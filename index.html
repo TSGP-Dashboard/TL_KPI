@@ -100,23 +100,23 @@
 
         </div>
 
-        <!-- LOWER BREADOWN PANEL: PLANNER INDIVIDUAL PERFORMANCE -->
+        <!-- LOWER BREADOWN PANEL: PLANNER INDIVIDUAL PERFORMANCE (COLUMN GRAPH) -->
         <div class="bg-[#111827] p-6 rounded-xl border border-slate-800/80 shadow-md">
             <div class="border-b border-slate-800 pb-4 mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                 <div>
                     <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-widest">Schedule Compliance Variance Matrix</h3>
-                    <p class="text-xs text-slate-500 font-mono mt-0.5">Granular raw metrics comparing planned allocation metrics to actual execution output</p>
+                    <p class="text-xs text-slate-500 font-mono mt-0.5">Comparative vertical column clusters tracking weekly operational target fulfillment</p>
                 </div>
-                <!-- Mini Legend Indicator Block -->
+                <!-- Legend Indicator Block -->
                 <div class="flex items-center gap-4 text-[10px] font-mono">
                     <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-slate-700 rounded-sm inline-block"></span> <span class="text-slate-400">PLANNED TARGET (100%)</span></div>
                     <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-cyan-500 rounded-sm inline-block"></span> <span class="text-slate-400">ACTUAL COMPLETED</span></div>
                 </div>
             </div>
 
-            <!-- Comparative Side-by-Side Graph Data Container -->
-            <div class="space-y-6" id="planners-graph-container">
-                <div class="text-slate-500 text-xs font-mono py-6 text-center">Syncing structural arrays from remote spreadsheet engine...</div>
+            <!-- Dynamic Column Layout Wrapper -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6" id="planners-graph-container">
+                <div class="text-slate-500 text-xs font-mono py-12 col-span-full text-center">Syncing structural arrays from remote spreadsheet engine...</div>
             </div>
         </div>
 
@@ -190,7 +190,7 @@
             } catch (err) {
                 console.error("System connection failure: ", err);
                 document.getElementById('planners-graph-container').innerHTML = `
-                    <div class="text-rose-400 text-xs font-mono py-4 text-center border border-rose-950/40 bg-rose-950/10 rounded-lg">
+                    <div class="text-rose-400 text-xs font-mono py-4 col-span-full text-center border border-rose-950/40 bg-rose-950/10 rounded-lg">
                         CRITICAL PIPELINE INTERRUPTION: VERIFY SECURE ENDPOINT HANDSHAKE VIA DEVELOPER CONSOLE.
                     </div>`;
             }
@@ -235,7 +235,7 @@
             let totalPlanned = 0, totalActual = 0, html = '';
 
             if(!weekFilteredRows.length) {
-                document.getElementById('planners-graph-container').innerHTML = `<div class="text-slate-500 text-xs font-mono py-4 text-center">Zero dataset returns configured for target Cycle Index ${selectedWeek}</div>`;
+                document.getElementById('planners-graph-container').innerHTML = `<div class="text-slate-500 text-xs font-mono py-4 col-span-full text-center">Zero dataset returns configured for target Cycle Index ${selectedWeek}</div>`;
                 return;
             }
 
@@ -251,46 +251,49 @@
 
                 const barColor = kpiPct >= 80 ? 'bg-cyan-500' : 'bg-amber-500';
                 const isCritical = planned > 0 && actual === 0;
-                const actualWidth = planned > 0 ? Math.min((actual / planned) * 100, 100) : 0;
+                
+                // Convert percentage to vertical height value (clamped at 100% max)
+                const actualHeight = planned > 0 ? Math.min((actual / planned) * 100, 100) : 0;
 
                 html += `
-                    <div class="grid grid-cols-1 lg:grid-cols-4 items-center gap-2 lg:gap-6 border-b border-slate-900/40 pb-4 last:border-0 font-mono text-xs">
-                        <!-- Label Meta Block -->
-                        <div class="lg:col-span-1">
-                            <span class="text-slate-300 font-medium block truncate">
-                                ${name}
-                            </span>
-                            <span class="text-slate-500 text-[11px] block mt-0.5">
-                                ${type} ${isCritical ? '• <span class="text-rose-400 font-bold">BACKLOG ANOMALY</span>' : ''}
-                            </span>
-                        </div>
+                    <!-- Individual Planner Column Card Module -->
+                    <div class="bg-[#161e2e]/60 border border-slate-800/80 rounded-xl p-4 flex flex-col justify-between font-mono text-xs">
                         
-                        <!-- Dual Comparative Bar Columns Stacked Vertically in Container -->
-                        <div class="lg:col-span-2 space-y-1.5 bg-[#0e1320] p-3 rounded-lg border border-slate-800/60">
-                            <!-- Row A: Planned Target -->
-                            <div class="flex items-center gap-3">
-                                <span class="text-[10px] text-slate-500 w-12 tracking-tighter">PLANNED</span>
-                                <div class="flex-1 bg-slate-900 h-2.5 rounded-sm overflow-hidden">
-                                    <div class="bg-slate-700 h-full w-full rounded-sm"></div>
-                                </div>
-                            </div>
-                            <!-- Row B: Actual Executed -->
-                            <div class="flex items-center gap-3">
-                                <span class="text-[10px] text-slate-400 w-12 tracking-tighter">ACTUAL</span>
-                                <div class="flex-1 bg-slate-900 h-2.5 rounded-sm overflow-hidden">
-                                    <div class="${isCritical ? 'bg-rose-500' : barColor} h-full rounded-sm transition-all duration-500" style="width: ${actualWidth}%"></div>
-                                </div>
+                        <!-- Top Meta Header -->
+                        <div class="border-b border-slate-800 pb-2.5 mb-4">
+                            <div class="text-white font-semibold truncate text-[13px]">${name}</div>
+                            <div class="text-slate-500 text-[11px] mt-0.5 flex justify-between items-center">
+                                <span>${type}</span>
+                                ${isCritical ? '<span class="text-rose-400 font-bold bg-rose-950/40 border border-rose-900/40 px-1 rounded text-[9px]">CRITICAL</span>' : ''}
                             </div>
                         </div>
 
-                        <!-- Single Metric Efficiency Value Output Column -->
-                        <div class="lg:col-span-1 text-left lg:text-right mt-1 lg:mt-0">
-                            <div class="text-[10px] text-slate-500 uppercase tracking-widest">Efficiency Status</div>
-                            <div class="text-lg font-bold ${isCritical ? 'text-rose-400' : 'text-white'} mt-0.5">
-                                ${planned > 0 ? kpiPct + '%' : 'N/A'}
-                                <span class="text-xs text-slate-400 font-normal ml-1">(${actual}/${planned})</span>
+                        <!-- Graph Canvas Panel: Vertical column staging yard (140px tall fixed height box) -->
+                        <div class="h-[140px] flex items-end justify-center gap-6 px-2 bg-[#0e1320] rounded-lg border border-slate-900 p-2">
+                            
+                            <!-- Column Cluster A: Planned Target (Locked standard baseline) -->
+                            <div class="flex flex-col items-center flex-1 h-full justify-end group relative">
+                                <div class="bg-slate-700 w-full rounded-t-sm transition-all duration-500" style="height: 100%"></div>
+                                <span class="text-[9px] text-slate-500 mt-1.5 tracking-tighter">PLAN</span>
                             </div>
+
+                            <!-- Column Cluster B: Actual Performance Output -->
+                            <div class="flex flex-col items-center flex-1 h-full justify-end group relative">
+                                <div class="${isCritical ? 'bg-rose-500' : barColor} w-full rounded-t-sm transition-all duration-500" style="height: ${actualHeight}%"></div>
+                                <span class="text-[9px] text-slate-400 mt-1.5 tracking-tighter">ACTUAL</span>
+                            </div>
+
                         </div>
+
+                        <!-- Data Bottom Status Readout -->
+                        <div class="mt-4 pt-3 border-t border-slate-800/60 flex justify-between items-center">
+                            <span class="text-[10px] text-slate-500 uppercase tracking-wider">Efficiency</span>
+                            <span class="text-[14px] font-bold ${isCritical ? 'text-rose-400' : 'text-white'}">
+                                ${planned > 0 ? kpiPct + '%' : 'N/A'}
+                                <span class="text-[11px] text-slate-400 font-normal ml-0.5">(${actual}/${planned})</span>
+                            </span>
+                        </div>
+
                     </div>`;
             });
 
