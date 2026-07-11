@@ -35,7 +35,6 @@
             </div>
             <div class="h-8 w-[1px] bg-slate-800"></div>
             
-            <!-- Dynamic selector: Options are now generated automatically from database -->
             <select id="week-selector" onchange="changeWeekFilter()" class="bg-[#1f2937] text-slate-200 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-cyan-500 cursor-pointer transition-colors">
                 <option value="">Loading weeks...</option>
             </select>
@@ -103,13 +102,20 @@
 
         <!-- LOWER BREADOWN PANEL: PLANNER INDIVIDUAL PERFORMANCE -->
         <div class="bg-[#111827] p-6 rounded-xl border border-slate-800/80 shadow-md">
-            <div class="border-b border-slate-800 pb-4 mb-6">
-                <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-widest">Schedule Compliance Variance Matrix</h3>
-                <p class="text-xs text-slate-500 font-mono mt-0.5">Granular raw metrics tracked per operational shift manager</p>
+            <div class="border-b border-slate-800 pb-4 mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                <div>
+                    <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-widest">Schedule Compliance Variance Matrix</h3>
+                    <p class="text-xs text-slate-500 font-mono mt-0.5">Granular raw metrics comparing planned allocation metrics to actual execution output</p>
+                </div>
+                <!-- Mini Legend Indicator Block -->
+                <div class="flex items-center gap-4 text-[10px] font-mono">
+                    <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-slate-700 rounded-sm inline-block"></span> <span class="text-slate-400">PLANNED TARGET (100%)</span></div>
+                    <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-cyan-500 rounded-sm inline-block"></span> <span class="text-slate-400">ACTUAL COMPLETED</span></div>
+                </div>
             </div>
 
-            <!-- Proportional Data Visualization Rows -->
-            <div class="space-y-5" id="planners-graph-container">
+            <!-- Comparative Side-by-Side Graph Data Container -->
+            <div class="space-y-6" id="planners-graph-container">
                 <div class="text-slate-500 text-xs font-mono py-6 text-center">Syncing structural arrays from remote spreadsheet engine...</div>
             </div>
         </div>
@@ -150,7 +156,6 @@
 
     <!-- DATA PIPELINE CORE LOGIC ENGINE -->
     <script>
-        // Paste your unique deployment URL here
         const SHEET_DB_API_URL = 'https://script.google.com/macros/s/AKfycbzqed0j2W4mevtpEANLXZTIpFoAS79_GXxzmNvDfZOls4hOlnHY7FDtWyyXUCHIawrePQ/exec';
 
         let rawPlannerRows = [];
@@ -174,10 +179,8 @@
                     const db = payload.data;
                     rawPlannerRows = db.planner_performance || [];
                     
-                    // 1. Scan rows and populate the dropdown menu dynamically
                     const defaultWeek = populateWeekSelector(rawPlannerRows);
                     
-                    // 2. Route metrics to their cards and visual charts
                     renderPlannerVisualizer(rawPlannerRows, defaultWeek); 
                     renderCapexSummary(db.capex_projects || []);
                     renderTireSummary(db.tire_maintenance || []);
@@ -192,12 +195,10 @@
             }
         });
 
-        // Scans column 0 of your planner sheet, pulls unique weeks, and builds select drop-down menu
         function populateWeekSelector(rows) {
             const selector = document.getElementById('week-selector');
             if (!rows.length) return "";
 
-            // Use Set to collect unique values, filtering out headers or empty cells
             const uniqueWeeks = new Set();
             rows.forEach(row => {
                 const weekVal = String(row[0]).trim();
@@ -206,7 +207,6 @@
                 }
             });
 
-            // Sort weeks chronologically (e.g., Week 21, 22, 23, 24...)
             const sortedWeeks = Array.from(uniqueWeeks).sort((a, b) => a - b);
             
             if (sortedWeeks.length === 0) {
@@ -214,12 +214,10 @@
                 return "";
             }
 
-            // Build selection list strings
             selector.innerHTML = sortedWeeks.map(wk => 
                 `<option value="${wk}">Week ${wk} Performance</option>`
             ).join('');
 
-            // Automatically focus view on the most recent week in your dataset
             const latestWeek = sortedWeeks[sortedWeeks.length - 1];
             selector.value = latestWeek;
             return latestWeek;
@@ -250,20 +248,51 @@
                 totalPlanned += planned;
                 totalActual += actual;
 
+                // Adjust color scale based on efficiency threshold
                 const barColor = kpiPct >= 80 ? 'bg-cyan-500' : 'bg-amber-500';
                 const isCritical = planned > 0 && actual === 0;
 
+                // Scaled width logic so actual bar accurately mirrors its execution ratio relative to target
+                const maxBarWidth = 100;
+                const actualWidth = planned > 0 ? Math.min((actual / planned) * 100, 100) : 0;
+
                 html += `
-                    <div class="space-y-1.5 font-mono text-xs">
-                        <div class="flex justify-between items-center">
-                            <span class="text-slate-300 font-medium">
-                                ${name} <span class="text-slate-500 font-normal">(${type})</span>
-                                ${isCritical ? '<span class="ml-2 text-rose-400 font-bold bg-rose-950/30 px-1.5 py-0.5 rounded border border-rose-900/30 text-[10px]">BACKLOG ANOMALY</span>' : ''}
+                    <div class="grid grid-cols-1 lg:grid-cols-4 items-center gap-2 lg:gap-6 border-b border-slate-900/40 pb-4 last:border-0 font-mono text-xs">
+                        <!-- Label Meta Block -->
+                        <div class="lg:col-span-1">
+                            <span class="text-slate-300 font-medium block truncate">
+                                ${name}
                             </span>
-                            <span class="${isCritical ? 'text-rose-400' : 'text-white'} font-bold">${planned > 0 ? kpiPct + '%' : 'N/A'} <span class="text-slate-500 font-normal">(${actual}/${planned})</span></span>
+                            <span class="text-slate-500 text-[11px] block mt-0.5">
+                                ${type} ${isCritical ? '• <span class="text-rose-400 font-bold">BACKLOG ANOMALY</span>' : ''}
+                            </span>
                         </div>
-                        <div class="w-full bg-[#1f2937] h-2 rounded-sm overflow-hidden relative">
-                            <div class="${isCritical ? 'bg-rose-500' : barColor} h-full rounded-sm transition-all duration-500" style="width: ${planned > 0 ? kpiPct : 0}%"></div>
+                        
+                        <!-- Dual Comparative Bar Columns Stacked Vertically in Container -->
+                        <div class="lg:col-span-2 space-y-1.5 bg-[#0e1320] p-3 rounded-lg border border-slate-800/60">
+                            <!-- Row A: Planned Target (Static Baseline representation set to 100% boundary container) -->
+                            <div class="flex items-center gap-3">
+                                <span class="text-[10px] text-slate-500 w-12 tracking-tighter">PLANNED</span>
+                                <div class="flex-1 bg-slate-900 h-2.5 rounded-sm overflow-hidden">
+                                    <div class="bg-slate-700 h-full w-full rounded-sm"></div>
+                                </div>
+                            </div>
+                            <!-- Row B: Actual Executed (Calculated proportionally against target scope) -->
+                            <div class="flex items-center gap-3">
+                                <span class="text-[10px] text-slate-400 w-12 tracking-tighter">ACTUAL</span>
+                                <div class="flex-1 bg-slate-900 h-2.5 rounded-sm overflow-hidden">
+                                    <div class="${isCritical ? 'bg-rose-500' : barColor} h-full rounded-sm transition-all duration-500" style="width: ${actualWidth}%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Single Metric Efficiency Value Output Column -->
+                        <div class="lg:col-span-1 text-left lg:text-right mt-1 lg:mt-0">
+                            <div class="text-[10px] text-slate-500 uppercase tracking-widest">Efficiency Status</div>
+                            <div class="text-lg font-bold ${isCritical ? 'text-rose-400' : 'text-white'} mt-0.5">
+                                ${planned > 0 ? kpiPct + '%' : 'N/A'}
+                                <span class="text-xs text-slate-400 font-normal ml-1">(${actual}/${planned})</span>
+                            </div>
                         </div>
                     </div>`;
             });
@@ -323,7 +352,7 @@
             document.getElementById('kpi-parts').innerText = `${rows.length} Items`;
         }
 
-        function openCapexModal() {
+        fn openCapexModal() {
             document.getElementById('capex-modal').classList.remove('hidden');
             document.getElementById('capex-modal').classList.add('flex');
         }
