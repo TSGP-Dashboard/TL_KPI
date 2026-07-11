@@ -84,15 +84,18 @@
                 </div>
             </div>
 
-            <!-- Panel 3: Parts Backlog -->
-            <div class="bg-[#111827] p-6 rounded-xl border border-slate-800/80 shadow-md flex flex-col justify-between">
+            <!-- Panel 3: Parts Request Speed -->
+            <div class="bg-[#111827] p-6 rounded-xl border border-slate-800/80 shadow-md flex flex-col justify-between cursor-pointer hover:border-indigo-700/80 border-l-2 border-l-transparent hover:border-l-indigo-500/80 transition-all group" onclick="switchView('parts')">
                 <div>
-                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Parts Request Backlog</h2>
-                    <div class="text-5xl font-bold tracking-tight text-white mt-4" id="kpi-parts">-- Items</div>
+                    <div class="flex justify-between items-start">
+                        <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Parts Request Speed</h2>
+                        <span class="text-[10px] text-indigo-400 font-mono tracking-wider bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-900/40 opacity-100 group-hover:bg-indigo-900/40 transition-all">View Analytics ⏱️</span>
+                    </div>
+                    <div class="text-5xl font-bold tracking-tight text-white mt-4" id="kpi-parts">0.0 Days</div>
                 </div>
-                <div class="mt-6 flex items-center justify-between border-t border-slate-800/60 pt-3 text-[11px] font-mono text-slate-500">
-                    <span>Awaiting Procurement</span>
-                    <span class="text-rose-400">Queue Processing</span>
+                <div class="mt-6 flex items-center justify-between border-t border-slate-800/60 pt-3 text-[11px] font-mono text-slate-400">
+                    <span id="kpi-parts-count">Calculating efficiency indicators...</span>
+                    <span class="text-slate-500">Procurement</span>
                 </div>
             </div>
 
@@ -154,9 +157,7 @@
                     </button>
                 </div>
 
-                <!-- CHART CONTAINER SUB-STAGE -->
                 <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <!-- Left: Amount Allocation Breakdown (Doughnut) -->
                     <div class="lg:col-span-2 bg-[#0d121f] border border-slate-800/70 rounded-xl p-5 flex flex-col items-center">
                         <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 w-full text-left font-mono">Financial Breakdown per Asset Type</h4>
                         <div class="w-full max-w-[280px] h-[280px] flex items-center justify-center relative">
@@ -164,7 +165,6 @@
                         </div>
                     </div>
                     
-                    <!-- Right: Equipment Categorized Volume Performance (Column Chart) -->
                     <div class="lg:col-span-3 bg-[#0d121f] border border-slate-800/70 rounded-xl p-5">
                         <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 font-mono">Equipment Categories: Planned vs Actual</h4>
                         <div class="w-full h-[280px]">
@@ -173,7 +173,6 @@
                     </div>
                 </div>
 
-                <!-- Bottom: Raw Data Ledger Table View -->
                 <div class="overflow-x-auto chart-scrollbar bg-[#0d121f] rounded-xl border border-slate-800/60 p-4">
                     <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 font-mono px-2">Complete Database Registry Ledger</h4>
                     <table class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
@@ -195,6 +194,48 @@
                 </div>
             </div>
 
+            <!-- VIEW 3: PARTS PROCUREMENT PERFORMANCE HUB -->
+            <div id="view-parts-container" class="hidden space-y-6">
+                <div class="border-b border-slate-800 pb-4 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-indigo-400 uppercase tracking-widest">Procurement Turnaround Analytics Matrix</h3>
+                        <p class="text-xs text-slate-500 font-mono mt-0.5">Surfacing team processing velocities against procurement workflow approval points</p>
+                    </div>
+                    <button onclick="switchView('compliance')" class="text-slate-400 hover:text-white bg-[#1f2937] border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium font-mono transition-colors">
+                        ← Back to Planner Chart
+                    </button>
+                </div>
+
+                <!-- Comparative Process Bar Canvas Slot -->
+                <div class="bg-[#0d121f] border border-slate-800/70 rounded-xl p-5">
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 font-mono">Processing Bottleneck Analysis: Internal (Col L) vs Procurement Team (Col S)</h4>
+                    <div class="w-full h-[300px]">
+                        <canvas id="parts-performance-canvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Raw Parts Ledger View Container -->
+                <div class="overflow-x-auto chart-scrollbar bg-[#0d121f] rounded-xl border border-slate-800/60 p-4">
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 font-mono px-2">Parts Pipeline Registry Ledger</h4>
+                    <table class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[11px]">
+                                <th class="pb-3 pl-2 font-medium">Request ID</th>
+                                <th class="pb-3 font-medium">Asset Reference</th>
+                                <th class="pb-3 font-medium">Component Description</th>
+                                <th class="pb-3 font-medium">Our End (Days)</th>
+                                <th class="pb-3 font-medium">Procurement (Days)</th>
+                                <th class="pb-3 font-medium">Gross Lead Time</th>
+                                <th class="pb-3 pr-2 font-medium text-right">Workflow Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-900 text-slate-300" id="parts-table-rows">
+                            <tr><td colspan="7" class="py-6 text-center text-slate-500">Retrieving logistical data tables...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
 
     </main>
@@ -205,9 +246,11 @@
 
         let rawPlannerRows = [];
         let rawCapexRows = [];
+        let rawPartsRows = [];
         
         let doughnutChartInstance = null;
         let barChartInstance = null;
+        let partsChartInstance = null;
 
         document.addEventListener("DOMContentLoaded", async () => {
             // Register Chart.js Datalabels plugin globally
@@ -226,13 +269,14 @@
                     const db = payload.data;
                     rawPlannerRows = db.planner_performance || [];
                     rawCapexRows = db.capex_projects || [];
+                    rawPartsRows = db.parts_requests || [];
                     
                     const defaultWeek = populateWeekSelector(rawPlannerRows);
                     
                     renderPlannerVisualizer(rawPlannerRows, defaultWeek); 
                     renderCapexSummary(rawCapexRows);
+                    renderPartsSummary(rawPartsRows);
                     renderTireSummary(db.tire_maintenance || []);
-                    renderPartsSummary(db.parts_requests || []);
                 }
             } catch (err) {
                 console.error("System connection failure: ", err);
@@ -246,11 +290,17 @@
         function switchView(targetView) {
             const complianceBox = document.getElementById('view-compliance-container');
             const capexBox = document.getElementById('view-capex-container');
+            const partsBox = document.getElementById('view-parts-container');
+
+            complianceBox.classList.add('hidden');
+            capexBox.classList.add('hidden');
+            partsBox.classList.add('hidden');
+
             if (targetView === 'capex') {
-                complianceBox.classList.add('hidden');
                 capexBox.classList.remove('hidden');
+            } else if (targetView === 'parts') {
+                partsBox.classList.remove('hidden');
             } else {
-                capexBox.classList.add('hidden');
                 complianceBox.classList.remove('hidden');
             }
         }
@@ -333,18 +383,15 @@
             let documentPhaseCount = 0; 
             let tableHtml = '';
 
-            // Monitored category containers
             let categoryFinancials = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
             let categoryVolumePlanned = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
             let categoryVolumeActual = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
 
             rows.forEach(row => {
-                // Ignore empty spacer rows
                 if (!row[2] && !row[5]) return;
 
                 const id = row[0], quarter = row[1], assetId = String(row[2] || '').toUpperCase(), activity = row[3] || '', po = row[4], status = row[6] || '';
                 
-                // CRITICAL CORRECTION: Retain decimals/numbers exclusively to avoid text merge distortions
                 let cleanText = String(row[5] || '').replace(/[^0-9.]/g, '');
                 const budgetNum = cleanText ? parseFloat(cleanText) : 0;
 
@@ -354,7 +401,6 @@
 
                 if(status === 'With Documents') documentPhaseCount++;
 
-                // Map prefixes explicitly
                 let targetedCategory = null;
                 if (assetId.startsWith("BH")) targetedCategory = "Backhoe";
                 else if (assetId.startsWith("BD")) targetedCategory = "Bulldozer";
@@ -384,7 +430,6 @@
                     </tr>`;
             });
 
-            // Clean Auto-Scaler Output (Under 1B maps directly to Millions)
             if (totalDatabaseGrossBudget >= 1000000000) {
                 document.getElementById('kpi-capex').innerText = `₱${(totalDatabaseGrossBudget / 1000000000).toFixed(2)}B`;
             } else {
@@ -406,7 +451,6 @@
             const plannedData = labels.map(lbl => plannedMap[lbl] || 0);
             const actualData = labels.map(lbl => actualMap[lbl] || 0);
 
-            // 1. DOUGHNUT CHART WITH PERSISTENT PERCENTAGE LABELS
             if (doughnutChartInstance) doughnutChartInstance.destroy();
             const ctxDoughnut = document.getElementById('capex-doughnut-canvas').getContext('2d');
             doughnutChartInstance = new Chart(ctxDoughnut, {
@@ -430,11 +474,7 @@
                             labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
                         },
                         tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return ` Total: ₱${context.raw.toLocaleString()}`;
-                                }
-                            }
+                            callbacks: { label: function(context) { return ` Total: ₱${context.raw.toLocaleString()}`; } }
                         },
                         datalabels: {
                             display: true,
@@ -450,7 +490,6 @@
                 }
             });
 
-            // 2. DOUBLE COLUMN BAR CHART WITH STRIP LABELS ON TOP
             if (barChartInstance) barChartInstance.destroy();
             const ctxBar = document.getElementById('capex-bar-canvas').getContext('2d');
             barChartInstance = new Chart(ctxBar, {
@@ -458,18 +497,8 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        {
-                            label: 'Planned Target Scope',
-                            data: plannedData,
-                            backgroundColor: '#0ea5e9',
-                            borderRadius: 4
-                        },
-                        {
-                            label: 'Actual Volume Executed',
-                            data: actualData,
-                            backgroundColor: '#fb923c',
-                            borderRadius: 4
-                        }
+                        { label: 'Planned Target Scope', data: plannedData, backgroundColor: '#0ea5e9', borderRadius: 4 },
+                        { label: 'Actual Volume Executed', data: actualData, backgroundColor: '#fb923c', borderRadius: 4 }
                     ]
                 },
                 options: {
@@ -477,16 +506,10 @@
                     maintainAspectRatio: false,
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } },
-                        y: { 
-                            grid: { color: '#1e293b' }, 
-                            ticks: { color: '#64748b', font: { family: 'monospace' }, stepSize: 1 } 
-                        }
+                        y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { family: 'monospace' }, stepSize: 1 } }
                     },
                     plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: { color: '#cbd5e1', font: { family: 'Inter', size: 11 } }
-                        },
+                        legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: 'Inter', size: 11 } } },
                         datalabels: {
                             display: true,
                             anchor: 'end',
@@ -500,16 +523,142 @@
             });
         }
 
+        function renderPartsSummary(rows) {
+            if (!rows.length) return;
+
+            let totalOverallDays = 0;
+            let totalInternalDays = 0;
+            let totalProcurementDays = 0;
+            
+            let approvedCount = 0;
+            let backlogCount = 0;
+            let tableHtml = '';
+
+            // Categorized operational array maps
+            let categoryInternalSums = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
+            let categoryProcureSums = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
+            let categoryApprovedCounts = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
+
+            rows.forEach(row => {
+                if (!row[19]) return; // Skip empty structural gaps
+
+                const id = row[0] || 'PR-?', assetId = String(row[2] || '').toUpperCase(), desc = row[3] || 'Unspecified Component', status = String(row[19]).trim().toUpperCase();
+                
+                // Extraction parameters mapping directly from layout instructions
+                const internalDays = parseFloat(String(row[11]).replace(/[^0-9.]/g, '')) || 0;
+                const procurementDays = parseFloat(String(row[18]).replace(/[^0-9.]/g, '')) || 0;
+                const grossLeadDays = parseFloat(String(row[20]).replace(/[^0-9.]/g, '')) || 0;
+
+                let parsedCat = null;
+                if (assetId.startsWith("BH")) parsedCat = "Backhoe";
+                else if (assetId.startsWith("BD")) parsedCat = "Bulldozer";
+                else if (assetId.startsWith("CR")) parsedCat = "Crane";
+
+                if (status === "APPROVED") {
+                    totalOverallDays += grossLeadDays;
+                    totalInternalDays += internalDays;
+                    totalProcurementDays += procurementDays;
+                    approvedCount++;
+
+                    if (parsedCat) {
+                        categoryInternalSums[parsedCat] += internalDays;
+                        categoryProcureSums[parsedCat] += procurementDays;
+                        categoryApprovedCounts[parsedCat] += 1;
+                    }
+                } else {
+                    backlogCount++;
+                }
+
+                tableHtml += `
+                    <tr class="hover:bg-slate-900/60 border-b border-slate-900/60 transition-colors">
+                        <td class="py-3 pl-2 text-indigo-400 font-medium">${id}</td>
+                        <td class="py-3"><span class="bg-slate-800 border border-slate-700 text-slate-300 px-1.5 py-0.5 rounded text-[11px] font-bold">${assetId}</span></td>
+                        <td class="py-3 text-white font-medium truncate max-w-[220px]">${desc}</td>
+                        <td class="py-3 text-sky-400">${status === 'APPROVED' ? internalDays + ' d' : '---'}</td>
+                        <td class="py-3 text-orange-400">${status === 'APPROVED' ? procurementDays + ' d' : '---'}</td>
+                        <td class="py-3 text-slate-200 font-bold">${status === 'APPROVED' ? grossLeadDays + ' d' : '---'}</td>
+                        <td class="py-3 pr-2 text-right">
+                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-medium ${status==='APPROVED'?'bg-emerald-950/40 text-emerald-400 border border-emerald-900/40':'bg-amber-950/30 text-amber-500 border border-amber-900/30'}">
+                                ${status}
+                            </span>
+                        </td>
+                    </tr>`;
+            });
+
+            // Set main executive top-level card stats indicators
+            const globalMean = approvedCount > 0 ? (totalOverallDays / approvedCount).toFixed(1) : "0.0";
+            const internalMean = approvedCount > 0 ? (totalInternalDays / approvedCount).toFixed(1) : "0.0";
+            const procurementMean = approvedCount > 0 ? (totalProcurementDays / approvedCount).toFixed(1) : "0.0";
+
+            document.getElementById('kpi-parts').innerText = `${globalMean} Days`;
+            document.getElementById('kpi-parts-count').innerText = `Internal: ${internalMean}d | Procure: ${procurementMean}d [${backlogCount} items]`;
+
+            const partsTbody = document.getElementById("parts-table-rows");
+            if (partsTbody && tableHtml) partsTbody.innerHTML = tableHtml;
+
+            // Compute grouped category arrays metrics explicitly to push onto Chart.js arrays
+            let categories = ["Backhoe", "Bulldozer", "Crane"];
+            let finalInternalAverages = categories.map(cat => categoryApprovedCounts[cat] > 0 ? (categoryInternalSums[cat] / categoryApprovedCounts[cat]).toFixed(1) : 0);
+            let finalProcureAverages = categories.map(cat => categoryApprovedCounts[cat] > 0 ? (categoryProcureSums[cat] / categoryApprovedCounts[cat]).toFixed(1) : 0);
+
+            buildAdvancedPartsPerformanceChart(categories, finalInternalAverages, finalProcureAverages);
+        }
+
+        function buildAdvancedPartsPerformanceChart(labels, internalData, procureData) {
+            if (partsChartInstance) partsChartInstance.destroy();
+            const ctxParts = document.getElementById('parts-performance-canvas').getContext('2d');
+            
+            partsChartInstance = new Chart(ctxParts, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Internal Process Target (Col L Avg)',
+                            data: internalData,
+                            backgroundColor: '#38bdf8',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Procurement Approval Cycle (Col S Avg)',
+                            data: procureData,
+                            backgroundColor: '#fb923c',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } },
+                        y: { 
+                            grid: { color: '#1e293b' }, 
+                            ticks: { color: '#64748b', font: { family: 'monospace' } },
+                            title: { display: true, text: 'Average Days Elapsed', color: '#64748b', font: { size: 10 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: 'Inter', size: 11 } } },
+                        datalabels: {
+                            display: true,
+                            anchor: 'end',
+                            align: 'top',
+                            color: '#ffffff',
+                            font: { family: 'monospace', size: 11, weight: 'bold' },
+                            offset: 1,
+                            formatter: (value) => value + 'd'
+                        }
+                    }
+                }
+            });
+        }
+
         function renderTireSummary(rows) {
             if (!rows.length) return;
             let maxKm = 0;
             rows.forEach(row => { const km = parseInt(row[3]) || 0; if (km > maxKm) maxKm = km; });
             document.getElementById('kpi-tires').innerText = maxKm > 0 ? `${maxKm.toLocaleString()} KM` : '-- KM';
-        }
-
-        function renderPartsSummary(rows) {
-            if (!rows.length) return;
-            document.getElementById('kpi-parts').innerText = `${rows.length} Items`;
         }
     </script>
 </body>
