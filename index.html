@@ -200,8 +200,8 @@
                     <div>
                         <h3 class="text-sm font-semibold text-indigo-400 uppercase tracking-widest">Procurement Turnaround Analytics Matrix</h3>
                         <p class="text-xs text-slate-400 font-mono mt-1">
-                            💡 <strong class="text-sky-400">Our End Processing (Col L):</strong> Tracks time from parts request generation up to engineering submission. 
-                            | <strong class="text-orange-400">Procurement Approval (Col S):</strong> Tracks external cycle speed until buyer validation.
+                            💡 <strong class="text-[#25a2e7]">Internal Pipeline (Blue):</strong> Timeline generation to submission. 
+                            | <strong class="text-[#3cb86e]">Procurement Validation (Green):</strong> Logistics approval and buy cycle.
                         </p>
                     </div>
                     <button onclick="switchView('compliance')" class="text-slate-400 hover:text-white bg-[#1f2937] border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium font-mono transition-colors">
@@ -209,10 +209,10 @@
                     </button>
                 </div>
 
-                <!-- Thick Structured Process Bar Canvas Slot -->
-                <div class="bg-[#0d121f] border border-slate-800/70 rounded-xl p-5">
-                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 font-mono">Processing Bottleneck Analysis: Macro Pipeline Target Comparison</h4>
-                    <div class="w-full h-[320px]">
+                <!-- Horizontal Stacked Process Timeline Bar Chart -->
+                <div class="bg-[#0d121f] border border-slate-800/70 rounded-xl p-6">
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-5 font-mono">Macro Pipeline Turnaround Stack: Average Total Lead Days Breakdown</h4>
+                    <div class="w-full h-[150px]">
                         <canvas id="parts-performance-canvas"></canvas>
                     </div>
                 </div>
@@ -538,11 +538,10 @@
             let tableHtml = '';
 
             rows.forEach(row => {
-                if (!row[19]) return; // Skip blank layout structural gaps
+                if (!row[19]) return; 
 
                 const id = row[0] || 'PR-?', assetId = String(row[2] || '').toUpperCase(), desc = row[3] || 'Unspecified Component', status = String(row[19]).trim().toUpperCase();
                 
-                // Extraction parameter mapping based on structural column rules
                 const internalDays = parseFloat(String(row[11]).replace(/[^0-9.]/g, '')) || 0;
                 const procurementDays = parseFloat(String(row[18]).replace(/[^0-9.]/g, '')) || 0;
                 const grossLeadDays = parseFloat(String(row[20]).replace(/[^0-9.]/g, '')) || 0;
@@ -561,8 +560,8 @@
                         <td class="py-3 pl-2 text-indigo-400 font-medium">${id}</td>
                         <td class="py-3"><span class="bg-slate-800 border border-slate-700 text-slate-300 px-1.5 py-0.5 rounded text-[11px] font-bold">${assetId}</span></td>
                         <td class="py-3 text-white font-medium truncate max-w-[220px]">${desc}</td>
-                        <td class="py-3 text-sky-400">${status === 'APPROVED' ? internalDays + ' d' : '---'}</td>
-                        <td class="py-3 text-orange-400">${status === 'APPROVED' ? procurementDays + ' d' : '---'}</td>
+                        <td class="py-3 text-[#25a2e7]">${status === 'APPROVED' ? internalDays + ' d' : '---'}</td>
+                        <td class="py-3 text-[#3cb86e]">${status === 'APPROVED' ? procurementDays + ' d' : '---'}</td>
                         <td class="py-3 text-slate-200 font-bold">${status === 'APPROVED' ? grossLeadDays + ' d' : '---'}</td>
                         <td class="py-3 pr-2 text-right">
                             <span class="inline-block px-2 py-0.5 rounded text-[11px] font-medium ${status==='APPROVED'?'bg-emerald-950/40 text-emerald-400 border border-emerald-900/40':'bg-amber-950/30 text-amber-500 border border-amber-900/30'}">
@@ -572,7 +571,6 @@
                     </tr>`;
             });
 
-            // Set main executive top-level card stats indicators
             const globalMean = approvedCount > 0 ? (totalOverallDays / approvedCount).toFixed(1) : "0.0";
             const internalMean = approvedCount > 0 ? (totalInternalDays / approvedCount).toFixed(1) : "0.0";
             const procurementMean = approvedCount > 0 ? (totalProcurementDays / approvedCount).toFixed(1) : "0.0";
@@ -583,9 +581,9 @@
             const partsTbody = document.getElementById("parts-table-rows");
             if (partsTbody && tableHtml) partsTbody.innerHTML = tableHtml;
 
-            // Generate macro global metrics bar chart directly
+            // Generate Horizontal Stacked Timeline Chart
             buildAdvancedPartsPerformanceChart(
-                ['Overall Approved Requests Timeline Summary'], 
+                ['Approved Requests Cycle Time (Mean Average)'], 
                 [parseFloat(internalMean)], 
                 [parseFloat(procurementMean)]
             );
@@ -601,50 +599,57 @@
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Our End Processing Average (Column L)',
+                            label: 'Internal Pipeline (Blue)',
                             data: internalData,
-                            backgroundColor: '#38bdf8',
-                            borderRadius: 6,
-                            barPercentage: 0.35,      // Formats thick chunks natively
-                            categoryPercentage: 0.55
+                            backgroundColor: '#25a2e7', // Sky Blue matching sample
+                            barThickness: 55
                         },
                         {
-                            label: 'Procurement Approval Average (Column S)',
+                            label: 'Procurement Validation (Green)',
                             data: srcProcureData,
-                            backgroundColor: '#fb923c',
-                            borderRadius: 6,
-                            barPercentage: 0.35,      // Formats thick chunks natively
-                            categoryPercentage: 0.55
+                            backgroundColor: '#3cb86e', // Emerald Green matching sample
+                            barThickness: 55
                         }
                     ]
                 },
                 options: {
+                    indexAxis: 'y', // Renders horizontally
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
                         x: { 
-                            grid: { display: false }, 
-                            ticks: { color: '#e2e8f0', font: { family: 'Inter', size: 12, weight: 'bold' } } 
-                        },
-                        y: { 
+                            stacked: true, // Turns layout horizontal stacked format
                             grid: { color: '#1e293b' }, 
                             ticks: { color: '#64748b', font: { family: 'monospace', size: 11 } },
-                            title: { display: true, text: 'Average Days Elapsed', color: '#64748b', font: { size: 11 } }
+                            title: { display: true, text: 'Days Processed', color: '#64748b', font: { size: 11 } }
+                        },
+                        y: { 
+                            stacked: true, // Turns layout horizontal stacked format
+                            grid: { display: false }, 
+                            ticks: { color: '#e2e8f0', font: { family: 'Inter', size: 12, weight: 'bold' } } 
                         }
                     },
                     plugins: {
                         legend: { 
                             position: 'top', 
-                            labels: { color: '#cbd5e1', font: { family: 'Inter', size: 12, weight: '500' }, padding: 20 } 
+                            labels: { color: '#cbd5e1', font: { family: 'Inter', size: 12 }, padding: 15 } 
                         },
                         datalabels: {
                             display: true,
-                            anchor: 'end',
-                            align: 'top',
                             color: '#ffffff',
-                            font: { family: 'Inter', size: 13, weight: 'bold' },
-                            offset: 5,
-                            formatter: (value) => value + ' Days'
+                            font: { family: 'Inter', size: 12, weight: 'bold' },
+                            formatter: (value, context) => {
+                                // Dynamic internal segment tagging text placement
+                                if (value === 0) return '';
+                                
+                                // Calculate total logic for tracking label display right pinned at the edge 
+                                if(context.datasetIndex === 1) {
+                                    let internalVal = context.chart.data.datasets[0].data[context.dataIndex];
+                                    let grandTotal = (internalVal + value).toFixed(1);
+                                    return `${value}d (Total: ${grandTotal} Days)`;
+                                }
+                                return `${value} Days`;
+                            }
                         }
                     }
                 }
