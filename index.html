@@ -34,10 +34,10 @@
                 <p class="text-[11px] text-slate-500 font-mono">Q2 Reporting Framework</p>
             </div>
             <div class="h-8 w-[1px] bg-slate-800"></div>
-            <!-- Dynamic selector themed perfectly for corporate panels -->
+            
+            <!-- Dynamic selector: Options are now generated automatically from database -->
             <select id="week-selector" onchange="changeWeekFilter()" class="bg-[#1f2937] text-slate-200 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-cyan-500 cursor-pointer transition-colors">
-                <option value="23">Week 23 Metrics</option>
-                <option value="26">Week 26 Metrics</option>
+                <option value="">Loading weeks...</option>
             </select>
         </div>
     </header>
@@ -108,7 +108,7 @@
                 <p class="text-xs text-slate-500 font-mono mt-0.5">Granular raw metrics tracked per operational shift manager</p>
             </div>
 
-            <!-- Sleek Proportional Data Visualization Rows -->
+            <!-- Proportional Data Visualization Rows -->
             <div class="space-y-5" id="planners-graph-container">
                 <div class="text-slate-500 text-xs font-mono py-6 text-center">Syncing structural arrays from remote spreadsheet engine...</div>
             </div>
@@ -174,8 +174,11 @@
                     const db = payload.data;
                     rawPlannerRows = db.planner_performance || [];
                     
-                    // Route values seamlessly into data rendering slots
-                    renderPlannerVisualizer(rawPlannerRows, '23'); 
+                    // 1. Scan rows and populate the dropdown menu dynamically
+                    const defaultWeek = populateWeekSelector(rawPlannerRows);
+                    
+                    // 2. Route metrics to their cards and visual charts
+                    renderPlannerVisualizer(rawPlannerRows, defaultWeek); 
                     renderCapexSummary(db.capex_projects || []);
                     renderTireSummary(db.tire_maintenance || []);
                     renderPartsSummary(db.parts_requests || []);
@@ -189,13 +192,46 @@
             }
         });
 
+        // Scans column 0 of your planner sheet, pulls unique weeks, and builds select drop-down menu
+        function populateWeekSelector(rows) {
+            const selector = document.getElementById('week-selector');
+            if (!rows.length) return "";
+
+            // Use Set to collect unique values, filtering out headers or empty cells
+            const uniqueWeeks = new Set();
+            rows.forEach(row => {
+                const weekVal = String(row[0]).trim();
+                if (weekVal && !isNaN(weekVal)) {
+                    uniqueWeeks.add(Number(weekVal));
+                }
+            });
+
+            // Sort weeks chronologically (e.g., Week 21, 22, 23, 24...)
+            const sortedWeeks = Array.from(uniqueWeeks).sort((a, b) => a - b);
+            
+            if (sortedWeeks.length === 0) {
+                selector.innerHTML = `<option value="">No Weeks Found</option>`;
+                return "";
+            }
+
+            // Build selection list strings
+            selector.innerHTML = sortedWeeks.map(wk => 
+                `<option value="${wk}">Week ${wk} Performance</option>`
+            ).join('');
+
+            // Automatically focus view on the most recent week in your dataset
+            const latestWeek = sortedWeeks[sortedWeeks.length - 1];
+            selector.value = latestWeek;
+            return latestWeek;
+        }
+
         function changeWeekFilter() {
             const targetWeek = document.getElementById('week-selector').value;
             renderPlannerVisualizer(rawPlannerRows, targetWeek);
         }
 
         function renderPlannerVisualizer(rows, selectedWeek) {
-            if (!rows.length) return;
+            if (!rows.length || !selectedWeek) return;
             const weekFilteredRows = rows.filter(r => String(r[0]).trim() === String(selectedWeek).trim());
             let totalPlanned = 0, totalActual = 0, html = '';
 
@@ -214,7 +250,6 @@
                 totalPlanned += planned;
                 totalActual += actual;
 
-                // Professional high-contrast slate dashboard accents instead of playful bright colors
                 const barColor = kpiPct >= 80 ? 'bg-cyan-500' : 'bg-amber-500';
                 const isCritical = planned > 0 && actual === 0;
 
