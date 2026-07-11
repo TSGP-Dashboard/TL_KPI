@@ -100,23 +100,26 @@
 
         </div>
 
-        <!-- LOWER BREADOWN PANEL: PLANNER INDIVIDUAL PERFORMANCE (COLUMN GRAPH) -->
+        <!-- LOWER BREAKDOWN PANEL: UNIFIED BAR CHART STAGE -->
         <div class="bg-[#111827] p-6 rounded-xl border border-slate-800/80 shadow-md">
             <div class="border-b border-slate-800 pb-4 mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                 <div>
                     <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-widest">Schedule Compliance Variance Matrix</h3>
-                    <p class="text-xs text-slate-500 font-mono mt-0.5">Comparative vertical column clusters tracking weekly operational target fulfillment</p>
+                    <p class="text-xs text-slate-500 font-mono mt-0.5">Side-by-side vertical data columns tracked per operational shift planner</p>
                 </div>
-                <!-- Legend Indicator Block -->
+                <!-- Legend Matching Image Request Style -->
                 <div class="flex items-center gap-4 text-[10px] font-mono">
-                    <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-slate-700 rounded-sm inline-block"></span> <span class="text-slate-400">PLANNED TARGET (100%)</span></div>
-                    <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-cyan-500 rounded-sm inline-block"></span> <span class="text-slate-400">ACTUAL COMPLETED</span></div>
+                    <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-sky-500 rounded-sm inline-block"></span> <span class="text-slate-400">PLANNED TARGET</span></div>
+                    <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-orange-400 rounded-sm inline-block"></span> <span class="text-slate-400">ACTUAL COMPLETED</span></div>
                 </div>
             </div>
 
-            <!-- Dynamic Column Layout Wrapper -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6" id="planners-graph-container">
-                <div class="text-slate-500 text-xs font-mono py-12 col-span-full text-center">Syncing structural arrays from remote spreadsheet engine...</div>
+            <!-- UNIFIED GRAPH CONTAINER -->
+            <div class="overflow-x-auto pt-6">
+                <!-- Inner flexible timeline floor with a clear solid baseline border -->
+                <div class="min-w-[700px] h-[280px] flex items-end justify-around border-b-2 border-slate-700 px-4 pb-1" id="planners-graph-container">
+                    <div class="text-slate-500 text-xs font-mono w-full text-center pb-20">Syncing structural arrays from remote spreadsheet engine...</div>
+                </div>
             </div>
         </div>
 
@@ -156,7 +159,6 @@
 
     <!-- DATA PIPELINE CORE LOGIC ENGINE -->
     <script>
-        // Paste your unique deployment URL here
         const SHEET_DB_API_URL = 'https://script.google.com/macros/s/AKfycbzqed0j2W4mevtpEANLXZTIpFoAS79_GXxzmNvDfZOls4hOlnHY7FDtWyyXUCHIawrePQ/exec';
 
         let rawPlannerRows = [];
@@ -190,7 +192,7 @@
             } catch (err) {
                 console.error("System connection failure: ", err);
                 document.getElementById('planners-graph-container').innerHTML = `
-                    <div class="text-rose-400 text-xs font-mono py-4 col-span-full text-center border border-rose-950/40 bg-rose-950/10 rounded-lg">
+                    <div class="text-rose-400 text-xs font-mono py-4 text-center w-full border border-rose-950/40 bg-rose-950/10 rounded-lg">
                         CRITICAL PIPELINE INTERRUPTION: VERIFY SECURE ENDPOINT HANDSHAKE VIA DEVELOPER CONSOLE.
                     </div>`;
             }
@@ -235,65 +237,56 @@
             let totalPlanned = 0, totalActual = 0, html = '';
 
             if(!weekFilteredRows.length) {
-                document.getElementById('planners-graph-container').innerHTML = `<div class="text-slate-500 text-xs font-mono py-4 col-span-full text-center">Zero dataset returns configured for target Cycle Index ${selectedWeek}</div>`;
+                document.getElementById('planners-graph-container').innerHTML = `<div class="text-slate-500 text-xs font-mono py-4 text-center w-full">Zero dataset returns configured for target Cycle Index ${selectedWeek}</div>`;
                 return;
             }
 
+            // Find global maximum single metric value to handle proportional chart height scale (Max = 100% box height)
+            let maxVal = 10; 
+            weekFilteredRows.forEach(row => {
+                const p = parseInt(row[3]) || 0;
+                const a = parseInt(row[4]) || 0;
+                if (p > maxVal) maxVal = p;
+                if (a > maxVal) maxVal = a;
+            });
+
             weekFilteredRows.forEach(row => {
                 const name = row[1] || 'Unassigned';
-                const type = row[2] || 'System Default';
                 const planned = parseInt(row[3]) || 0;
                 const actual = parseInt(row[4]) || 0;
-                const kpiPct = planned > 0 ? Math.round((actual / planned) * 100) : 0;
 
                 totalPlanned += planned;
                 totalActual += actual;
 
-                const barColor = kpiPct >= 80 ? 'bg-cyan-500' : 'bg-amber-500';
-                const isCritical = planned > 0 && actual === 0;
-                
-                // Convert percentage to vertical height value (clamped at 100% max)
-                const actualHeight = planned > 0 ? Math.min((actual / planned) * 100, 100) : 0;
+                // Calculate exact proportional matching height inside our 200px tall column envelope
+                const plannedHeight = Math.round((planned / maxVal) * 200);
+                const actualHeight = Math.round((actual / maxVal) * 200);
 
                 html += `
-                    <!-- Individual Planner Column Card Module -->
-                    <div class="bg-[#161e2e]/60 border border-slate-800/80 rounded-xl p-4 flex flex-col justify-between font-mono text-xs">
+                    <!-- Close-Knit Cluster For Single Planner -->
+                    <div class="flex flex-col items-center h-full justify-end w-32 relative group">
                         
-                        <!-- Top Meta Header -->
-                        <div class="border-b border-slate-800 pb-2.5 mb-4">
-                            <div class="text-white font-semibold truncate text-[13px]">${name}</div>
-                            <div class="text-slate-500 text-[11px] mt-0.5 flex justify-between items-center">
-                                <span>${type}</span>
-                                ${isCritical ? '<span class="text-rose-400 font-bold bg-rose-950/40 border border-rose-900/40 px-1 rounded text-[9px]">CRITICAL</span>' : ''}
-                            </div>
-                        </div>
-
-                        <!-- Graph Canvas Panel: Vertical column staging yard (140px tall fixed height box) -->
-                        <div class="h-[140px] flex items-end justify-center gap-6 px-2 bg-[#0e1320] rounded-lg border border-slate-900 p-2">
+                        <!-- Side-By-Side Columns Container Stage -->
+                        <div class="flex items-end justify-center gap-1.5 w-full h-[210px] pb-1">
                             
-                            <!-- Column Cluster A: Planned Target (Locked standard baseline) -->
-                            <div class="flex flex-col items-center flex-1 h-full justify-end group relative">
-                                <div class="bg-slate-700 w-full rounded-t-sm transition-all duration-500" style="height: 100%"></div>
-                                <span class="text-[9px] text-slate-500 mt-1.5 tracking-tighter">PLAN</span>
+                            <!-- Planned Bar (Sky Blue) -->
+                            <div class="w-7 bg-sky-500 rounded-t transition-all duration-500 relative flex flex-col justify-between" style="height: ${plannedHeight}px;">
+                                <!-- Top floating numeric value sticker -->
+                                <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-300 font-mono">${planned}</span>
                             </div>
 
-                            <!-- Column Cluster B: Actual Performance Output -->
-                            <div class="flex flex-col items-center flex-1 h-full justify-end group relative">
-                                <div class="${isCritical ? 'bg-rose-500' : barColor} w-full rounded-t-sm transition-all duration-500" style="height: ${actualHeight}%"></div>
-                                <span class="text-[9px] text-slate-400 mt-1.5 tracking-tighter">ACTUAL</span>
+                            <!-- Actual Completed Bar (Classic Amber/Orange Accent) -->
+                            <div class="w-7 bg-orange-400 rounded-t transition-all duration-500 relative flex flex-col justify-between" style="height: ${actualHeight}px;">
+                                <!-- Top floating numeric value sticker -->
+                                <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-orange-400 font-mono">${actual}</span>
                             </div>
 
                         </div>
 
-                        <!-- Data Bottom Status Readout -->
-                        <div class="mt-4 pt-3 border-t border-slate-800/60 flex justify-between items-center">
-                            <span class="text-[10px] text-slate-500 uppercase tracking-wider">Efficiency</span>
-                            <span class="text-[14px] font-bold ${isCritical ? 'text-rose-400' : 'text-white'}">
-                                ${planned > 0 ? kpiPct + '%' : 'N/A'}
-                                <span class="text-[11px] text-slate-400 font-normal ml-0.5">(${actual}/${planned})</span>
-                            </span>
+                        <!-- Footer X-Axis Identification Label -->
+                        <div class="text-center mt-2 w-full">
+                            <span class="text-[11px] font-semibold text-slate-300 block truncate tracking-tight">${name}</span>
                         </div>
-
                     </div>`;
             });
 
