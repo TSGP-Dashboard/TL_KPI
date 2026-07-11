@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN for High-Performance Chart Rendering -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Datalabels Plugin CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <!-- Corporate Clean Typography -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -74,7 +76,7 @@
                         <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">CAPEX Pipeline Total</h2>
                         <span class="text-[10px] text-cyan-400 font-mono tracking-wider bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-900/40 opacity-100 group-hover:bg-cyan-900/40 transition-all">View Ledger 📋</span>
                     </div>
-                    <div class="text-5xl font-bold tracking-tight text-white mt-4" id="kpi-capex">₱0.00B</div>
+                    <div class="text-5xl font-bold tracking-tight text-white mt-4" id="kpi-capex">₱0.00M</div>
                 </div>
                 <div class="mt-6 flex items-center justify-between border-t border-slate-800/60 pt-3 text-[11px] font-mono">
                     <span class="text-amber-400 font-medium" id="kpi-capex-count">Loading status...</span>
@@ -152,7 +154,7 @@
                     </button>
                 </div>
 
-                <!-- ADDED ADVANCED CHART CONTAINER SUB-STAGE -->
+                <!-- CHART CONTAINER SUB-STAGE -->
                 <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
                     <!-- Left: Amount Allocation Breakdown (Doughnut) -->
                     <div class="lg:col-span-2 bg-[#0d121f] border border-slate-800/70 rounded-xl p-5 flex flex-col items-center">
@@ -204,11 +206,13 @@
         let rawPlannerRows = [];
         let rawCapexRows = [];
         
-        // References to preserve instances across viewport toggles
         let doughnutChartInstance = null;
         let barChartInstance = null;
 
         document.addEventListener("DOMContentLoaded", async () => {
+            // Register Chart.js Datalabels plugin globally
+            Chart.register(ChartDataLabels);
+
             if(SHEET_DB_API_URL === 'YOUR_COPIED_GOOGLE_WEB_APP_URL_HERE' || SHEET_DB_API_URL.includes('...')) {
                 console.warn("API Deployment Endpoint Configuration Required.");
                 return;
@@ -242,7 +246,6 @@
         function switchView(targetView) {
             const complianceBox = document.getElementById('view-compliance-container');
             const capexBox = document.getElementById('view-capex-container');
-
             if (targetView === 'capex') {
                 complianceBox.classList.add('hidden');
                 capexBox.classList.remove('hidden');
@@ -325,37 +328,44 @@
 
         function renderCapexSummary(rows) {
             if (!rows.length) return;
-            let totalDatabaseGrossBudget = 0, documentPhaseCount = 0, tableHtml = '';
+            
+            let totalDatabaseGrossBudget = 0; 
+            let documentPhaseCount = 0; 
+            let tableHtml = '';
 
-            // Metric tracking variables for chart aggregation
-            let categoryFinancials = {};
-            let categoryVolumePlanned = {};
-            let categoryVolumeActual = {};
+            // Monitored category containers
+            let categoryFinancials = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
+            let categoryVolumePlanned = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
+            let categoryVolumeActual = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
 
             rows.forEach(row => {
-                const id = row[0], quarter = row[1], assetId = row[2] || '', activity = row[3] || '', po = row[4], status = row[6] || '';
-                const budgetNum = row[5] ? parseInt(String(row[5]).replace(/[^0-9]/g, '')) : 0;
+                // Ignore empty spacer rows
+                if (!row[2] && !row[5]) return;
 
-                totalDatabaseGrossBudget += budgetNum;
-                if(status === 'With Documents') documentPhaseCount++;
+                const id = row[0], quarter = row[1], assetId = String(row[2] || '').toUpperCase(), activity = row[3] || '', po = row[4], status = row[6] || '';
+                
+                // CRITICAL CORRECTION: Retain decimals/numbers exclusively to avoid text merge distortions
+                let cleanText = String(row[5] || '').replace(/[^0-9.]/g, '');
+                const budgetNum = cleanText ? parseFloat(cleanText) : 0;
 
-                // EXTRACT COMPONENT CATEGORY TO BUCKET LOGISTICS ACCURATELY
-                // Automatically isolates prefix components (e.g. "BD" from BD-16, "EX" from EX-02) or keywords
-                let cleanedCategory = "Other Infrastructure";
-                if (activity.toUpperCase().includes("UNDERCARRIAGE")) cleanedCategory = "Undercarriage Base";
-                else if (activity.toUpperCase().includes("ENGINE")) cleanedCategory = "Powerplant Engine";
-                else if (activity.toUpperCase().includes("TIRE") || activity.toUpperCase().includes("WHEEL")) cleanedCategory = "Tire Logistics";
-                else if (assetId.includes("-")) {
-                    cleanedCategory = assetId.split("-")[0].toUpperCase() + " Group Heavy Assets";
+                if (!isNaN(budgetNum)) {
+                    totalDatabaseGrossBudget = Number(totalDatabaseGrossBudget) + budgetNum;
                 }
 
-                // Aggregate Data Arrays for both advanced Chart engines
-                categoryFinancials[cleanedCategory] = (categoryFinancials[cleanedCategory] || 0) + budgetNum;
-                categoryVolumePlanned[cleanedCategory] = (categoryVolumePlanned[cleanedCategory] || 0) + 1;
-                if(status === "Done" || status === "Complete") {
-                    categoryVolumeActual[cleanedCategory] = (categoryVolumeActual[cleanedCategory] || 0) + 1;
-                } else {
-                    categoryVolumeActual[cleanedCategory] = (categoryVolumeActual[cleanedCategory] || 0) + 0; 
+                if(status === 'With Documents') documentPhaseCount++;
+
+                // Map prefixes explicitly
+                let targetedCategory = null;
+                if (assetId.startsWith("BH")) targetedCategory = "Backhoe";
+                else if (assetId.startsWith("BD")) targetedCategory = "Bulldozer";
+                else if (assetId.startsWith("CR")) targetedCategory = "Crane";
+
+                if (targetedCategory) {
+                    categoryFinancials[targetedCategory] += budgetNum;
+                    categoryVolumePlanned[targetedCategory] += 1;
+                    if (status === "Done" || status === "Complete") {
+                        categoryVolumeActual[targetedCategory] += 1;
+                    }
                 }
 
                 tableHtml += `
@@ -374,29 +384,29 @@
                     </tr>`;
             });
 
-            // Convert complete gross allocation to legible Billions/Millions layout
+            // Clean Auto-Scaler Output (Under 1B maps directly to Millions)
             if (totalDatabaseGrossBudget >= 1000000000) {
                 document.getElementById('kpi-capex').innerText = `₱${(totalDatabaseGrossBudget / 1000000000).toFixed(2)}B`;
             } else {
-                document.getElementById('kpi-capex').innerText = `₱${(totalDatabaseGrossBudget / 1000000).toFixed(1)}M`;
+                document.getElementById('kpi-capex').innerText = `₱${(totalDatabaseGrossBudget / 1000000).toFixed(2)}M`;
             }
             document.getElementById('kpi-capex-count').innerText = `● ${documentPhaseCount} Items Request Docs`;
             
             const tbody = document.getElementById("capex-table-rows");
             if (tbody && tableHtml) tbody.innerHTML = tableHtml;
 
-            // FIRE GENERATION PROTOCOLS FOR BOTH HIGH-LEVEL VISUAL CHARTS
             buildAdvancedCapexCharts(categoryFinancials, categoryVolumePlanned, categoryVolumeActual);
         }
 
         function buildAdvancedCapexCharts(financialsMap, plannedMap, actualMap) {
-            const labels = Object.keys(financialsMap);
+            const labels = Object.keys(financialsMap); 
             const financialData = Object.values(financialsMap);
+            const totalFinancials = financialData.reduce((a, b) => a + b, 0);
             
             const plannedData = labels.map(lbl => plannedMap[lbl] || 0);
             const actualData = labels.map(lbl => actualMap[lbl] || 0);
 
-            // 1. GENERATE DOUGHNUT INSTANCE (FINANCIAL VALUES)
+            // 1. DOUGHNUT CHART WITH PERSISTENT PERCENTAGE LABELS
             if (doughnutChartInstance) doughnutChartInstance.destroy();
             const ctxDoughnut = document.getElementById('capex-doughnut-canvas').getContext('2d');
             doughnutChartInstance = new Chart(ctxDoughnut, {
@@ -405,7 +415,7 @@
                     labels: labels,
                     datasets: [{
                         data: financialData,
-                        backgroundColor: ['#06b6d4', '#f97316', '#10b981', '#6366f1', '#a855f7', '#ec4899'],
+                        backgroundColor: ['#06b6d4', '#f97316', '#a855f7'],
                         borderWidth: 2,
                         borderColor: '#0d121f'
                     }]
@@ -414,21 +424,33 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false }, // Hiding messy labels list, interactive tooltips show all details on hover
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
+                        },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    let val = context.raw;
-                                    return ` Total: ₱${val.toLocaleString()}`;
+                                    return ` Total: ₱${context.raw.toLocaleString()}`;
                                 }
+                            }
+                        },
+                        datalabels: {
+                            display: true,
+                            color: '#ffffff',
+                            font: { family: 'Inter', weight: 'bold', size: 12 },
+                            formatter: (value) => {
+                                if (totalFinancials === 0) return '0%';
+                                return ((value / totalFinancials) * 100).toFixed(1) + '%';
                             }
                         }
                     },
-                    cutout: '70%'
+                    cutout: '55%'
                 }
             });
 
-            // 2. GENERATE COMPACT DOUBLE-COLUMN HORIZON CHART (PLANNED VS EXECUTED OPERATIONAL CAP CAPACITY)
+            // 2. DOUBLE COLUMN BAR CHART WITH STRIP LABELS ON TOP
             if (barChartInstance) barChartInstance.destroy();
             const ctxBar = document.getElementById('capex-bar-canvas').getContext('2d');
             barChartInstance = new Chart(ctxBar, {
@@ -454,20 +476,24 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Inter', size: 10 } } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } },
                         y: { 
                             grid: { color: '#1e293b' }, 
-                            ticks: { 
-                                color: '#64748b', 
-                                font: { family: 'Courier New' },
-                                stepSize: 1
-                            } 
+                            ticks: { color: '#64748b', font: { family: 'monospace' }, stepSize: 1 } 
                         }
                     },
                     plugins: {
                         legend: {
                             position: 'top',
-                            labels: { color: '#cbd5e1', font: { family: 'Inter', size: 10 } }
+                            labels: { color: '#cbd5e1', font: { family: 'Inter', size: 11 } }
+                        },
+                        datalabels: {
+                            display: true,
+                            anchor: 'end',
+                            align: 'top',
+                            color: '#ffffff',
+                            font: { family: 'monospace', size: 11, weight: 'bold' },
+                            offset: 2
                         }
                     }
                 }
