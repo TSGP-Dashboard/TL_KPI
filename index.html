@@ -156,6 +156,7 @@
 
     <!-- DATA PIPELINE CORE LOGIC ENGINE -->
     <script>
+        // Paste your unique deployment URL here
         const SHEET_DB_API_URL = 'https://script.google.com/macros/s/AKfycbzqed0j2W4mevtpEANLXZTIpFoAS79_GXxzmNvDfZOls4hOlnHY7FDtWyyXUCHIawrePQ/exec';
 
         let rawPlannerRows = [];
@@ -248,12 +249,8 @@
                 totalPlanned += planned;
                 totalActual += actual;
 
-                // Adjust color scale based on efficiency threshold
                 const barColor = kpiPct >= 80 ? 'bg-cyan-500' : 'bg-amber-500';
                 const isCritical = planned > 0 && actual === 0;
-
-                // Scaled width logic so actual bar accurately mirrors its execution ratio relative to target
-                const maxBarWidth = 100;
                 const actualWidth = planned > 0 ? Math.min((actual / planned) * 100, 100) : 0;
 
                 html += `
@@ -270,14 +267,14 @@
                         
                         <!-- Dual Comparative Bar Columns Stacked Vertically in Container -->
                         <div class="lg:col-span-2 space-y-1.5 bg-[#0e1320] p-3 rounded-lg border border-slate-800/60">
-                            <!-- Row A: Planned Target (Static Baseline representation set to 100% boundary container) -->
+                            <!-- Row A: Planned Target -->
                             <div class="flex items-center gap-3">
                                 <span class="text-[10px] text-slate-500 w-12 tracking-tighter">PLANNED</span>
                                 <div class="flex-1 bg-slate-900 h-2.5 rounded-sm overflow-hidden">
                                     <div class="bg-slate-700 h-full w-full rounded-sm"></div>
                                 </div>
                             </div>
-                            <!-- Row B: Actual Executed (Calculated proportionally against target scope) -->
+                            <!-- Row B: Actual Executed -->
                             <div class="flex items-center gap-3">
                                 <span class="text-[10px] text-slate-400 w-12 tracking-tighter">ACTUAL</span>
                                 <div class="flex-1 bg-slate-900 h-2.5 rounded-sm overflow-hidden">
@@ -352,10 +349,11 @@
             document.getElementById('kpi-parts').innerText = `${rows.length} Items`;
         }
 
-        fn openCapexModal() {
+        function openCapexModal() {
             document.getElementById('capex-modal').classList.remove('hidden');
             document.getElementById('capex-modal').classList.add('flex');
         }
+        
         function closeCapexModal() {
             document.getElementById('capex-modal').classList.remove('flex');
             document.getElementById('capex-modal').classList.add('hidden');
