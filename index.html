@@ -199,17 +199,20 @@
                 <div class="border-b border-slate-800 pb-4 flex items-center justify-between">
                     <div>
                         <h3 class="text-sm font-semibold text-indigo-400 uppercase tracking-widest">Procurement Turnaround Analytics Matrix</h3>
-                        <p class="text-xs text-slate-500 font-mono mt-0.5">Surfacing team processing velocities against procurement workflow approval points</p>
+                        <p class="text-xs text-slate-400 font-mono mt-1">
+                            💡 <strong class="text-sky-400">Our End Processing (Col L):</strong> Tracks time from parts request generation up to engineering submission. 
+                            | <strong class="text-orange-400">Procurement Approval (Col S):</strong> Tracks external cycle speed until buyer validation.
+                        </p>
                     </div>
                     <button onclick="switchView('compliance')" class="text-slate-400 hover:text-white bg-[#1f2937] border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium font-mono transition-colors">
                         ← Back to Planner Chart
                     </button>
                 </div>
 
-                <!-- Comparative Process Bar Canvas Slot -->
+                <!-- Thick Structured Process Bar Canvas Slot -->
                 <div class="bg-[#0d121f] border border-slate-800/70 rounded-xl p-5">
-                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 font-mono">Processing Bottleneck Analysis: Internal (Col L) vs Procurement Team (Col S)</h4>
-                    <div class="w-full h-[300px]">
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 font-mono">Processing Bottleneck Analysis: Macro Pipeline Target Comparison</h4>
+                    <div class="w-full h-[320px]">
                         <canvas id="parts-performance-canvas"></canvas>
                     </div>
                 </div>
@@ -534,37 +537,21 @@
             let backlogCount = 0;
             let tableHtml = '';
 
-            // Categorized operational array maps
-            let categoryInternalSums = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
-            let categoryProcureSums = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
-            let categoryApprovedCounts = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
-
             rows.forEach(row => {
-                if (!row[19]) return; // Skip empty structural gaps
+                if (!row[19]) return; // Skip blank layout structural gaps
 
                 const id = row[0] || 'PR-?', assetId = String(row[2] || '').toUpperCase(), desc = row[3] || 'Unspecified Component', status = String(row[19]).trim().toUpperCase();
                 
-                // Extraction parameters mapping directly from layout instructions
+                // Extraction parameter mapping based on structural column rules
                 const internalDays = parseFloat(String(row[11]).replace(/[^0-9.]/g, '')) || 0;
                 const procurementDays = parseFloat(String(row[18]).replace(/[^0-9.]/g, '')) || 0;
                 const grossLeadDays = parseFloat(String(row[20]).replace(/[^0-9.]/g, '')) || 0;
-
-                let parsedCat = null;
-                if (assetId.startsWith("BH")) parsedCat = "Backhoe";
-                else if (assetId.startsWith("BD")) parsedCat = "Bulldozer";
-                else if (assetId.startsWith("CR")) parsedCat = "Crane";
 
                 if (status === "APPROVED") {
                     totalOverallDays += grossLeadDays;
                     totalInternalDays += internalDays;
                     totalProcurementDays += procurementDays;
                     approvedCount++;
-
-                    if (parsedCat) {
-                        categoryInternalSums[parsedCat] += internalDays;
-                        categoryProcureSums[parsedCat] += procurementDays;
-                        categoryApprovedCounts[parsedCat] += 1;
-                    }
                 } else {
                     backlogCount++;
                 }
@@ -596,15 +583,15 @@
             const partsTbody = document.getElementById("parts-table-rows");
             if (partsTbody && tableHtml) partsTbody.innerHTML = tableHtml;
 
-            // Compute grouped category arrays metrics explicitly to push onto Chart.js arrays
-            let categories = ["Backhoe", "Bulldozer", "Crane"];
-            let finalInternalAverages = categories.map(cat => categoryApprovedCounts[cat] > 0 ? (categoryInternalSums[cat] / categoryApprovedCounts[cat]).toFixed(1) : 0);
-            let finalProcureAverages = categories.map(cat => categoryApprovedCounts[cat] > 0 ? (categoryProcureSums[cat] / categoryApprovedCounts[cat]).toFixed(1) : 0);
-
-            buildAdvancedPartsPerformanceChart(categories, finalInternalAverages, finalProcureAverages);
+            // Generate macro global metrics bar chart directly
+            buildAdvancedPartsPerformanceChart(
+                ['Overall Approved Requests Timeline Summary'], 
+                [parseFloat(internalMean)], 
+                [parseFloat(procurementMean)]
+            );
         }
 
-        function buildAdvancedPartsPerformanceChart(labels, internalData, procureData) {
+        function buildAdvancedPartsPerformanceChart(labels, internalData, srcProcureData) {
             if (partsChartInstance) partsChartInstance.destroy();
             const ctxParts = document.getElementById('parts-performance-canvas').getContext('2d');
             
@@ -614,16 +601,20 @@
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Internal Process Target (Col L Avg)',
+                            label: 'Our End Processing Average (Column L)',
                             data: internalData,
                             backgroundColor: '#38bdf8',
-                            borderRadius: 4
+                            borderRadius: 6,
+                            barPercentage: 0.35,      // Formats thick chunks natively
+                            categoryPercentage: 0.55
                         },
                         {
-                            label: 'Procurement Approval Cycle (Col S Avg)',
-                            data: procureData,
+                            label: 'Procurement Approval Average (Column S)',
+                            data: srcProcureData,
                             backgroundColor: '#fb923c',
-                            borderRadius: 4
+                            borderRadius: 6,
+                            barPercentage: 0.35,      // Formats thick chunks natively
+                            categoryPercentage: 0.55
                         }
                     ]
                 },
@@ -631,23 +622,29 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } },
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { color: '#e2e8f0', font: { family: 'Inter', size: 12, weight: 'bold' } } 
+                        },
                         y: { 
                             grid: { color: '#1e293b' }, 
-                            ticks: { color: '#64748b', font: { family: 'monospace' } },
-                            title: { display: true, text: 'Average Days Elapsed', color: '#64748b', font: { size: 10 } }
+                            ticks: { color: '#64748b', font: { family: 'monospace', size: 11 } },
+                            title: { display: true, text: 'Average Days Elapsed', color: '#64748b', font: { size: 11 } }
                         }
                     },
                     plugins: {
-                        legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: 'Inter', size: 11 } } },
+                        legend: { 
+                            position: 'top', 
+                            labels: { color: '#cbd5e1', font: { family: 'Inter', size: 12, weight: '500' }, padding: 20 } 
+                        },
                         datalabels: {
                             display: true,
                             anchor: 'end',
                             align: 'top',
                             color: '#ffffff',
-                            font: { family: 'monospace', size: 11, weight: 'bold' },
-                            offset: 1,
-                            formatter: (value) => value + 'd'
+                            font: { family: 'Inter', size: 13, weight: 'bold' },
+                            offset: 5,
+                            formatter: (value) => value + ' Days'
                         }
                     }
                 }
