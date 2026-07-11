@@ -18,21 +18,17 @@
     <header class="bg-white border-b border-slate-100 sticky top-0 z-50 px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
         <!-- Search Bar -->
         <div class="relative w-full md:w-96">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                🔍
-            </span>
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔍</span>
             <input type="text" placeholder="Search your equipment, assets, or planners..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm bg-slate-50">
         </div>
 
         <!-- Gamified Level Profile Header -->
         <div class="flex items-center gap-4 w-full md:w-auto justify-end">
-            <!-- XP Status -->
             <div class="flex items-center gap-2 bg-purple-50 border border-purple-100 px-4 py-2 rounded-xl">
                 <span class="text-purple-600 font-bold text-sm">⚡ 2,847 XP</span>
                 <span class="text-slate-300">|</span>
                 <span class="text-purple-700 bg-purple-100 px-2 py-0.5 rounded-lg text-xs font-bold">Lvl 12 Master</span>
             </div>
-            <!-- Notifications / Profile -->
             <div class="relative bg-orange-100 text-orange-700 p-2 rounded-xl font-bold text-sm">🎁</div>
             <div class="relative bg-red-100 text-red-700 p-2 rounded-xl font-bold text-sm">🔔 <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">3</span></div>
             <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md">TM</div>
@@ -56,12 +52,12 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Planner Compliance</p>
-                        <h3 class="text-4xl font-bold text-slate-900 mt-2" id="kpi-compliance">83%</h3>
+                        <h3 class="text-4xl font-bold text-slate-900 mt-2" id="kpi-compliance">--%</h3>
                     </div>
                     <div class="bg-purple-50 p-3 rounded-xl text-purple-600 font-semibold text-xl">📊</div>
                 </div>
                 <div class="mt-4 flex items-center gap-1.5 text-xs font-medium text-emerald-600">
-                    <span>▲ +5%</span> <span class="text-slate-400 font-normal">vs last week</span>
+                    <span>▲ Live Sync</span> <span class="text-slate-400 font-normal">from Apps Script DB</span>
                 </div>
             </div>
 
@@ -69,13 +65,13 @@
             <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group cursor-pointer hover:shadow-md transition-all" onclick="openCapexModal()">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">CAPEX Done (Q2)</p>
-                        <h3 class="text-4xl font-bold text-slate-900 mt-2" id="kpi-capex">₱9.8M</h3>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">CAPEX Pipeline (Q2)</p>
+                        <h3 class="text-4xl font-bold text-slate-900 mt-2" id="kpi-capex">₱0.0M</h3>
                     </div>
                     <div class="bg-orange-50 p-3 rounded-xl text-orange-600 font-semibold text-xl">🏗️</div>
                 </div>
                 <div class="mt-4 flex items-center justify-between text-xs font-medium">
-                    <span class="text-emerald-600">🟢 4 Items Finished</span>
+                    <span class="text-amber-600" id="kpi-capex-count">🔄 Loading items...</span>
                     <span class="text-purple-600 font-bold hover:underline">View Details →</span>
                 </div>
             </div>
@@ -85,12 +81,12 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Parts Backlog Log</p>
-                        <h3 class="text-4xl font-bold text-slate-900 mt-2" id="kpi-parts">18 Items</h3>
+                        <h3 class="text-4xl font-bold text-slate-900 mt-2" id="kpi-parts">-- Items</h3>
                     </div>
                     <div class="bg-amber-50 p-3 rounded-xl text-amber-600 font-semibold text-xl">📦</div>
                 </div>
                 <div class="mt-4 flex items-center gap-1.5 text-xs font-medium text-rose-600">
-                    <span>⏳ Avg: 21.4 Days</span> <span class="text-slate-400 font-normal">in bottleneck</span>
+                    <span>⏳ Active Funnel</span> <span class="text-slate-400 font-normal">awaiting processing</span>
                 </div>
             </div>
 
@@ -99,12 +95,12 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tire Mileage Leader</p>
-                        <h3 class="text-4xl font-bold text-slate-900 mt-2" id="kpi-tires">9,000 KM</h3>
+                        <h3 class="text-4xl font-bold text-slate-900 mt-2" id="kpi-tires">-- KM</h3>
                     </div>
                     <div class="bg-blue-50 p-3 rounded-xl text-blue-600 font-semibold text-xl">🛞</div>
                 </div>
                 <div class="mt-4 flex items-center gap-1.5 text-xs font-medium text-emerald-600">
-                    <span>⭐ Primewell Brand</span> <span class="text-slate-400 font-normal">highest lifecycle</span>
+                    <span>⭐ Fleet Brands</span> <span class="text-slate-400 font-normal">highest lifecycle</span>
                 </div>
             </div>
 
@@ -117,39 +113,15 @@
                     <h2 class="text-xl font-bold text-slate-900">Planner Schedule Compliance Visualizer</h2>
                     <p class="text-slate-500 text-xs">Dynamic comparison data drawn from sheet metrics</p>
                 </div>
-                <select class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium">
-                    <option>Week 23 (Active View)</option>
-                    <option>Week 26 (Jane & Dionah Addition)</option>
+                <select id="week-selector" onchange="changeWeekFilter()" class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium">
+                    <option value="23">Week 23 (Active View)</option>
+                    <option value="26">Week 26 (Jane & Dionah Addition)</option>
                 </select>
             </div>
 
-            <!-- Custom Interactive HTML/CSS Bar Graph Component -->
+            <!-- Dynamic Progress Bars Container -->
             <div class="space-y-5" id="planners-graph-container">
-                <!-- Philip -->
-                <div class="space-y-1">
-                    <div class="flex justify-between text-sm font-medium"><span class="text-slate-700">PHILIP (PMS)</span><span class="text-slate-900 font-bold">55% (27 / 49 Tasks)</span></div>
-                    <div class="w-full bg-slate-100 h-3.5 rounded-full overflow-hidden relative"><div class="bg-gradient-to-r from-amber-500 to-orange-500 h-full rounded-full" style="width: 55%"></div></div>
-                </div>
-                <!-- Leo -->
-                <div class="space-y-1">
-                    <div class="flex justify-between text-sm font-medium"><span class="text-slate-700">LEO (CM - GEM, LOS AMIGOS)</span><span class="text-slate-900 font-bold">84% (16 / 19 Tasks)</span></div>
-                    <div class="w-full bg-slate-100 h-3.5 rounded-full overflow-hidden relative"><div class="bg-gradient-to-r from-emerald-500 to-teal-500 h-full rounded-full" style="width: 84%"></div></div>
-                </div>
-                <!-- Vincent -->
-                <div class="space-y-1">
-                    <div class="flex justify-between text-sm font-medium"><span class="text-slate-700">VINCENT (CM - REGION XIII)</span><span class="text-slate-900 font-bold">69% (11 / 16 Tasks)</span></div>
-                    <div class="w-full bg-slate-100 h-3.5 rounded-full overflow-hidden relative"><div class="bg-gradient-to-r from-amber-500 to-orange-500 h-full rounded-full" style="width: 69%"></div></div>
-                </div>
-                <!-- Glenberth -->
-                <div class="space-y-1">
-                    <div class="flex justify-between text-sm font-medium"><span class="text-slate-700">GLENBERTH (CM - REGION XI)</span><span class="text-slate-900 font-bold">83% (5 / 6 Tasks)</span></div>
-                    <div class="w-full bg-slate-100 h-3.5 rounded-full overflow-hidden relative"><div class="bg-gradient-to-r from-emerald-500 to-teal-500 h-full rounded-full" style="width: 83%"></div></div>
-                </div>
-                <!-- Roice -->
-                <div class="space-y-1">
-                    <div class="flex justify-between text-sm font-medium"><span class="text-slate-700 flex items-center gap-1.5">ROICE (CM - SAMAL) <span class="bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.2 rounded">CRITICAL BACKLOG ⚠️</span></span><span class="text-rose-600 font-bold">0% (0 / 4 Tasks)</span></div>
-                    <div class="w-full bg-slate-100 h-3.5 rounded-full overflow-hidden relative"><div class="bg-rose-500 h-full rounded-full" style="width: 0%"></div></div>
-                </div>
+                <div class="text-slate-400 text-sm py-4 text-center">Connecting to backend database webapp endpoint...</div>
             </div>
         </div>
 
@@ -160,7 +132,6 @@
                 <span class="text-xs bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">3 / 6 Unlocked</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <!-- Achievement 1 Unlocked -->
                 <div class="p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 rounded-2xl flex items-center gap-4">
                     <div class="text-3xl bg-amber-500 text-white w-12 h-12 rounded-xl flex items-center justify-center shadow-md">👑</div>
                     <div>
@@ -169,7 +140,6 @@
                         <p class="text-xs text-slate-500">Hit target bar graph on Q1 targets</p>
                     </div>
                 </div>
-                <!-- Achievement 2 Unlocked -->
                 <div class="p-4 bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100 rounded-2xl flex items-center gap-4">
                     <div class="text-3xl bg-purple-500 text-white w-12 h-12 rounded-xl flex items-center justify-center shadow-md">🛡️</div>
                     <div>
@@ -178,7 +148,6 @@
                         <p class="text-xs text-slate-500">Engine overhauls finalized under budget</p>
                     </div>
                 </div>
-                <!-- Achievement 3 Unlocked -->
                 <div class="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100 rounded-2xl flex items-center gap-4">
                     <div class="text-3xl bg-blue-500 text-white w-12 h-12 rounded-xl flex items-center justify-center shadow-md">🏆</div>
                     <div>
@@ -187,7 +156,6 @@
                         <p class="text-xs text-slate-500">Averaged over 9,000 KM on fleet rubber</p>
                     </div>
                 </div>
-                <!-- Achievement 4 Locked -->
                 <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-4 opacity-50 relative">
                     <div class="text-3xl bg-slate-300 text-slate-500 w-12 h-12 rounded-xl flex items-center justify-center">🔒</div>
                     <div>
@@ -200,10 +168,9 @@
         </div>
     </main>
 
-    <!-- DRILL DOWN MODAL COMPONENT (CAPEX DETAIL DRAWER EXAMPLE) -->
+    <!-- DRILL DOWN MODAL COMPONENT -->
     <div id="capex-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
-            <!-- Modal Header -->
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl border border-slate-100">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <div>
                     <h3 class="text-xl font-bold text-slate-900">CAPEX Detailed Row Breakdown</h3>
@@ -211,7 +178,6 @@
                 </div>
                 <button onclick="closeCapexModal()" class="text-slate-400 hover:text-slate-600 bg-white shadow-sm border border-slate-200 w-8 h-8 rounded-full flex items-center justify-center font-bold">✕</button>
             </div>
-            <!-- Modal Body Table -->
             <div class="p-6 overflow-y-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -226,41 +192,144 @@
                         </tr>
                     </thead>
                     <tbody class="text-sm divide-y divide-slate-100 text-slate-700">
-                        <tr>
-                            <td class="py-3 font-bold">5</td>
-                            <td class="py-3">Second Quarter</td>
-                            <td class="py-3"><span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded font-mono text-xs font-bold">BD-16</span></td>
-                            <td class="py-3 font-medium">RECONDITION OF UNDERCARRIAGE</td>
-                            <td class="py-3 font-mono text-xs">RF450802</td>
-                            <td class="py-3 font-semibold">₱1,700,000</td>
-                            <td class="py-3"><span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-medium">With Documents</span></td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 font-bold">6</td>
-                            <td class="py-3">Second Quarter</td>
-                            <td class="py-3"><span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded font-mono text-xs font-bold">BD-19</span></td>
-                            <td class="py-3 font-medium">RECONDITION OF UNDERCARRIAGE</td>
-                            <td class="py-3 font-mono text-xs">RF705638</td>
-                            <td class="py-3 font-semibold">₱1,700,000</td>
-                            <td class="py-3"><span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-medium">With Documents</span></td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 font-bold">7</td>
-                            <td class="py-3">Second Quarter</td>
-                            <td class="py-3"><span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded font-mono text-xs font-bold">BD-14</span></td>
-                            <td class="py-3 font-medium">ENGINE TOP OVERHAUL PROCESS</td>
-                            <td class="py-3 font-mono text-xs">RF705637</td>
-                            <td class="py-3 font-semibold">₱4,200,000</td>
-                            <td class="py-3"><span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-medium">With Documents</span></td>
-                        </tr>
+                        <tr><td colspan="7" class="py-4 text-center text-slate-400">Loading dynamic details...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- UI INTERACTION SCRIPT CONTROLLERS -->
+    <!-- CORE LIVE SCRIPT CONTROLLERS -->
     <script>
+        // ====== LIVE WEB APP API CONFIGURATION ======
+        // Paste your unique deployment Macro link directly here:
+        const SHEET_DB_API_URL = 'https://script.google.com/macros/s/AKfycbzqed0j2W4mevtpEANLXZTIpFoAS79_GXxzmNvDfZOls4hOlnHY7FDtWyyXUCHIawrePQ/exec';
+
+        // Global memory storage for dynamic filters
+        let rawPlannerRows = [];
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            if(SHEET_DB_API_URL === 'YOUR_COPIED_GOOGLE_WEB_APP_URL_HERE') {
+                console.warn("Please deploy your Google Script macro and assign the URL parameters.");
+                return;
+            }
+            try {
+                // Fetch the consolidated database payload object
+                const res = await fetch(SHEET_DB_API_URL);
+                const payload = await res.json();
+                
+                if (payload.status === "success") {
+                    const db = payload.data;
+                    rawPlannerRows = db.planner_performance;
+                    
+                    // Route live arrays instantly into independent UI visualization engines
+                    renderPlannerVisualizer(rawPlannerRows, '23'); 
+                    renderCapexSummary(db.capex_projects);
+                    renderTireSummary(db.tire_maintenance);
+                    renderPartsSummary(db.parts_requests);
+                } else {
+                    console.error("Internal script engine error: ", payload.message);
+                }
+            } catch (err) {
+                console.error("Network communication link mapping failure: ", err);
+            }
+        });
+
+        function changeWeekFilter() {
+            const targetWeek = document.getElementById('week-selector').value;
+            renderPlannerVisualizer(rawPlannerRows, targetWeek);
+        }
+
+        function renderPlannerVisualizer(rows, selectedWeek) {
+            if (!rows.length) return;
+            const weekFilteredRows = rows.filter(r => String(r[0]).trim() === String(selectedWeek).trim());
+            
+            let totalPlanned = 0, totalActual = 0, html = '';
+
+            if(!weekFilteredRows.length) {
+                document.getElementById('planners-graph-container').innerHTML = `<div class="text-slate-400 text-sm py-2 text-center">No matching database entries found for Week ${selectedWeek}</div>`;
+                return;
+            }
+
+            weekFilteredRows.forEach(row => {
+                const name = row[1] || 'Pending';
+                const type = row[2] || 'Unassigned';
+                const planned = parseInt(row[3]) || 0;
+                const actual = parseInt(row[4]) || 0;
+                const kpiPct = planned > 0 ? Math.round((actual / planned) * 100) : 0;
+
+                totalPlanned += planned;
+                totalActual += actual;
+
+                const barColor = kpiPct >= 80 ? 'from-emerald-500 to-teal-500' : 'from-amber-500 to-orange-500';
+                const isCritical = planned > 0 && actual === 0;
+
+                html += `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-sm font-medium">
+                            <span class="text-slate-700 flex items-center gap-1.5">
+                                ${name} <span class="text-slate-400 font-normal text-xs">(${type})</span>
+                                ${isCritical ? '<span class="bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.2 rounded">CRITICAL BACKLOG ⚠️</span>' : ''}
+                            </span>
+                            <span class="${isCritical ? 'text-rose-600' : 'text-slate-900'} font-bold">${planned > 0 ? kpiPct + '%' : 'Pending'} (${actual} / ${planned})</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-3.5 rounded-full overflow-hidden relative">
+                            <div class="bg-gradient-to-r ${isCritical ? 'bg-rose-500' : barColor} h-full rounded-full transition-all duration-500" style="width: ${planned > 0 ? kpiPct : 0}%"></div>
+                        </div>
+                    </div>`;
+            });
+
+            const teamAvg = totalPlanned > 0 ? Math.round((totalActual / totalPlanned) * 100) : 0;
+            document.getElementById('kpi-compliance').innerText = totalPlanned > 0 ? `${teamAvg}%` : '--%';
+            document.getElementById('planners-graph-container').innerHTML = html;
+        }
+
+        function renderCapexSummary(rows) {
+            if (!rows.length) return;
+            let totalQ2Budget = 0, documentPhaseCount = 0, tableHtml = '';
+
+            rows.forEach(row => {
+                const id = row[0], quarter = row[1], asset = row[2], activity = row[3], po = row[4], status = row[6] || '';
+                const budgetNum = row[5] ? parseInt(String(row[5]).replace(/[^0-9]/g, '')) : 0;
+
+                if (quarter === 'Second Quarter') {
+                    totalQ2Budget += budgetNum;
+                    if(status === 'With Documents') documentPhaseCount++;
+
+                    tableHtml += `
+                        <tr>
+                            <td class="py-3 font-bold">${id}</td>
+                            <td class="py-3">${quarter}</td>
+                            <td class="py-3"><span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded font-mono text-xs font-bold">${asset}</span></td>
+                            <td class="py-3 font-medium">${activity}</td>
+                            <td class="py-3 font-mono text-xs">${po || 'N/A'}</td>
+                            <td class="py-3 font-semibold">₱${budgetNum.toLocaleString()}</td>
+                            <td class="py-3"><span class="${status==='Done'?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'} text-xs px-2.5 py-0.5 rounded-full font-medium">${status}</span></td>
+                        </tr>`;
+                }
+            });
+
+            document.getElementById('kpi-capex').innerText = `₱${(totalQ2Budget / 1000000).toFixed(1)}M`;
+            document.getElementById('kpi-capex-count').innerText = `🟡 ${documentPhaseCount} With Documents`;
+            const tbody = document.querySelector("#capex-modal table tbody");
+            if (tbody && tableHtml) tbody.innerHTML = tableHtml;
+        }
+
+        function renderTireSummary(rows) {
+            if (!rows.length) return;
+            let maxKm = 0, topBrand = 'N/A';
+            rows.forEach(row => {
+                const brand = row[1], km = parseInt(row[3]) || 0;
+                if (km > maxKm) { maxKm = km; topBrand = brand; }
+            });
+            document.getElementById('kpi-tires').innerText = maxKm > 0 ? `${maxKm.toLocaleString()} KM` : '-- KM';
+        }
+
+        function renderPartsSummary(rows) {
+            if (!rows.length) return;
+            document.getElementById('kpi-parts').innerText = `${rows.length} Items`;
+        }
+
         function openCapexModal() {
             document.getElementById('capex-modal').classList.remove('hidden');
             document.getElementById('capex-modal').classList.add('flex');
