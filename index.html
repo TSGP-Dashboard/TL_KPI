@@ -53,7 +53,6 @@
             font-weight: 700;
         }
 
-        /* Detail drawer animation styles */
         .detail-drawer {
             display: none;
             background-color: #050d0b;
@@ -82,7 +81,7 @@
         <div class="flex items-center gap-4">
             <div class="text-right hidden sm:block font-mono">
                 <p class="text-xs text-[#70cbb0] font-medium">Global Enterprise Deck</p>
-                <p class="text-[11px] text-[#41826b]">v3.0.0-full-interactive</p>
+                <p class="text-[11px] text-[#41826b]">v3.1.1-target-locked</p>
             </div>
         </div>
     </header>
@@ -102,7 +101,7 @@
                     <div class="space-y-1 min-w-0">
                         <h2 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider truncate">Planner Compliance</h2>
                         <div class="text-[10px] font-mono text-[#41826b] flex items-center gap-1.5 mt-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-[#00f5a0]" id="compliance-dot"></span> Target: &gt;<span id="target-label-display">85</span>%
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#00f5a0]"></span> Target: &gt;85%
                         </div>
                     </div>
                     <div class="text-3xl font-mono font-bold tracking-tight text-[#00f5a0]" id="kpi-compliance">--%</div>
@@ -170,11 +169,8 @@
                         <p class="text-xs text-[#70cbb0] font-mono mt-0.5">PM tasks assigned vs. successfully executed records</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-4 text-[10px] font-mono">
-                        <!-- FEATURE #4 INTERACTIVE THRESHOLD MANAGER BUTTONS -->
-                        <div class="flex items-center gap-1 bg-[#091512] border border-[#1f4d40] rounded-lg p-1">
-                            <span class="text-[#529e84] px-1.5 py-0.5 text-[9px] uppercase tracking-wider font-bold">⚙️ Target:</span>
-                            <button onclick="setGlobalThreshold(85)" id="thresh-85" class="bg-[#10b981] text-slate-900 font-bold px-2 py-0.5 rounded text-[10px]">Strict (85%)</button>
-                            <button onclick="setGlobalThreshold(70)" id="thresh-70" class="text-slate-400 hover:text-white px-2 py-0.5 rounded text-[10px]">Lenient (70%)</button>
+                        <div class="flex items-center gap-2 bg-[#091512] border border-[#1f4d40] rounded-lg px-3 py-1.5 text-[#00f5a0] font-bold">
+                            <span>⚙️ DEPT TARGET: 85%</span>
                         </div>
                         <select id="week-selector" onchange="changeWeekFilter()" class="bg-[#091512] text-white border border-[#1f4d40] rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-[#00f5a0] cursor-pointer transition-colors shadow-md w-full sm:w-auto">
                             <option value="">Loading cycles...</option>
@@ -183,11 +179,25 @@
                 </div>
 
                 <div class="relative w-full bg-[#081310] rounded-xl p-4 sm:p-6 border border-[#16382e]">
-                    <div class="absolute inset-x-6 top-12 bottom-[70px] flex flex-col justify-between pointer-events-none font-mono text-[9px] text-[#366857]">
-                        <div class="w-full border-t border-[#1a3c31] relative"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">100% Volume Tracking</span></div>
-                        <div class="w-full border-t border-[#1a3c31]/60 relative"><span id="threshold-marker-text" class="absolute -top-2 left-0 bg-[#081310] pr-2 text-emerald-400">85% Target Threshold</span></div>
-                        <div class="w-full border-t border-[#1a3c31]/60 relative"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">50% Midline Vol</span></div>
+                    <!-- GRAPH OVERLAY: DASHED METRIC LINES + RED TARGET LINE -->
+                    <div class="absolute inset-x-6 top-12 bottom-[70px] pointer-events-none font-mono text-[9px] text-[#2d5f4e]">
+                        <!-- 100% Grid -->
+                        <div class="absolute w-full border-t border-dashed border-[#164637] top-[0%]"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">100% Volume</span></div>
+                        <!-- 75% Grid -->
+                        <div class="absolute w-full border-t border-dashed border-[#164637]/70 top-[25%]"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">75% Vol</span></div>
+                        <!-- 50% Grid -->
+                        <div class="absolute w-full border-t border-dashed border-[#164637]/60 top-[50%]"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">50% Vol</span></div>
+                        <!-- 25% Grid -->
+                        <div class="absolute w-full border-t border-dashed border-[#164637]/40 top-[75%]"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">25% Vol</span></div>
+                        <!-- 10% Grid -->
+                        <div class="absolute w-full border-t border-dashed border-[#164637]/30 top-[90%]"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">10% Vol</span></div>
+                        
+                        <!-- RED TARGET THRESHOLD INDICATOR LINE LOCKED TO 85% -->
+                        <div class="absolute w-full border-t-2 border-rose-500 z-10" style="top: 15%;">
+                            <span class="absolute -top-2.5 right-2 bg-[#081310] px-2 text-rose-400 font-bold border border-rose-900 rounded">TARGET: 85%</span>
+                        </div>
                     </div>
+                    
                     <div class="overflow-x-auto pt-6 pl-14 chart-scrollbar relative z-10">
                         <div class="min-w-[850px] h-[260px] flex items-end justify-around border-b border-[#1f4d40] pb-1" id="planners-graph-container">
                             <div class="text-[#529e84] text-xs font-mono w-full text-center pb-20">Syncing structural matrix...</div>
@@ -202,7 +212,7 @@
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                         <div>
                             <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">CAPEX Advanced Metrics Engine</h3>
-                            <p class="text-xs text-[#70cbb0] font-mono mt-0.5">Allocation streams and physical asset deployment breakdown (Click row to expand details)</p>
+                            <p class="text-xs text-[#70cbb0] font-mono mt-0.5">Allocation streams and asset deployment breakdown (Click row to expand details)</p>
                         </div>
                         <div id="chart-filter-badge" class="hidden font-mono text-[10px] bg-cyan-950 border border-cyan-400 text-cyan-400 px-2 py-1 rounded animate-pulse">
                             Chart Filter Active: <span id="chart-filter-name" class="font-bold">None</span>
@@ -227,7 +237,6 @@
                     </div>
                 </div>
 
-                <!-- INTERACTIVE CONTROLS FOR CAPEX TABLE -->
                 <div class="flex flex-col sm:flex-row gap-3 items-center justify-between bg-[#081310] p-3 rounded-xl border border-[#16382e]">
                     <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="capex-status-pills">
                         <button onclick="filterCapexTable('ALL')" id="capex-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL STATUSES</button>
@@ -272,7 +281,6 @@
                     </div>
                 </div>
 
-                <!-- INTERACTIVE CONTROLS FOR PARTS REQUESTS TABLE -->
                 <div class="flex flex-col sm:flex-row gap-3 items-center justify-between bg-[#081310] p-3 rounded-xl border border-[#16382e]">
                     <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="parts-status-pills">
                         <button onclick="filterPartsTable('ALL')" id="parts-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL</button>
@@ -317,11 +325,10 @@
         let barChartInstance = null;
         let partsChartInstance = null;
 
-        // Interactive States Configuration
         let currentCapexFilter = 'ALL';
         let currentPartsFilter = 'ALL';
         let currentCapexChartCategoryFilter = 'ALL'; 
-        let globalComplianceThreshold = 85; // Feature #4 state memory
+        const globalComplianceThreshold = 85; // Fixed locked baseline for department
 
         document.addEventListener("DOMContentLoaded", async () => {
             Chart.register(ChartDataLabels);
@@ -349,31 +356,8 @@
             }
         });
 
-        // FEATURE #4: UPDATE GLOBAL COMPLIANCE RULES
-        function setGlobalThreshold(targetValue) {
-            globalComplianceThreshold = targetValue;
-            document.getElementById('target-label-display').innerText = targetValue;
-            document.getElementById('threshold-marker-text').innerText = `${targetValue}% Target Threshold`;
-            
-            // Toggle active status UI pill colors
-            if (targetValue === 85) {
-                document.getElementById('thresh-85').className = "bg-[#10b981] text-slate-900 font-bold px-2 py-0.5 rounded text-[10px]";
-                document.getElementById('thresh-70').className = "text-slate-400 hover:text-white px-2 py-0.5 rounded text-[10px]";
-                document.getElementById('compliance-dot').className = "w-1.5 h-1.5 rounded-full bg-[#00f5a0]";
-            } else {
-                document.getElementById('thresh-70').className = "bg-yellow-400 text-slate-900 font-bold px-2 py-0.5 rounded text-[10px]";
-                document.getElementById('thresh-85').className = "text-slate-400 hover:text-white px-2 py-0.5 rounded text-[10px]";
-                document.getElementById('compliance-dot').className = "w-1.5 h-1.5 rounded-full bg-yellow-400";
-            }
-            
-            // Re-render graphs using new constraints immediately
-            const currentWeek = document.getElementById('week-selector').value;
-            renderPlannerVisualizer(rawPlannerRows, currentWeek);
-        }
-
-        // FEATURE #3: ASSET ID COPY TOOLTIP HUB
         function copyAssetIdToClipboard(event, value) {
-            event.stopPropagation(); // Prevents row expander from triggering simultaneously
+            event.stopPropagation(); 
             navigator.clipboard.writeText(value).then(() => {
                 const toast = document.getElementById('copy-toast');
                 toast.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
@@ -383,7 +367,6 @@
             });
         }
 
-        // FEATURE #3: EXPAND ROW SUB-DRAWER ENGINE
         function toggleRowDetailDrawer(rowId) {
             const drawer = document.getElementById(`drawer-${rowId}`);
             if(drawer.classList.contains('open-drawer')) {
@@ -393,6 +376,7 @@
             }
         }
 
+        view-compliance-container
         function switchView(targetView) {
             document.getElementById('view-compliance-container').classList.add('hidden');
             document.getElementById('view-capex-container').classList.add('hidden');
@@ -456,7 +440,6 @@
                 const plannedHeight = Math.round((planned / maxVal) * 200);
                 const actualHeight = Math.round((actual / maxVal) * 200);
                 
-                // Colors track rule shifts dynamically via Feature #4
                 const badgeColor = kpiPct >= globalComplianceThreshold ? 'bg-emerald-950/80 border border-emerald-500/50 text-[#00f5a0]' : 'bg-rose-950/80 border border-rose-500/50 text-rose-400';
 
                 html += `
@@ -502,7 +485,6 @@
                     if (status === "Done" || status === "Complete") categoryVolumeActual[cat] += 1;
                 }
 
-                // Injected Copy Event listeners on Badges and Subdrawer rows below
                 tableHtml += `
                     <tr class="filterable-row ${index % 2 === 0 ? 'bg-[#091612]' : 'bg-[#0b1c17]'} hover:bg-[#123128] transition-colors" 
                         data-status="${status.toUpperCase()}" 
@@ -575,7 +557,6 @@
                     row.classList.remove('hidden-row');
                 } else {
                     row.classList.add('hidden-row');
-                    // Automatically collapse active nested drawers if parent row becomes hidden
                     const nextDrawer = row.nextElementSibling;
                     if(nextDrawer && nextDrawer.classList.contains('detail-drawer')) {
                         nextDrawer.classList.remove('open-drawer');
@@ -628,7 +609,7 @@
 
         function renderPartsSummary(rows) {
             if (!rows.length) return;
-            let totalOverallDays = 0, totalInternalDays = 0, totalProcurementDays = 0, approvedCount = 0, backlogCount = 0, tableHtml = '';
+            let totalOverallDays = 0, totalInternalDays = 0, totalProcurementDays = 0, approvedCount = 0, tableHtml = '';
 
             rows.forEach((row, index) => {
                 if (!row[19]) return;
@@ -637,7 +618,7 @@
 
                 if (status === "APPROVED") {
                     totalOverallDays += grossLeadDays; totalInternalDays += internalDays; totalProcurementDays += procurementDays; approvedCount++;
-                } else { backlogCount++; }
+                }
 
                 tableHtml += `
                     <tr class="filterable-row ${index % 2 === 0 ? 'bg-[#091612]' : 'bg-[#0b1c17]'} hover:bg-[#123128] transition-colors" 
