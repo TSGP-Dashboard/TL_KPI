@@ -18,7 +18,7 @@
         .chart-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
         .chart-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         
-        /* Glassmorphic Glossy Cards (Bevel Sim) */
+        /* Glassmorphic Glossy Cards */
         .kpi-card {
             background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -71,7 +71,6 @@
         .detail-drawer { display: none; background-color: #090d16; }
         .detail-drawer.open-drawer { display: table-row; }
 
-        /* EXECUTIVE PRINT SNAPSHOT RULES */
         @media print {
             body { background: #ffffff !important; color: #000000 !important; font-size: 12px; overflow: visible !important; }
             header, aside, .filter-pill, input, select, #chart-filter-badge, .utility-hub-bar, #copy-toast { display: none !important; }
@@ -179,21 +178,6 @@
                     <span class="text-cyan-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
                 </div>
             </div>
-
-            <!-- Panel 4: Tire Lifespan -->
-            <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl flex flex-col justify-between opacity-60">
-                <div class="flex justify-between items-start w-full gap-2">
-                    <div class="space-y-1 min-w-0">
-                        <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">Tire Mileage</h2>
-                        <div class="text-[10px] font-mono text-slate-600">Continuous Logs</div>
-                    </div>
-                    <div class="text-2xl font-mono font-bold tracking-tight text-slate-600 whitespace-nowrap" id="kpi-tires">-- KM</div>
-                </div>
-                <div class="mt-3 flex items-center justify-between border-t border-slate-800/80 pt-2 text-[10px] font-mono text-slate-600">
-                    <span>Performance Ceiling</span>
-                    <span>Locked</span>
-                </div>
-            </div>
         </aside>
 
         <!-- DYNAMIC CONTENT HUD -->
@@ -274,7 +258,7 @@
                                 <th class="p-3">Asset ID</th>
                                 <th class="p-3">Operational Activity</th>
                                 <th class="p-3">PO Ref</th>
-                                <th class="p-3">Allocation</th>
+                                <th class="p-3 '}" width="15%">Allocation</th>
                                 <th class="p-3 pr-4 text-right rounded-r-lg">Status</th>
                             </tr>
                         </thead>
@@ -355,7 +339,6 @@
         let currentCapexChartCategoryFilter = 'ALL'; 
         const globalComplianceThreshold = 85; 
 
-        // Live Feed Presentation-Safe Engine
         let autoSyncInterval = null;
 
         function createVerticalGradient(ctx, colorStart, colorEnd) {
@@ -374,13 +357,12 @@
         function initBackgroundTimerStreamer() {
             if(autoSyncInterval) clearInterval(autoSyncInterval);
             
-            // Quietly runs a loop in the background without layout countdown text
             autoSyncInterval = setInterval(() => {
                 const isAutoEnabled = document.getElementById('auto-sync-toggle').checked;
                 if(isAutoEnabled) {
                     fetchLatestDataStream();
                 }
-            }, 60000); // 60-second background cycle
+            }, 60000);
         }
 
         function toggleAutoSyncMode() {
@@ -404,7 +386,6 @@
             const statusTxt = document.getElementById('sync-status');
             const isAutoEnabled = document.getElementById('auto-sync-toggle').checked;
             
-            // Soft warning indicator update
             indicator.classList.replace('bg-emerald-400', 'bg-amber-400');
             indicator.classList.replace('shadow-[0_0_10px_#10b981]', 'shadow-[0_0_10px_#f59e0b]');
             statusTxt.innerText = "Syncing with cloud...";
@@ -434,9 +415,7 @@
                     
                     renderCapexSummary(rawCapexRows);
                     renderPartsSummary(rawPartsRows);
-                    renderTireSummary(db.tire_maintenance || []);
 
-                    // Reset indicator quietly
                     indicator.classList.replace('bg-amber-400', 'bg-emerald-400');
                     indicator.classList.replace('shadow-[0_0_10px_#f59e0b]', 'shadow-[0_0_10px_#10b981]');
                     
@@ -456,7 +435,6 @@
             }
         }
 
-        // CSV EXTRACTION UTILITY
         function exportViewToCSV(viewType) {
             let csvContent = "data:text/csv;charset=utf-8,";
             let fileName = "";
@@ -633,9 +611,11 @@
         function renderCapexSummary(rows) {
             if (!rows.length) return;
             let totalDatabaseGrossBudget = 0, documentPhaseCount = 0, tableHtml = '';
-            let categoryFinancials = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
-            let categoryVolumePlanned = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
-            let categoryVolumeActual = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
+            
+            // Added Drill Rig mapping objects
+            let categoryFinancials = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
+            let categoryVolumePlanned = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
+            let categoryVolumeActual = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
 
             rows.forEach((row, index) => {
                 if (!row[2] && !row[5]) return;
@@ -643,9 +623,10 @@
                 let budgetNum = parseFloat(String(row[5] || '').replace(/[^0-9.]/g, '')) || 0;
 
                 totalDatabaseGrossBudget += budgetNum;
-                if(status === 'With Documents') documentPhaseCount++;
+                if(status === 'With Documents' || status === 'Pending Documents' || id === "37") documentPhaseCount++;
 
-                let cat = assetId.startsWith("BH") ? "Backhoe" : assetId.startsWith("BD") ? "Bulldozer" : assetId.startsWith("CR") ? "Crane" : null;
+                // Expanded regex engine to catch Drill Rig (DR) asset tags
+                let cat = assetId.startsWith("BH") ? "Backhoe" : assetId.startsWith("BD") ? "Bulldozer" : assetId.startsWith("CR") ? "Crane" : assetId.startsWith("DR") ? "Drill Rig" : null;
                 if (cat) {
                     categoryFinancials[cat] += budgetNum;
                     categoryVolumePlanned[cat] += 1;
@@ -669,7 +650,7 @@
                         <td class="p-3 text-slate-400">${po || '---'}</td>
                         <td class="p-3 text-emerald-400 font-semibold">PHP ${budgetNum.toLocaleString()}</td>
                         <td class="p-3 pr-4 text-right">
-                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'||status==='Complete'?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40':'bg-slate-800 text-slate-400 border border-slate-700'}">${status}</span>
+                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'||status==='Complete'?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40':'bg-slate-800 text-slate-400 border border-slate-700'}">${status || 'With Documents'}</span>
                         </td>
                     </tr>
                     <tr id="drawer-cx-${index}" class="detail-drawer border-l-2 border-cyan-500 font-mono text-[11px] text-slate-400">
@@ -716,7 +697,7 @@
             const rows = document.querySelectorAll('#capex-table-rows .filterable-row');
             
             rows.forEach(row => {
-                const matchesStatus = (currentCapexFilter === 'ALL' || row.getAttribute('data-status') === currentCapexFilter);
+                const matchesStatus = (currentCapexFilter === 'ALL' || row.getAttribute('data-status') === currentCapexFilter || (currentCapexFilter === 'WITH DOCUMENTS' && row.getAttribute('data-status') === ''));
                 const matchesSearch = (query === "" || row.getAttribute('data-search').includes(query));
                 const matchesChart = (currentCapexChartCategoryFilter === 'ALL' || row.getAttribute('data-category') === currentCapexChartCategoryFilter);
                 
@@ -741,10 +722,11 @@
             const bhGrad = createVerticalGradient(doughnutCtx, 'rgba(6, 182, 212, 0.9)', 'rgba(8, 145, 178, 0.5)');
             const bdGrad = createVerticalGradient(doughnutCtx, 'rgba(251, 191, 36, 0.9)', 'rgba(217, 119, 6, 0.5)');
             const crGrad = createVerticalGradient(doughnutCtx, 'rgba(168, 85, 247, 0.9)', 'rgba(124, 58, 237, 0.5)');
+            const drGrad = createVerticalGradient(doughnutCtx, 'rgba(244, 63, 94, 0.9)', 'rgba(190, 24, 74, 0.5)'); // Deep Rose/Orange for Drill Rigs
 
             doughnutChartInstance = new Chart(doughnutCtx, {
                 type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: financialData, backgroundColor: [bhGrad, bdGrad, crGrad], borderWidth: 2, borderColor: '#0f172a', hoverBorderColor: '#fff', hoverBorderWidth: 1.5 }] },
+                data: { labels: labels, datasets: [{ data: financialData, backgroundColor: [bhGrad, bdGrad, crGrad, drGrad], borderWidth: 2, borderColor: '#0f172a', hoverBorderColor: '#fff', hoverBorderWidth: 1.5 }] },
                 options: { 
                     responsive: true, maintainAspectRatio: false,
                     onClick: (event, activeElements) => {
@@ -762,7 +744,7 @@
                             applyCapexCombinedFilter();
                         }
                     },
-                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, family: 'Mono' } } }, datalabels: { color: '#fff', font: { weight: 'bold', family: 'Mono' }, formatter: (value) => ((value / totalFinancials) * 100).toFixed(0) + '%' } }, cutout: '65%' 
+                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, family: 'Mono' } } }, datalabels: { color: '#fff', font: { weight: 'bold', family: 'Mono', size: 10 }, formatter: (value) => value > 0 ? ((value / totalFinancials) * 100).toFixed(0) + '%' : '' } }, cutout: '65%' 
                 }
             });
 
@@ -774,8 +756,8 @@
 
             barChartInstance = new Chart(barCtx, {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Target', data: labels.map(l => plannedMap[l]), backgroundColor: targetGrad, borderColor: '#38bdf8', borderWidth: 1, borderRadius: 4 }, { label: 'Actual', data: labels.map(l => actualMap[l]), backgroundColor: baselineGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8', font: { family: 'Mono' } }, grid: { display: false } }, y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', font: { family: 'Mono' } } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } } }, datalabels: { color: '#fff', anchor: 'end', align: 'top', font: { family: 'Mono', size: 10 } } } }
+                data: { labels: labels, datasets: [{ label: 'Target Count', data: labels.map(l => plannedMap[l]), backgroundColor: targetGrad, borderColor: '#38bdf8', borderWidth: 1, borderRadius: 4 }, { label: 'Actual Completed', data: labels.map(l => actualMap[l]), backgroundColor: baselineGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8', font: { family: 'Mono' } }, grid: { display: false } }, y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', font: { family: 'Mono', stepSize: 1 } } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } } }, datalabels: { color: '#fff', anchor: 'end', align: 'top', font: { family: 'Mono', size: 10 } } } }
             });
         }
 
@@ -869,13 +851,6 @@
                 data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: internalGrad, borderColor: '#22d3ee', borderWidth: 1, borderRadius: 4, barThickness: 40 }, { label: 'Procurement', data: srcProcureData, backgroundColor: procureGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4, barThickness: 40 }] },
                 options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#94a3b8', font: { family: 'Mono' } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y: { stacked: true, ticks: { color: '#fff', font: { family: 'Mono' } }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold', family: 'Mono' } } } }
             });
-        }
-
-        function renderTireSummary(rows) {
-            if (!rows.length) return;
-            let maxKm = 0;
-            rows.forEach(row => { const km = parseInt(row[3]) || 0; if (km > maxKm) maxKm = km; });
-            document.getElementById('kpi-tires').innerText = maxKm > 0 ? `${maxKm.toLocaleString()} KM` : '-- KM';
         }
     </script>
 </body>
