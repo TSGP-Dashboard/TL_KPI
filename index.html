@@ -3,331 +3,290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TL Operational Command Center</title>
+    <title>Enterprise Performance Dashboard</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js & DataLabels Plugin CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0b0f19; }
-        .workspace-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .workspace-scrollbar::-webkit-scrollbar-track { background: #0f172a; border-radius: 4px; }
-        .workspace-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-        .workspace-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
-        .chart-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
-        .chart-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
-        .chart-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
-        
-        /* Glassmorphic Cyber Cards */
-        .kpi-card {
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            position: relative;
-            backdrop-filter: blur(12px);
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 4px 20px rgba(0, 0, 0, 0.25);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
         }
-        .kpi-card::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0; width: 0px;
-            background: linear-gradient(to bottom, #10b981, #059669);
-            transition: width 0.2s ease;
-            border-top-left-radius: 0.75rem;
-            border-bottom-left-radius: 0.75rem;
+        /* Custom scrollbar styling for seamless dark UI */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-        .kpi-card:hover { 
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
-            border-color: rgba(255, 255, 255, 0.15); 
-            transform: translateY(-2px);
-            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2), 0 8px 25px rgba(0, 0, 0, 0.35);
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
         }
-        .kpi-card.active-panel { 
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(15, 23, 42, 0.8) 100%);
-            border-color: #10b981; 
-            box-shadow: inset 0 1px 2px rgba(16, 185, 129, 0.2), 0 0 20px rgba(16, 185, 129, 0.2); 
-            animation: pulse-border 2s infinite alternate;
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
         }
-        .kpi-card.active-panel::before { width: 4px; }
-
-        @keyframes pulse-border {
-            0% { border-color: rgba(16, 185, 129, 0.6); box-shadow: 0 0 15px rgba(16, 185, 129, 0.1); }
-            100% { border-color: rgba(16, 185, 129, 1); box-shadow: 0 0 25px rgba(16, 185, 129, 0.3); }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
         }
-
-        .filterable-row { transition: all 0.15s ease-out; cursor: pointer; }
-        .hidden-row { display: none !important; }
-        
-        .filter-pill {
-            background-color: #1e293b;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: #94a3b8;
-            transition: all 0.2s ease;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        .active-panel {
+            background-color: #1e293b !important;
+            border-color: #3b82f6 !important;
+            color: #ffffff !important;
         }
-        .filter-pill.active-pill {
-            background: linear-gradient(180deg, #10b981 0%, #059669 100%);
-            border-color: #10b981;
-            color: #0f172a;
-            font-weight: 700;
-            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+        .active-pill {
+            background-color: #3b82f6 !important;
+            color: #ffffff !important;
         }
-
-        @media print {
-            body { background: #ffffff !important; color: #000000 !important; font-size: 12px; overflow: visible !important; }
-            header, aside, .filter-pill, input, select, #chart-filter-badge, .utility-hub-bar, #copy-toast { display: none !important; }
-            main { width: 100% !important; background: transparent !important; padding: 0 !important; border: none !important; overflow: visible !important; height: auto !important; }
-            .bg-slate-950, .bg-slate-950/60, .bg-slate-900/60, .bg-slate-800 { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; }
-            tr { page-break-inside: avoid; }
-            th { background: #e2e8f0 !important; color: #0f172a !important; border-bottom: 2px solid #94a3b8 !important; }
-            td { color: #334155 !important; border-bottom: 1px solid #e2e8f0 !important; }
+        .hidden-row {
+            display: none !important;
         }
     </style>
 </head>
-<body class="text-slate-200 antialiased min-h-screen flex flex-col lg:h-screen lg:overflow-hidden">
+<body class="text-slate-100 min-h-screen flex flex-col antialiased">
 
-    <!-- COPIED TOAST -->
-    <div id="copy-toast" class="fixed top-6 right-6 z-50 transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300 bg-emerald-400 text-slate-950 font-mono text-xs font-bold px-4 py-3 rounded-lg shadow-2xl flex items-center gap-2">
-        <span>📋</span> ASSET COPIED TO SYSTEM CLIPBOARD
-    </div>
-
-    <!-- HEADER -->
-    <header class="bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-800 px-4 sm:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl z-20 shrink-0">
-        <div class="flex items-center gap-4">
-            <div id="sync-indicator" class="h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_10px_#10b981] transition-all duration-300"></div>
+    <!-- TOP NAVIGATION BAR -->
+    <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex flex-wrap justify-between items-center gap-4 shadow-xl sticky top-0 z-50">
+        <div class="flex items-center space-x-3">
+            <div class="h-8 w-8 bg-gradient-to-tr from-blue-600 to-emerald-500 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/20">E</div>
             <div>
-                <h1 class="text-base sm:text-lg font-bold tracking-wider text-white uppercase font-mono">TL Operational Command Center</h1>
-                <p class="text-xs text-slate-400 font-mono mt-0.5">
-                    Database Feed: <span id="sync-status" class="text-emerald-400 font-bold">Connected</span>
-                </p>
+                <h1 class="font-bold text-base tracking-tight">Enterprise Performance Analytics</h1>
+                <p class="text-xs text-slate-400 font-medium">Operations Stream Control & Optimization</p>
             </div>
         </div>
-        <div class="flex items-center gap-4">
-            <div class="flex items-center bg-slate-950/80 border border-slate-800 rounded-lg p-1.5 gap-3 font-mono text-xs">
-                <label class="flex items-center gap-2 cursor-pointer select-none text-slate-400 pl-1.5">
-                    <input type="checkbox" id="auto-sync-toggle" checked onchange="toggleAutoSyncMode()" class="rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0 focus:ring-offset-0 cursor-pointer">
-                    <span>Auto-Refresh (60s)</span>
+
+        <!-- System Core Live Stream Updates Indicator Status -->
+        <div class="flex items-center space-x-6 bg-slate-950/60 px-4 py-2 rounded-xl border border-slate-800/80">
+            <div class="flex items-center space-x-2.5">
+                <div id="sync-indicator" class="h-3 w-3 rounded-full bg-slate-600 transition-all duration-500"></div>
+                <div class="flex flex-col">
+                    <span class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Data Pipeline</span>
+                    <span id="sync-status" class="text-slate-400 font-bold text-xs font-mono mt-0.5">Initializing</span>
+                </div>
+            </div>
+            <div class="h-6 w-px bg-slate-800"></div>
+            <div class="flex items-center space-x-3">
+                <label class="relative inline-flex items-center cursor-pointer select-none">
+                    <input type="checkbox" id="auto-sync-toggle" checked onchange="toggleAutoSyncMode()" class="sr-only peer">
+                    <div class="w-8 h-4 bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500 peer-checked:after:bg-white"></div>
+                    <span class="ml-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Auto Sync (1m)</span>
                 </label>
-                <div class="h-4 w-[1px] bg-slate-800"></div>
-                <button onclick="fetchLatestDataStream()" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-2.5 py-1 rounded transition-colors border border-slate-700 flex items-center gap-1">
-                    🔄 Sync Now
-                </button>
             </div>
         </div>
     </header>
 
-    <!-- WORKSPACE -->
-    <div class="flex-1 flex flex-col lg:flex-row w-full max-w-[1850px] mx-auto p-4 sm:p-6 gap-6 overflow-y-auto lg:h-[calc(100vh-73px)] lg:overflow-hidden">
+    <!-- CONTENT ROOT WRAPPER -->
+    <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 lg:p-6 flex flex-col lg:flex-row gap-6">
         
-        <!-- SIDEBAR -->
-        <aside class="w-full lg:w-1/5 flex flex-col gap-4 shrink-0">
-            <div class="text-[10px] font-mono tracking-widest text-slate-400 uppercase px-1 font-bold">Operational Framework</div>
-
-            <!-- Compliance Panel -->
-            <div id="panel-compliance" class="kpi-card active-panel p-4 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('compliance')">
-                <div class="flex justify-between items-start w-full gap-2">
-                    <div class="space-y-1 min-w-0">
-                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Planner Compliance</h2>
-                        <div class="text-[10px] font-mono text-slate-400 flex items-center gap-1.5 mt-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Target: &gt;85%
-                        </div>
-                    </div>
-                    <div class="text-3xl font-mono font-bold tracking-tight text-emerald-400" id="kpi-compliance">--%</div>
-                </div>
-                <div class="mt-3 flex items-center justify-between border-t border-slate-700/50 pt-2 text-[10px] font-mono text-slate-400">
-                    <span>Chart Matrix</span>
-                    <span class="text-emerald-400 font-bold">Select</span>
-                </div>
-            </div>
-
-            <!-- CAPEX Panel -->
-            <div id="panel-capex" class="kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('capex')">
-                <div class="flex justify-between items-start w-full gap-2">
-                    <div class="space-y-1 min-w-0">
-                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">CAPEX Pipeline</h2>
-                        <div class="text-[10px] font-mono text-amber-400 truncate" id="kpi-capex-count">Loading...</div>
-                    </div>
-                    <div class="text-xl font-mono font-bold tracking-tight text-white whitespace-nowrap" id="kpi-capex">PHP 0M</div>
-                </div>
-                <div class="mt-3 flex items-center justify-between border-t border-slate-700/50 pt-2 text-[10px] font-mono text-slate-400">
-                    <span>Gross Ledger</span>
-                    <span class="text-emerald-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
-                </div>
-            </div>
-
-            <!-- Requests Panel -->
-            <div id="panel-parts" class="kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('parts')">
-                <div class="flex justify-between items-start w-full gap-2">
-                    <div class="space-y-1 min-w-0">
-                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Request Speed</h2>
-                        <div class="text-[10px] font-mono text-purple-400 truncate" id="kpi-parts-count">Calculating...</div>
-                    </div>
-                    <div class="text-2xl font-mono font-bold tracking-tight text-purple-400 whitespace-nowrap" id="kpi-parts">0.0d</div>
-                </div>
-                <div class="mt-3 flex items-center justify-between border-t border-slate-700/50 pt-2 text-[10px] font-mono text-slate-400">
-                    <span>Turnaround</span>
-                    <span class="text-emerald-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
-                </div>
-            </div>
+        <!-- SIDE NAVIGATION DIRECTORY BAR -->
+        <aside class="w-full lg:w-64 shrink-0 flex flex-row lg:flex-col gap-2 bg-slate-900/50 p-2 lg:p-3 rounded-2xl border border-slate-800/60 backdrop-blur-md h-fit">
+            <button id="panel-compliance" onclick="switchView('compliance')" class="active-panel flex-1 lg:flex-none flex items-center justify-center lg:justify-start space-x-3 px-4 py-3 rounded-xl border border-transparent text-slate-400 hover:text-white transition-all text-sm font-medium group">
+                <span class="text-base group-hover:scale-110 transition-transform">📊</span>
+                <span class="hidden sm:inline">Compliance Metrics</span>
+            </button>
+            <button id="panel-capex" onclick="switchView('capex')" class="flex-1 lg:flex-none flex items-center justify-center lg:justify-start space-x-3 px-4 py-3 rounded-xl border border-transparent text-slate-400 hover:text-white transition-all text-sm font-medium group">
+                <span class="text-base group-hover:scale-110 transition-transform">🏗️</span>
+                <span class="hidden sm:inline">Capex Analytics</span>
+            </button>
+            <button id="panel-parts" onclick="switchView('parts')" class="flex-1 lg:flex-none flex items-center justify-center lg:justify-start space-x-3 px-4 py-3 rounded-xl border border-transparent text-slate-400 hover:text-white transition-all text-sm font-medium group">
+                <span class="text-base group-hover:scale-110 transition-transform">⚙️</span>
+                <span class="hidden sm:inline">Parts & SLA Logistics</span>
+            </button>
         </aside>
 
-        <!-- MAIN DASHBOARD HUB -->
-        <main class="w-full lg:w-4/5 bg-slate-900/60 backdrop-blur-md rounded-xl border border-slate-800 p-4 sm:p-6 shadow-2xl lg:overflow-y-auto workspace-scrollbar lg:h-full">
-            
-            <!-- VIEW 1: COMPLIANCE -->
+        <!-- DASHBOARD CONTAINER SECTIONS -->
+        <section class="flex-1 min-w-0">
+
+            <!-- MODULE 1: COMPLIANCE METRICS PERFORMANCE VIEW -->
             <div id="view-compliance-container" class="space-y-6">
-                <div class="border-b border-slate-800 pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                <!-- TOP HEADER COMPONENT BLOCK -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/60 backdrop-blur-sm">
                     <div>
-                        <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Schedule Compliance Variance Matrix</h3>
-                        <p class="text-xs text-slate-400 font-mono mt-0.5">Dual Axis Setup: Production Volume Bars vs Compliance Curves</p>
+                        <h2 class="text-lg font-bold text-white tracking-tight">Compliance Tracker</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Planner volume allocations versus real-world completion performance streams</p>
                     </div>
-                    <div>
-                        <select id="week-selector" onchange="changeWeekFilter()" class="bg-slate-950 text-white border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-emerald-400 cursor-pointer transition-colors shadow-md w-full sm:w-auto">
-                            <option value="">Loading cycles...</option>
-                        </select>
+                    <div class="flex items-center space-x-3 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+                        <span class="text-xs text-slate-500 font-bold px-2 uppercase tracking-wider">Select Range:</span>
+                        <select id="week-selector" onchange="changeWeekFilter()" class="bg-slate-900 border border-slate-700 rounded-lg text-xs font-semibold px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white cursor-pointer min-w-[120px]"></select>
                     </div>
                 </div>
 
-                <div class="w-full bg-slate-950/60 border border-slate-800 rounded-xl p-4 sm:p-6 shadow-inner">
-                    <div class="h-[340px] w-full relative">
+                <!-- KPI CARD SUMMARY GRID ROW -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-6 text-3xl opacity-10 group-hover:scale-110 transition-transform select-none">📈</div>
+                        <div>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Overall Compliance</span>
+                            <h3 id="kpi-compliance" class="text-3xl font-black text-white mt-1">--%</h3>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-2 font-medium">Aggregated execution volume ratio</p>
+                    </div>
+                </div>
+
+                <!-- ANALYTICS CANVAS ROW VISUALIZER GRAPH BLOCK -->
+                <div class="bg-slate-900/40 p-5 rounded-2xl border border-slate-800/60 backdrop-blur-sm">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Weekly Execution Output Distribution Matrix</h3>
+                    <div class="h-[400px] w-full relative">
                         <canvas id="planner-compliance-canvas"></canvas>
                     </div>
                 </div>
-
-                <!-- PLANNER SCOPE MATRIX -->
-                <div class="bg-slate-950/40 border border-slate-800/80 rounded-xl p-4">
-                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 font-mono flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Planner Scope Assignment Reference
-                    </h4>
-                    <div class="overflow-x-auto chart-scrollbar">
-                        <table class="w-full text-left font-mono text-xs border border-slate-800">
-                            <thead>
-                                <tr class="bg-slate-900 text-slate-400 border-b border-slate-800 text-[10px] uppercase font-bold">
-                                    <th class="p-2.5">Planner Name</th>
-                                    <th class="p-2.5">Maintenance Jurisdiction / Type</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-800/60 text-slate-300" id="legend-table-body">
-                                <tr data-planner="PHILIP" class="transition-colors"><td class="p-2 font-bold name-cell">PHILIP</td><td class="p-2">PMS</td></tr>
-                                <tr data-planner="LEO" class="transition-colors"><td class="p-2 font-bold name-cell">LEO</td><td class="p-2">CM (GEM, LOS AMIGOS)</td></tr>
-                                <tr data-planner="VINCENT" class="transition-colors"><td class="p-2 font-bold name-cell">VINCENT</td><td class="p-2">CM (REGION XIII, SINUDA)</td></tr>
-                                <tr data-planner="GLENBERTH" class="transition-colors"><td class="p-2 font-bold name-cell">GLENBERTH</td><td class="p-2">CM (REGION XI-A, XI-B)</td></tr>
-                                <tr data-planner="ROICE" class="transition-colors"><td class="p-2 font-bold name-cell">ROICE</td><td class="p-2">CM (SAMAL, CRANEAGE)</td></tr>
-                                <tr data-planner="JANE" class="transition-colors"><td class="p-2 font-bold name-cell">JANE</td><td class="p-2">PM (REGION X) / CM (REGION X)</td></tr>
-                                <tr data-planner="DIONAH" class="transition-colors"><td class="p-2 font-bold name-cell">DIONAH</td><td class="p-2">SV, TM, TYRES</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
             </div>
 
-            <!-- VIEW 2: CAPEX -->
+            <!-- MODULE 2: CAPEX PROJECT ANALYSIS VIEW PANEL -->
             <div id="view-capex-container" class="hidden space-y-6">
-                <div class="border-b border-slate-800 pb-4">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                        <div>
-                            <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">CAPEX Advanced Metrics Engine</h3>
-                            <p class="text-xs text-slate-400 font-mono mt-0.5">Allocation streams and asset deployment breakdown</p>
-                        </div>
-                        <div id="chart-filter-badge" class="hidden font-mono text-[10px] bg-emerald-950 border border-emerald-500 text-emerald-400 px-2 py-1 rounded animate-pulse shadow-md">
-                            Chart Filter Active: <span id="chart-filter-name" class="font-bold">None</span>
-                        </div>
+                <!-- TOP HEADER COMPONENT BLOCK -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/60 backdrop-blur-sm">
+                    <div>
+                        <h2 class="text-lg font-bold text-white tracking-tight">Capital Expenditure (Capex) Dashboard</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Heavy industrial equipment allocation deployments, financial budgets and documentation funnels</p>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
-                    <div class="xl:col-span-2 bg-slate-950/60 border border-slate-800 rounded-xl p-5 flex flex-col items-center">
-                        <div class="w-full flex justify-between items-center mb-4">
-                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">Asset Allocation</h4>
-                            <span class="text-[9px] font-mono text-slate-500 cursor-pointer hover:text-emerald-400 select-none" onclick="resetChartCrossFilter()">[Clear Filter]</span>
+
+                <!-- SUMMARY KPI CARDS ROW BANNER BLOCK -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-6 text-3xl opacity-10 group-hover:scale-110 transition-transform select-none">💰</div>
+                        <div>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Active Budget Allocations</span>
+                            <h3 id="kpi-capex" class="text-3xl font-black text-white mt-1">PHP 0.0M</h3>
                         </div>
-                        <div class="w-full max-w-[280px] h-[280px] flex items-center justify-center relative">
+                        <p id="kpi-capex-count" class="text-[11px] text-emerald-400 mt-2 font-bold tracking-wide">● 0 Projects Identified</p>
+                    </div>
+                </div>
+
+                <!-- INTERACTIVE CROSS-FILTER ANALYTICS PLOTS GRAPHICS BLOCKS -->
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <div class="lg:col-span-2 bg-slate-900/40 p-5 rounded-2xl border border-slate-800/60 backdrop-blur-sm flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Asset Allocation</h3>
+                            <div id="chart-filter-badge" class="hidden font-mono text-[10px] bg-emerald-950 border border-emerald-500 text-emerald-400 px-2 py-1 rounded">
+                                Filter: <span id="chart-filter-name" class="font-bold">None</span>
+                                <button onclick="resetChartCrossFilter()" class="ml-1 text-slate-400 hover:text-white font-sans text-xs">×</button>
+                            </div>
+                        </div>
+                        <div class="h-[280px] w-full relative flex-1">
                             <canvas id="capex-doughnut-canvas"></canvas>
                         </div>
                     </div>
-                    <div class="xl:col-span-3 bg-slate-950/60 border border-slate-800 rounded-xl p-5">
-                        <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-4 font-mono">Equipment Categories</h4>
-                        <div class="w-full h-[280px]">
+                    <div class="lg:col-span-3 bg-slate-900/40 p-5 rounded-2xl border border-slate-800/60 backdrop-blur-sm flex flex-col">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Equipment Categories</h3>
+                        <div class="h-[280px] w-full relative flex-1">
                             <canvas id="capex-bar-canvas"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-950/40 p-3 rounded-xl border border-slate-800">
-                    <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="capex-status-pills">
-                        <button onclick="filterCapexTable('ALL')" id="capex-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL STATUSES</button>
-                        <button onclick="filterCapexTable('WITH DOCUMENTS')" id="capex-pill-WITH-DOCUMENTS" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">PENDING DOCS</button>
-                        <button onclick="filterCapexTable('DONE')" id="capex-pill-DONE" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">COMPLETE</button>
+                <!-- DATA ENGINE FILTER UTILITIES SYSTEM CONTROL COMPONENT BAR -->
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                    <div id="capex-status-pills" class="flex flex-wrap gap-1.5">
+                        <button id="capex-pill-ALL" onclick="filterCapexTable('ALL')" class="active-pill px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-all">All Streams</button>
+                        <button id="capex-pill-DONE" onclick="filterCapexTable('DONE')" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-all">Completed</button>
+                        <button id="capex-pill-WITH-DOCUMENTS" onclick="filterCapexTable('WITH DOCUMENTS')" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-all">With Documents</button>
+                        <button id="capex-pill-PENDING" onclick="filterCapexTable('PENDING')" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-all">Pending Docs</button>
                     </div>
-                    <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <input type="text" id="capex-search" oninput="searchCapexTable()" placeholder="🔍 Quick search..." class="w-full sm:w-48 bg-slate-950 text-slate-200 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-emerald-400">
+                    <div class="w-full sm:w-72 relative">
+                        <input type="text" id="capex-search" onkeyup="searchCapexTable()" placeholder="Search asset ID or actual description..." class="w-full bg-slate-900 border border-slate-700 rounded-xl text-xs px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-slate-500">
+                        <span class="absolute left-2.5 top-2.5 text-xs text-slate-500 select-none pointer-events-none">🔍</span>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto chart-scrollbar bg-slate-950/60 rounded-xl border border-slate-800 p-4">
-                    <table id="capex-data-table" class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
-                        <thead>
-                            <tr class="bg-slate-800 text-slate-200 uppercase tracking-wider text-[11px] font-bold rounded-lg border-b border-slate-700">
-                                <th class="p-3 pl-4 rounded-l-lg">Index</th>
-                                <th class="p-3">Reporting Cycle</th>
-                                <th class="p-3">Asset ID</th>
-                                <th class="p-3">Operational Activity</th>
-                                <th class="p-3">PO Ref</th>
-                                <th class="p-3" width="15%">Allocation</th>
-                                <th class="p-3 pr-4 text-right rounded-r-lg">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-800 text-slate-300" id="capex-table-rows">
-                            <tr><td colspan="7" class="py-6 text-center text-slate-500">Querying allocations...</td></tr>
-                        </tbody>
-                    </table>
+                <!-- MAIN INTERACTIVE DATA GRID TABLE COMPONENT -->
+                <div class="bg-slate-900/40 rounded-2xl border border-slate-800/60 overflow-hidden backdrop-blur-sm shadow-xl">
+                    <div class="overflow-x-auto w-full">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
+                                    <th class="p-3 pl-4">ID</th>
+                                    <th class="p-3">Timeline Qtr</th>
+                                    <th class="p-3">Asset Registry Code</th>
+                                    <th class="p-3">Actual Classification Name</th>
+                                    <th class="p-3">PO Reference ID</th>
+                                    <th class="p-3">Financial Cost Budget Value</th>
+                                    <th class="p-3 pr-4 text-right">Fulfillment Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="capex-table-rows" class="divide-y divide-slate-800/20 font-medium"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <!-- VIEW 3: PARTS REQUEST -->
+            <!-- MODULE 3: PARTS PROCUREMENT & SLA SYSTEM LOGISTICS VIEW PANEL -->
             <div id="view-parts-container" class="hidden space-y-6">
-                <div class="border-b border-slate-800 pb-4">
-                    <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Procurement Turnaround Analytics Matrix</h3>
-                    <p class="text-xs text-slate-400 font-mono mt-0.5">Dual Stacked Metrics Breakdown (Internal SLA vs Procurement Lead Target)</p>
+                <!-- TOP HEADER COMPONENT BLOCK -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/60 backdrop-blur-sm">
+                    <div>
+                        <h2 class="text-lg font-bold text-white tracking-tight">Parts Procurement & SLA Control Engine</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Pipeline analytics tracking operational cycle turnarounds against fulfillment contracts</p>
+                    </div>
                 </div>
-                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 sm:p-6">
-                    <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-5 font-mono">Average Total Lead Days Breakdown</h4>
-                    <div class="w-full h-[180px]">
+
+                <!-- SUMMARY KPI CARDS ROW BANNER BLOCK -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-6 text-3xl opacity-10 group-hover:scale-110 transition-transform select-none">⏱️</div>
+                        <div>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Average Total Lead Days Breakdown</span>
+                            <h3 id="kpi-parts" class="text-3xl font-black text-amber-400 mt-1">0.0d</h3>
+                        </div>
+                        <p id="kpi-parts-count" class="text-[11px] text-slate-500 mt-2 font-mono">Int: 0.0d | Pro: 0.0d</p>
+                    </div>
+                </div>
+
+                <!-- GRAPH VISUAL LAYER BAR CHART ELEMENT METRIC SYSTEM -->
+                <div class="bg-slate-900/40 p-5 rounded-2xl border border-slate-800/60 backdrop-blur-sm">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Average Total Lead Days Breakdown</h3>
+                    <div class="h-[120px] w-full relative">
                         <canvas id="parts-performance-canvas"></canvas>
                     </div>
                 </div>
 
-                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-950/40 p-3 rounded-xl border border-slate-800">
-                    <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="parts-status-pills">
-                        <button onclick="filterPartsTable('ALL')" id="parts-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL</button>
-                        <button onclick="filterPartsTable('APPROVED')" id="parts-pill-APPROVED" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">APPROVED</button>
+                <!-- DATA ENGINE FILTER UTILITIES SYSTEM CONTROL COMPONENT BAR -->
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                    <div id="parts-status-pills" class="flex flex-wrap gap-1.5">
+                        <button id="parts-pill-ALL" onclick="filterPartsTable('ALL')" class="active-pill px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-all">All Logs</button>
+                        <button id="parts-pill-APPROVED" onclick="filterPartsTable('APPROVED')" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-all">Approved</button>
+                        <button id="parts-pill-PENDING" onclick="filterPartsTable('PENDING')" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-all">Pending</button>
                     </div>
-                    <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <input type="text" id="parts-search" oninput="searchPartsTable()" placeholder="🔍 Search description..." class="w-full sm:w-48 bg-slate-950 text-slate-200 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono">
+                    <div class="w-full sm:w-72 relative">
+                        <input type="text" id="parts-search" onkeyup="searchPartsTable()" placeholder="Search active asset ID or parts log description..." class="w-full bg-slate-900 border border-slate-700 rounded-xl text-xs px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-slate-500">
+                        <span class="absolute left-2.5 top-2.5 text-xs text-slate-500 select-none pointer-events-none">🔍</span>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto chart-scrollbar bg-slate-950/60 rounded-xl border border-slate-800 p-4">
-                    <table id="parts-data-table" class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
-                        <thead>
-                            <tr class="bg-slate-800 text-slate-200 uppercase tracking-wider text-[11px] font-bold border-b border-slate-700">
-                                <th class="p-3 pl-4">Request ID</th>
-                                <th class="p-3">Asset Ref</th>
-                                <th class="p-3">Component Description</th>
-                                <th class="p-3">Our End</th>
-                                <th class="p-3">Procurement</th>
-                                <th class="p-3">Gross Lead Time</th>
-                                <th class="p-3 pr-4 text-right">Workflow Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-800 text-slate-300" id="parts-table-rows">
-                            <tr><td colspan="7" class="py-6 text-center text-slate-500">Retrieving metrics...</td></tr>
-                        </tbody>
-                    </table>
+                <!-- MAIN INTERACTIVE DATA GRID LOG TABLE COMPONENT -->
+                <div class="bg-slate-900/40 rounded-2xl border border-slate-800/60 overflow-hidden backdrop-blur-sm shadow-xl">
+                    <div class="overflow-x-auto w-full">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
+                                    <th class="p-3 pl-4">Request Log ID</th>
+                                    <th class="p-3">Target Asset Key</th>
+                                    <th class="p-3">Material Component Description</th>
+                                    <th class="p-3">Internal SLA Process Time (Days)</th>
+                                    <th class="p-3">Procurement Logistics Target (Days)</th>
+                                    <th class="p-3">Gross Turnaround Total (Days)</th>
+                                    <th class="p-3 pr-4 text-right">Log Processing State</th>
+                                </tr>
+                            </thead>
+                            <tbody id="parts-table-rows" class="divide-y divide-slate-800/20 font-medium"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-        </main>
+        </section>
+    </main>
+
+    <!-- CLIPBOARD TOAST NOTIFICATION NOTIFIER ALERT MODAL ELEMENT -->
+    <div id="copy-toast" class="fixed bottom-6 right-6 bg-slate-900 border border-emerald-500/50 text-white font-medium text-xs px-4 py-3 rounded-xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center space-x-2">
+        <span class="text-emerald-400 font-bold">✓</span>
+        <span>Target Registry ID key successfully mapped to workspace clipboard context</span>
     </div>
 
     <!-- ENGINE SCRIPTS -->
@@ -349,6 +308,10 @@
         const globalComplianceThreshold = 85; 
 
         let autoSyncInterval = null;
+
+        // Apply Global Chart.js Defaults to kill the Times New Roman fallback
+        Chart.defaults.font.family = "'Inter', 'ui-monospace', monospace";
+        Chart.defaults.color = '#94a3b8';
 
         function createGradient(ctx, start, end) {
             const g = ctx.createLinearGradient(0, 0, 0, 300);
@@ -474,19 +437,19 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Planned Vol', data: pVol, backgroundColor: createGradient(ctx, '#94a3b8', '#475569'), yAxisID: 'yVol', order: 2 },
-                        { label: 'Actual Vol', data: aVol, backgroundColor: createGradient(ctx, '#10b981', '#047857'), yAxisID: 'yVol', order: 3 },
-                        { label: 'Compliance %', data: comp, type: 'line', borderColor: '#eab308', backgroundColor: '#0b0f19', borderWidth: 3, yAxisID: 'yPct', order: 1 }
+                        { label: 'Planned Vol', data: pVol, backgroundColor: createGradient(ctx, '#475569', '#1e293b'), borderRadius: 4, yAxisID: 'yVol', order: 2 },
+                        { label: 'Actual Vol', data: aVol, backgroundColor: createGradient(ctx, '#10b981', '#047857'), borderRadius: 4, yAxisID: 'yVol', order: 3 },
+                        { label: 'Compliance %', data: comp, type: 'line', borderColor: '#eab308', backgroundColor: '#0b0f19', borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#eab308', yAxisID: 'yPct', order: 1 }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     scales: {
-                        x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
-                        yVol: { position: 'left', ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                        yPct: { position: 'right', min: 0, max: 100, ticks: { color: '#eab308', callback: v => v+'%' }, grid: { display: false } }
+                        x: { ticks: { color: '#94a3b8', font: { family: "'Inter', sans-serif" } }, grid: { display: false } },
+                        yVol: { position: 'left', ticks: { color: '#94a3b8', font: { family: "'Inter', sans-serif" } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        yPct: { position: 'right', min: 0, max: 100, ticks: { color: '#eab308', font: { family: "'Inter', sans-serif" }, callback: v => v+'%' }, grid: { display: false } }
                     },
-                    plugins: { legend: { labels: { color: '#cbd5e1' } }, datalabels: { display: false } }
+                    plugins: { legend: { labels: { color: '#cbd5e1', font: { family: "'Inter', sans-serif", weight: '500' } } }, datalabels: { display: false } }
                 }
             });
         }
@@ -539,7 +502,7 @@
                 type: 'doughnut',
                 data: { labels: labels, datasets: [{ data: values, backgroundColor: ['#06b6d4','#f59e0b','#a855f7','#f43f5e'], borderWidth: 3, borderColor: '#0f172a', hoverOffset: 8 }] },
                 options: { 
-                    responsive: true, maintainAspectRatio: false, cutout: '70%',
+                    responsive: true, maintainAspectRatio: false, cutout: '75%',
                     onClick: (e, el) => {
                         if (el.length > 0) {
                             const clickedLabel = labels[el[0].index].toUpperCase();
@@ -549,7 +512,10 @@
                             applyCapexCombinedFilter();
                         }
                     },
-                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, family: 'Mono' } } }, datalabels: { color: '#fff', font: { weight: 'bold' }, formatter: v => v > 0 ? ((v / total) * 100).toFixed(0) + '%' : '' } }
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 12, padding: 15, font: { size: 11, family: "'Inter', sans-serif" } } }, 
+                        datalabels: { color: '#ffffff', font: { weight: 'bold', family: "'Inter', sans-serif", size: 11 }, formatter: v => v > 0 ? ((v / total) * 100).toFixed(0) + '%' : '' } 
+                    }
                 }
             });
 
@@ -558,7 +524,14 @@
             barChartInstance = new Chart(barCtx, {
                 type: 'bar',
                 data: { labels: labels, datasets: [{ label: 'Target Stream', data: labels.map(l => planned[l]), backgroundColor: '#0284c7', borderRadius: 4 }, { label: 'Completed', data: labels.map(l => actual[l]), backgroundColor: '#10b981', borderRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#64748b', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } } }, plugins: { legend: { labels: { color: '#cbd5e1' } }, datalabels: { display: false } } }
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    scales: { 
+                        x: { ticks: { color: '#94a3b8', font: { family: "'Inter', sans-serif" } }, grid: { display: false } }, 
+                        y: { ticks: { color: '#64748b', stepSize: 5, font: { family: "'Inter', sans-serif" } }, grid: { color: 'rgba(255,255,255,0.05)' } } 
+                    }, 
+                    plugins: { legend: { labels: { color: '#cbd5e1', font: { family: "'Inter', sans-serif" } } }, datalabels: { display: false } } 
+                }
             });
         }
 
@@ -637,10 +610,13 @@
                 options: { 
                     indexAxis: 'y', responsive: true, maintainAspectRatio: false,
                     scales: { 
-                        x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }, 
-                        y: { stacked: true, ticks: { color: '#ffffff', font: { weight: 'bold' } } } 
+                        x: { stacked: true, ticks: { color: '#94a3b8', font: { family: "'Inter', sans-serif" } }, grid: { color: 'rgba(255,255,255,0.05)' } }, 
+                        y: { stacked: true, ticks: { color: '#ffffff', font: { family: "'Inter', sans-serif", weight: 'bold' } } } 
                     },
-                    plugins: { legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } } }, datalabels: { display: true, color: '#fff', font: { weight: 'bold', family: 'Mono' }, formatter: v => v > 0 ? v + 'd' : '' } }
+                    plugins: { 
+                        legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: "'Inter', sans-serif", size: 11 } } }, 
+                        datalabels: { display: true, color: '#ffffff', font: { weight: 'bold', family: "'Inter', sans-serif", size: 11 }, formatter: v => v > 0 ? v + 'd' : '' } 
+                    }
                 }
             });
         }
