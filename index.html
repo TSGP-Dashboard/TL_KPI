@@ -202,6 +202,32 @@
                         <canvas id="planner-compliance-canvas"></canvas>
                     </div>
                 </div>
+
+                <!-- DYNAMICALLY SCOPED WORK GROUP LEGEND (Auto-hides with container scope switch) -->
+                <div class="bg-slate-950/40 border border-slate-800/80 rounded-xl p-4">
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 font-mono flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Planner Scope Assignment Reference
+                    </h4>
+                    <div class="overflow-x-auto chart-scrollbar">
+                        <table class="w-full text-left font-mono text-xs border border-slate-800">
+                            <thead>
+                                <tr class="bg-slate-900 text-slate-400 border-b border-slate-800 text-[10px] uppercase font-bold">
+                                    <th class="p-2.5">Planner Name</th>
+                                    <th class="p-2.5">Maintenance Jurisdiction / Type</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">PHILIP</td><td class="p-2">PMS</td></tr>
+                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">LEO</td><td class="p-2">CM (GEM, LOS AMIGOS)</td></tr>
+                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">VINCENT</td><td class="p-2">CM (REGION XIII, SINUDA)</td></tr>
+                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">GLENBERTH</td><td class="p-2">CM (REGION XI-A, XI-B)</td></tr>
+                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">ROICE</td><td class="p-2">CM (SAMAL, CRANEAGE)</td></tr>
+                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">JANE</td><td class="p-2">PM (REGION X) / CM (REGION X)</td></tr>
+                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">DIONAH</td><td class="p-2">SV, TM, TYRES</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <!-- VIEW 2: CAPEX -->
@@ -258,7 +284,7 @@
                                 <th class="p-3">Asset ID</th>
                                 <th class="p-3">Operational Activity</th>
                                 <th class="p-3">PO Ref</th>
-                                <th class="p-3 '}" width="15%">Allocation</th>
+                                <th class="p-3" width="15%">Allocation</th>
                                 <th class="p-3 pr-4 text-right rounded-r-lg">Status</th>
                             </tr>
                         </thead>
@@ -612,7 +638,6 @@
             if (!rows.length) return;
             let totalDatabaseGrossBudget = 0, documentPhaseCount = 0, tableHtml = '';
             
-            // Added Drill Rig mapping objects
             let categoryFinancials = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
             let categoryVolumePlanned = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
             let categoryVolumeActual = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
@@ -625,7 +650,6 @@
                 totalDatabaseGrossBudget += budgetNum;
                 if(status === 'With Documents' || status === 'Pending Documents' || id === "37") documentPhaseCount++;
 
-                // Expanded regex engine to catch Drill Rig (DR) asset tags
                 let cat = assetId.startsWith("BH") ? "Backhoe" : assetId.startsWith("BD") ? "Bulldozer" : assetId.startsWith("CR") ? "Crane" : assetId.startsWith("DR") ? "Drill Rig" : null;
                 if (cat) {
                     categoryFinancials[cat] += budgetNum;
@@ -722,7 +746,7 @@
             const bhGrad = createVerticalGradient(doughnutCtx, 'rgba(6, 182, 212, 0.9)', 'rgba(8, 145, 178, 0.5)');
             const bdGrad = createVerticalGradient(doughnutCtx, 'rgba(251, 191, 36, 0.9)', 'rgba(217, 119, 6, 0.5)');
             const crGrad = createVerticalGradient(doughnutCtx, 'rgba(168, 85, 247, 0.9)', 'rgba(124, 58, 237, 0.5)');
-            const drGrad = createVerticalGradient(doughnutCtx, 'rgba(244, 63, 94, 0.9)', 'rgba(190, 24, 74, 0.5)'); // Deep Rose/Orange for Drill Rigs
+            const drGrad = createVerticalGradient(doughnutCtx, 'rgba(244, 63, 94, 0.9)', 'rgba(190, 24, 74, 0.5)'); 
 
             doughnutChartInstance = new Chart(doughnutCtx, {
                 type: 'doughnut',
