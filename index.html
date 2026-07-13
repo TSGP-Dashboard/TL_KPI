@@ -15,133 +15,176 @@
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #10356c; /* Vibrant corporate dark blue from screenshot */
+            background-color: #06120e; /* Deep obsidian background from reference */
         }
         .chart-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
-        .chart-scrollbar::-webkit-scrollbar-track { background: #153b75; }
-        .chart-scrollbar::-webkit-scrollbar-thumb { background: #2a5f9e; border-radius: 3px; }
+        .chart-scrollbar::-webkit-scrollbar-track { background: #0d1f1a; }
+        .chart-scrollbar::-webkit-scrollbar-thumb { background: #1f473d; border-radius: 3px; }
+        
+        /* Tactical Card Selection States & Glow Effects */
+        .kpi-card {
+            background-color: #0d1f1a;
+            border: 1px solid #16382e;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0px;
+            background-color: #00f5a0;
+            transition: width 0.2s ease;
+            border-top-left-radius: 0.75rem;
+            border-bottom-left-radius: 0.75rem;
+        }
+        .kpi-card:hover {
+            background-color: #122b24;
+            border-color: #1f4d40;
+            transform: translateY(-1px);
+        }
+        .kpi-card.active-panel {
+            background-color: #112d24;
+            border-color: #00f5a0;
+            box-shadow: 0 0 25px rgba(0, 245, 160, 0.12);
+        }
+        .kpi-card.active-panel::before {
+            width: 4px;
+        }
     </style>
 </head>
-<body class="text-slate-100 antialiased min-h-screen">
+<body class="text-slate-100 antialiased min-h-screen flex flex-col">
 
-    <!-- EXECUTIVE HEADER -->
-    <header class="bg-[#163f79] border-b border-[#225394] px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-lg">
+    <!-- EXECUTIVE CYBER HEADER -->
+    <header class="bg-[#0a1815] border-b border-[#16382e] px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl z-20">
         <div class="flex items-center gap-4">
-            <div class="h-3 w-3 rounded-full bg-[#00cd52] animate-pulse"></div>
+            <div class="h-3 w-3 rounded-full bg-[#00f5a0] animate-pulse shadow-[0_0_10px_#00f5a0]"></div>
             <div>
-                <h1 class="text-xl font-bold tracking-tight text-white uppercase tracking-wider">TL Operational Command Center</h1>
-                <p class="text-xs text-[#7bb0e7] font-mono mt-0.5">Live Data Pipeline Status: Active</p>
+                <h1 class="text-lg font-bold tracking-wider text-white uppercase font-mono">TL Operational Command Center</h1>
+                <p class="text-xs text-[#529e84] font-mono mt-0.5">Matrix Pipeline Status: <span class="text-[#00f5a0]">Online</span></p>
             </div>
         </div>
 
-        <!-- System Controls (Cleaned Global Context) -->
+        <!-- System Controls -->
         <div class="flex items-center gap-4">
-            <div class="text-right hidden sm:block">
-                <p class="text-xs text-[#a2cbef] font-medium">Global Operations</p>
-                <p class="text-[11px] text-[#7bb0e7] font-mono">Operations Reporting Framework</p>
+            <div class="text-right hidden sm:block font-mono">
+                <p class="text-xs text-[#70cbb0] font-medium">Global Enterprise Deck</p>
+                <p class="text-[11px] text-[#41826b]">v2.4.0-emerald</p>
             </div>
         </div>
     </header>
 
-    <!-- MAIN DASHBOARD CONTENT GRID -->
-    <main class="p-8 max-w-[1700px] mx-auto space-y-6">
+    <!-- CORE WORKSPACE WITH INTEGRATED LEFT DECK -->
+    <div class="flex-1 flex flex-col lg:flex-row w-full max-w-[1750px] mx-auto p-6 gap-6">
+        
+        <!-- SIDEBAR DECK: PERSISTENT VERTICAL SUMMARY CHANNELS -->
+        <aside class="w-full lg:w-[400px] flex flex-col gap-4 shrink-0">
+            <div class="text-[10px] font-mono tracking-widest text-[#529e84] uppercase px-1 font-bold mb-1">
+                Operational Framework Segments
+            </div>
 
-        <!-- 4-COLUMN SUMMARY METRIC PANELS -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-            
             <!-- Panel 1: Planner Compliance -->
-            <div class="bg-[#1c4a8a] p-6 rounded-xl border border-[#255ba1] shadow-md flex flex-col justify-between cursor-pointer hover:bg-[#20549c] transition-all group" onclick="switchView('compliance')">
-                <div>
-                    <div class="flex justify-between items-start">
-                        <h2 class="text-xs font-semibold text-[#a2cbef] uppercase tracking-widest">Planner Compliance</h2>
-                        <span class="text-[10px] text-[#00b4ff] font-mono tracking-wider bg-[#0f3464] px-2 py-0.5 rounded border border-[#1b4b83] opacity-0 group-hover:opacity-100 transition-opacity">Show Chart 📊</span>
+            <div id="panel-compliance" class="kpi-card active-panel p-5 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('compliance')">
+                <div class="flex justify-between items-start w-full">
+                    <div class="space-y-1">
+                        <h2 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider">Planner Compliance</h2>
+                        <div class="text-[10px] font-mono text-[#41826b] flex items-center gap-1.5 mt-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#00f5a0]"></span> Target: &gt;85%
+                        </div>
                     </div>
-                    <div class="text-5xl font-bold tracking-tight text-[#00cd52] mt-4" id="kpi-compliance">--%</div>
+                    <div class="text-4xl font-mono font-bold tracking-tight text-[#00f5a0]" id="kpi-compliance">--%</div>
                 </div>
-                <div class="mt-6 flex items-center justify-between border-t border-[#255ba1]/60 pt-3 text-[11px] font-mono text-[#7bb0e7]">
-                    <span>Target: &gt;85%</span>
-                    <span class="text-[#00cd52] flex items-center gap-1">● Operational</span>
+                <div class="mt-4 flex items-center justify-between border-t border-[#1a3f34] pt-2.5 text-[10px] font-mono text-[#529e84]">
+                    <span>View Chart Visualizer</span>
+                    <span class="text-[#00f5a0]">Select Matrix</span>
                 </div>
             </div>
 
             <!-- Panel 2: CAPEX Projects -->
-            <div class="bg-[#1c4a8a] p-6 rounded-xl border border-[#255ba1] shadow-md flex flex-col justify-between cursor-pointer hover:bg-[#20549c] transition-all group" onclick="switchView('capex')">
-                <div>
-                    <div class="flex justify-between items-start">
-                        <h2 class="text-xs font-semibold text-[#a2cbef] uppercase tracking-widest">CAPEX Pipeline Total</h2>
-                        <span class="text-[10px] text-[#00b4ff] font-mono tracking-wider bg-[#0f3464] px-2 py-0.5 rounded border border-[#1b4b83] opacity-100">View Ledger 📋</span>
+            <div id="panel-capex" class="kpi-card p-5 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('capex')">
+                <div class="flex justify-between items-start w-full">
+                    <div class="space-y-1">
+                        <h2 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider">CAPEX Pipeline Total</h2>
+                        <div class="text-[10px] font-mono text-yellow-400/90 truncate max-w-[180px]" id="kpi-capex-count">
+                            Loading status...
+                        </div>
                     </div>
-                    <div class="text-5xl font-bold tracking-tight text-white mt-4" id="kpi-capex">₱0.00M</div>
+                    <div class="text-3xl font-mono font-bold tracking-tight text-white" id="kpi-capex">₱0.00M</div>
                 </div>
-                <div class="mt-6 flex items-center justify-between border-t border-[#255ba1]/60 pt-3 text-[11px] font-mono">
-                    <span class="text-yellow-400 font-medium" id="kpi-capex-count">Loading status...</span>
-                    <span class="text-[#7bb0e7]">Gross DB Scope</span>
+                <div class="mt-4 flex items-center justify-between border-t border-[#1a3f34] pt-2.5 text-[10px] font-mono text-[#529e84]">
+                    <span>Gross DB Ledger Scope</span>
+                    <span class="text-[#00f5a0] opacity-0 group-hover:opacity-100 transition-opacity">Select Matrix</span>
                 </div>
             </div>
 
             <!-- Panel 3: Parts Request Speed -->
-            <div class="bg-[#1c4a8a] p-6 rounded-xl border border-[#255ba1] shadow-md flex flex-col justify-between cursor-pointer hover:bg-[#20549c] transition-all group" onclick="switchView('parts')">
-                <div>
-                    <div class="flex justify-between items-start">
-                        <h2 class="text-xs font-semibold text-[#a2cbef] uppercase tracking-widest">Parts Request Speed</h2>
-                        <span class="text-[10px] text-[#00b4ff] font-mono tracking-wider bg-[#0f3464] px-2 py-0.5 rounded border border-[#1b4b83] opacity-100">View Analytics ⏱️</span>
+            <div id="panel-parts" class="kpi-card p-5 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('parts')">
+                <div class="flex justify-between items-start w-full">
+                    <div class="space-y-1">
+                        <h2 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider">Parts Request Speed</h2>
+                        <div class="text-[10px] font-mono text-[#66d1ff] truncate max-w-[180px]" id="kpi-parts-count">
+                            Calculating indicators...
+                        </div>
                     </div>
-                    <div class="text-5xl font-bold tracking-tight text-[#00b4ff] mt-4" id="kpi-parts">0.0 Days</div>
+                    <div class="text-3xl font-mono font-bold tracking-tight text-[#22d3ee]" id="kpi-parts">0.0 Days</div>
                 </div>
-                <div class="mt-6 flex items-center justify-between border-t border-[#255ba1]/60 pt-3 text-[11px] font-mono text-[#a2cbef]">
-                    <span id="kpi-parts-count">Calculating efficiency indicators...</span>
-                    <span class="text-[#7bb0e7]">Procurement</span>
+                <div class="mt-4 flex items-center justify-between border-t border-[#1a3f34] pt-2.5 text-[10px] font-mono text-[#529e84]">
+                    <span>Procurement Turnaround</span>
+                    <span class="text-[#00f5a0] opacity-0 group-hover:opacity-100 transition-opacity">Select Matrix</span>
                 </div>
             </div>
 
             <!-- Panel 4: Tire Lifespan -->
-            <div class="bg-[#1c4a8a] p-6 rounded-xl border border-[#255ba1] shadow-md flex flex-col justify-between">
-                <div>
-                    <h2 class="text-xs font-semibold text-[#a2cbef] uppercase tracking-widest">Tire Mileage Leader</h2>
-                    <div class="text-5xl font-bold tracking-tight text-white mt-4" id="kpi-tires">-- KM</div>
+            <div class="bg-[#0b1613] border border-[#122822]/60 p-5 rounded-xl flex flex-col justify-between opacity-75">
+                <div class="flex justify-between items-start w-full">
+                    <div class="space-y-1">
+                        <h2 class="text-xs font-semibold text-[#529e84] uppercase tracking-wider">Tire Mileage Leader</h2>
+                        <div class="text-[10px] font-mono text-[#41826b]">Continuous Fleet Logs</div>
+                    </div>
+                    <div class="text-3xl font-mono font-bold tracking-tight text-slate-400" id="kpi-tires">-- KM</div>
                 </div>
-                <div class="mt-6 flex items-center justify-between border-t border-[#255ba1]/60 pt-3 text-[11px] font-mono text-[#7bb0e7]">
-                    <span>Fleet Asset Peak</span>
-                    <span class="text-[#a2cbef]">Continuous Logging</span>
+                <div class="mt-4 flex items-center justify-between border-t border-[#122822] pt-2.5 text-[10px] font-mono text-[#41826b]">
+                    <span>Asset Performance Ceiling</span>
+                    <span>Locked View</span>
                 </div>
             </div>
+        </aside>
 
-        </div>
-
-        <!-- LOWER BREAKDOWN HUB -->
-        <div class="bg-[#1c4a8a] p-6 rounded-xl border border-[#255ba1] shadow-md">
+        <!-- MAIN MAIN HUB INTERFACE DISPLAY SCREEN -->
+        <main class="flex-1 bg-[#0d1f1a] rounded-xl border border-[#16382e] p-6 shadow-2xl overflow-hidden">
             
             <!-- VIEW 1: COMPLIANCE MATRIX WORKSTAGE -->
-            <div id="view-compliance-container">
-                <div class="border-b border-[#255ba1] pb-4 mb-6 flex flex-col md:flex-row justify-between md:items-center gap-4">
+            <div id="view-compliance-container" class="space-y-6">
+                <div class="border-b border-[#1f4d40] pb-4 flex flex-col md:flex-row justify-between md:items-center gap-4">
                     <div>
-                        <h3 class="text-sm font-semibold text-white uppercase tracking-widest">Schedule Compliance Variance Matrix</h3>
-                        <p class="text-xs text-[#a2cbef] font-mono mt-0.5">Quantity of PM tasks assigned vs. items successfully completed within scheduled timeframe</p>
+                        <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Schedule Compliance Variance Matrix</h3>
+                        <p class="text-xs text-[#70cbb0] font-mono mt-0.5">PM tasks assigned vs. successfully executed records</p>
                     </div>
                     
-                    <!-- Integrated Context Controls (Dropdown + Legends Align Inline) -->
-                    <div class="flex flex-wrap items-center gap-4 sm:gap-6 text-[10px] font-mono">
-                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-[#00b4ff] rounded-sm inline-block"></span> <span class="text-[#cbd5e1]">PLANNED TARGET (TASKS)</span></div>
-                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-orange-400 rounded-sm inline-block"></span> <span class="text-[#cbd5e1]">ACTUAL EXECUTED</span></div>
+                    <!-- Integrated Context Controls -->
+                    <div class="flex flex-wrap items-center gap-4 text-[10px] font-mono">
+                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-[#0ea5e9] rounded-sm inline-block"></span> <span class="text-slate-300">PLANNED TARGET</span></div>
+                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-[#10b981] rounded-sm inline-block"></span> <span class="text-slate-300">ACTUAL EXECUTED</span></div>
                         
-                        <!-- RE-ROUTED DROPDOWN PLACEMENT FROM THE GLOBAL NAV BAR -->
-                        <select id="week-selector" onchange="changeWeekFilter()" class="bg-[#133d7a] text-white border border-[#2d66af] rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-[#00b4ff] cursor-pointer transition-colors shadow-md">
-                            <option value="">Loading weeks...</option>
+                        <select id="week-selector" onchange="changeWeekFilter()" class="bg-[#091512] text-white border border-[#1f4d40] rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-[#00f5a0] cursor-pointer transition-colors shadow-md">
+                            <option value="">Loading cycles...</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="relative w-full bg-[#133d7a] rounded-xl p-6 border border-[#22569b]">
-                    <div class="absolute inset-x-6 top-12 bottom-[70px] flex flex-col justify-between pointer-events-none font-mono text-[9px] text-[#6997d3]">
-                        <div class="w-full border-t border-[#255ba1]/80 relative"><span class="absolute -top-2 left-0 bg-[#133d7a] pr-2">100% Volume Track</span></div>
-                        <div class="w-full border-t border-[#255ba1]/40 relative"><span class="absolute -top-2 left-0 bg-[#133d7a] pr-2">75% Target Threshold</span></div>
-                        <div class="w-full border-t border-[#255ba1]/40 relative"><span class="absolute -top-2 left-0 bg-[#133d7a] pr-2">50% Midline Vol</span></div>
-                        <div class="w-full border-t border-[#255ba1]/40 relative"><span class="absolute -top-2 left-0 bg-[#133d7a] pr-2">25% Capacity Baseline</span></div>
+                <div class="relative w-full bg-[#081310] rounded-xl p-6 border border-[#16382e]">
+                    <div class="absolute inset-x-6 top-12 bottom-[70px] flex flex-col justify-between pointer-events-none font-mono text-[9px] text-[#366857]">
+                        <div class="w-full border-t border-[#1a3c31] relative"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">100% Volume Tracking</span></div>
+                        <div class="w-full border-t border-[#1a3c31]/60 relative"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">75% Target Threshold</span></div>
+                        <div class="w-full border-t border-[#1a3c31]/60 relative"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">50% Midline Vol</span></div>
+                        <div class="w-full border-t border-[#1a3c31]/60 relative"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">25% Capacity Baseline</span></div>
                     </div>
 
                     <div class="overflow-x-auto pt-6 pl-14 chart-scrollbar relative z-10">
-                        <div class="min-w-[850px] h-[260px] flex items-end justify-around border-b border-[#2c65b0] pb-1" id="planners-graph-container">
-                            <div class="text-[#a2cbef] text-xs font-mono w-full text-center pb-20">Syncing structural arrays from remote spreadsheet engine...</div>
+                        <div class="min-w-[850px] h-[260px] flex items-end justify-around border-b border-[#1f4d40] pb-1" id="planners-graph-container">
+                            <div class="text-[#529e84] text-xs font-mono w-full text-center pb-20">Syncing structural matrix from spreadsheet engine...</div>
                         </div>
                     </div>
                 </div>
@@ -149,37 +192,34 @@
 
             <!-- VIEW 2: FULL CAPEX GRAPH AND LEDGER ARCHITECTURE -->
             <div id="view-capex-container" class="hidden space-y-6">
-                <div class="border-b border-[#255ba1] pb-4 flex items-center justify-between">
+                <div class="border-b border-[#1f4d40] pb-4 flex items-center justify-between">
                     <div>
-                        <h3 class="text-sm font-semibold text-white uppercase tracking-widest">CAPEX Advanced Metrics Engine</h3>
-                        <p class="text-xs text-[#a2cbef] font-mono mt-0.5">Real-time analysis across allocation streams and physical deployment volumes</p>
+                        <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">CAPEX Advanced Metrics Engine</h3>
+                        <p class="text-xs text-[#70cbb0] font-mono mt-0.5">Allocation streams and physical asset deployment breakdown</p>
                     </div>
-                    <button onclick="switchView('compliance')" class="text-white hover:bg-[#20549c] bg-[#133d7a] border border-[#2d66af] px-3 py-1.5 rounded-lg text-xs font-medium font-mono transition-colors">
-                        ← Back to Planner Chart
-                    </button>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <div class="lg:col-span-2 bg-[#133d7a] border border-[#22569b] rounded-xl p-5 flex flex-col items-center">
-                        <h4 class="text-xs font-semibold text-[#a2cbef] uppercase tracking-wider mb-4 w-full text-left font-mono">Financial Breakdown per Asset Type</h4>
+                    <div class="lg:col-span-2 bg-[#081310] border border-[#16382e] rounded-xl p-5 flex flex-col items-center">
+                        <h4 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider mb-4 w-full text-left font-mono">Financial Allocation per Asset Group</h4>
                         <div class="w-full max-w-[280px] h-[280px] flex items-center justify-center relative">
                             <canvas id="capex-doughnut-canvas"></canvas>
                         </div>
                     </div>
                     
-                    <div class="lg:col-span-3 bg-[#133d7a] border border-[#22569b] rounded-xl p-5">
-                        <h4 class="text-xs font-semibold text-[#a2cbef] uppercase tracking-wider mb-4 font-mono">Equipment Categories: Planned vs Actual</h4>
+                    <div class="lg:col-span-3 bg-[#081310] border border-[#16382e] rounded-xl p-5">
+                        <h4 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider mb-4 font-mono">Equipment Categories: Planned vs Actual</h4>
                         <div class="w-full h-[280px]">
                             <canvas id="capex-bar-canvas"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto chart-scrollbar bg-[#133d7a] rounded-xl border border-[#22569b] p-4">
-                    <h4 class="text-xs font-semibold text-[#a2cbef] uppercase tracking-wider mb-3 font-mono px-2">Complete Database Registry Ledger</h4>
+                <div class="overflow-x-auto chart-scrollbar bg-[#081310] rounded-xl border border-[#16382e] p-4">
+                    <h4 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider mb-3 font-mono px-2">Complete Database Registry Ledger</h4>
                     <table class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
                         <thead>
-                            <tr class="bg-[#00cd52] text-[#10356c] uppercase tracking-wider text-[11px] font-bold rounded-lg">
+                            <tr class="bg-[#10b981] text-[#06120e] uppercase tracking-wider text-[11px] font-bold rounded-lg">
                                 <th class="p-3 pl-4 rounded-l-lg">Index</th>
                                 <th class="p-3">Reporting Cycle</th>
                                 <th class="p-3">Asset ID</th>
@@ -189,8 +229,8 @@
                                 <th class="p-3 pr-4 text-right rounded-r-lg">Pipeline Status</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-[#205297] text-slate-200" id="capex-table-rows">
-                            <tr><td colspan="7" class="py-6 text-center text-[#7bb0e7]">Querying global registry matrix arrays...</td></tr>
+                        <tbody class="divide-y divide-[#16382e] text-slate-200" id="capex-table-rows">
+                            <tr><td colspan="7" class="py-6 text-center text-[#529e84]">Querying database allocations...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -198,33 +238,30 @@
 
             <!-- VIEW 3: PARTS PROCUREMENT PERFORMANCE HUB -->
             <div id="view-parts-container" class="hidden space-y-6">
-                <div class="border-b border-[#255ba1] pb-4 flex items-center justify-between">
+                <div class="border-b border-[#1f4d40] pb-4 flex items-center justify-between">
                     <div>
-                        <h3 class="text-sm font-semibold text-white uppercase tracking-widest">Procurement Turnaround Analytics Matrix</h3>
+                        <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Procurement Turnaround Analytics Matrix</h3>
                         <p class="text-xs text-[#cbd5e1] font-mono mt-1">
-                            💡 <strong class="text-[#00b4ff]">Internal Pipeline (Blue):</strong> Timeline generation to submission. 
-                            | <strong class="text-[#00cd52]">Procurement Validation (Green):</strong> Logistics approval and buy cycle.
+                            💡 <strong class="text-[#22d3ee]">Internal Timeline (Blue):</strong> Generation to approval. 
+                            | <strong class="text-[#00f5a0]">Procurement Turnaround (Green):</strong> Acquisition cycle.
                         </p>
                     </div>
-                    <button onclick="switchView('compliance')" class="text-white hover:bg-[#20549c] bg-[#133d7a] border border-[#2d66af] px-3 py-1.5 rounded-lg text-xs font-medium font-mono transition-colors">
-                        ← Back to Planner Chart
-                    </button>
                 </div>
 
                 <!-- Horizontal Stacked Process Timeline Bar Chart -->
-                <div class="bg-[#133d7a] border border-[#22569b] rounded-xl p-6">
-                    <h4 class="text-xs font-semibold text-[#a2cbef] uppercase tracking-wider mb-5 font-mono">Macro Pipeline Turnaround Stack: Average Total Lead Days Breakdown</h4>
+                <div class="bg-[#081310] border border-[#16382e] rounded-xl p-6">
+                    <h4 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider mb-5 font-mono">Macro Pipeline Turnaround Stack: Average Total Lead Days Breakdown</h4>
                     <div class="w-full h-[150px]">
                         <canvas id="parts-performance-canvas"></canvas>
                     </div>
                 </div>
 
                 <!-- Raw Parts Ledger View Container -->
-                <div class="overflow-x-auto chart-scrollbar bg-[#133d7a] rounded-xl border border-[#22569b] p-4">
-                    <h4 class="text-xs font-semibold text-[#a2cbef] uppercase tracking-wider mb-3 font-mono px-2">Parts Pipeline Registry Ledger</h4>
+                <div class="overflow-x-auto chart-scrollbar bg-[#081310] rounded-xl border border-[#16382e] p-4">
+                    <h4 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider mb-3 font-mono px-2">Parts Pipeline Registry Ledger</h4>
                     <table class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
                         <thead>
-                            <tr class="bg-[#00cd52] text-[#10356c] uppercase tracking-wider text-[11px] font-bold rounded-lg">
+                            <tr class="bg-[#10b981] text-[#06120e] uppercase tracking-wider text-[11px] font-bold rounded-lg">
                                 <th class="p-3 pl-4 rounded-l-lg">Request ID</th>
                                 <th class="p-3">Asset Reference</th>
                                 <th class="p-3">Component Description</th>
@@ -234,16 +271,15 @@
                                 <th class="p-3 pr-4 text-right rounded-r-lg">Workflow Status</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-[#205297] text-slate-200" id="parts-table-rows">
-                            <tr><td colspan="7" class="py-6 text-center text-[#7bb0e7]">Retrieving logistical data tables...</td></tr>
+                        <tbody class="divide-y divide-[#16382e] text-slate-200" id="parts-table-rows">
+                            <tr><td colspan="7" class="py-6 text-center text-[#529e84]">Retrieving logistical metrics...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-        </div>
-
-    </main>
+        </main>
+    </div>
 
     <!-- DATA PIPELINE CORE LOGIC ENGINE -->
     <script>
@@ -286,7 +322,7 @@
             } catch (err) {
                 console.error("System connection failure: ", err);
                 document.getElementById('planners-graph-container').innerHTML = `
-                    <div class="text-rose-400 text-xs font-mono py-4 text-center w-full border border-rose-500 bg-rose-950/20 rounded-lg">
+                    <div class="text-rose-400 text-xs font-mono py-4 text-center w-full border border-rose-900/60 bg-rose-950/20 rounded-lg">
                         CRITICAL PIPELINE INTERRUPTION: VERIFY SECURE ENDPOINT HANDSHAKE VIA DEVELOPER CONSOLE.
                     </div>`;
             }
@@ -297,16 +333,25 @@
             const capexBox = document.getElementById('view-capex-container');
             const partsBox = document.getElementById('view-parts-container');
 
+            // Toggle Content Views
             complianceBox.classList.add('hidden');
             capexBox.classList.add('hidden');
             partsBox.classList.add('hidden');
 
+            // Manage Active States on Sidebar Cards
+            document.getElementById('panel-compliance').classList.remove('active-panel');
+            document.getElementById('panel-capex').classList.remove('active-panel');
+            document.getElementById('panel-parts').classList.remove('active-panel');
+
             if (targetView === 'capex') {
                 capexBox.classList.remove('hidden');
+                document.getElementById('panel-capex').classList.add('active-panel');
             } else if (targetView === 'parts') {
                 partsBox.classList.remove('hidden');
+                document.getElementById('panel-parts').classList.add('active-panel');
             } else {
                 complianceBox.classList.remove('hidden');
+                document.getElementById('panel-compliance').classList.add('active-panel');
             }
         }
 
@@ -316,8 +361,8 @@
             const uniqueWeeks = new Set();
             rows.forEach(row => { const w = String(row[0]).trim(); if (w && !isNaN(w)) uniqueWeeks.add(Number(w)); });
             const sortedWeeks = Array.from(uniqueWeeks).sort((a, b) => a - b);
-            if (sortedWeeks.length === 0) { selector.innerHTML = `<option value="">No Weeks</option>`; return ""; }
-            selector.innerHTML = sortedWeeks.map(wk => `<option value="${wk}">Week ${wk} Performance</option>`).join('');
+            if (sortedWeeks.length === 0) { selector.innerHTML = `<option value="">No Cycles</option>`; return ""; }
+            selector.innerHTML = sortedWeeks.map(wk => `<option value="${wk}">Reporting Week ${wk}</option>`).join('');
             const latestWeek = sortedWeeks[sortedWeeks.length - 1];
             selector.value = latestWeek;
             return latestWeek;
@@ -354,23 +399,23 @@
 
                 const plannedHeight = Math.round((planned / maxVal) * 200);
                 const actualHeight = Math.round((actual / maxVal) * 200);
-                const badgeColor = kpiPct >= 85 ? 'bg-emerald-950/80 border border-emerald-500 text-[#00cd52]' : 
-                                   kpiPct >= 70 ? 'bg-amber-950/80 border border-amber-500 text-amber-400' : 'bg-rose-950/80 border border-rose-500 text-rose-400';
+                const badgeColor = kpiPct >= 85 ? 'bg-emerald-950/80 border border-emerald-500/50 text-[#00f5a0]' : 
+                                   kpiPct >= 70 ? 'bg-amber-950/80 border border-amber-500/50 text-amber-400' : 'bg-rose-950/80 border border-rose-500/50 text-rose-400';
 
                 html += `
                     <div class="flex flex-col items-center h-full justify-end w-36 relative group">
                         <div class="flex items-end justify-center gap-2 w-full h-[210px] pb-1">
-                            <div class="w-8 bg-[#00b4ff] rounded-t-sm transition-all duration-500 relative" style="height: ${plannedHeight}px;">
-                                <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-200 font-mono">${planned}</span>
+                            <div class="w-8 bg-[#0ea5e9] rounded-t-sm transition-all duration-500 relative" style="height: ${plannedHeight}px;">
+                                <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-300 font-mono">${planned}</span>
                             </div>
-                            <div class="w-8 bg-orange-400 rounded-t-sm transition-all duration-500 relative" style="height: ${actualHeight}px;">
-                                <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-orange-300 font-mono">${actual}</span>
+                            <div class="w-8 bg-[#10b981] rounded-t-sm transition-all duration-500 relative" style="height: ${actualHeight}px;">
+                                <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-[#00f5a0] font-mono">${actual}</span>
                             </div>
                         </div>
-                        <div class="text-center mt-3 w-full space-y-1">
-                            <span class="text-[11px] font-bold text-white block truncate uppercase">${name}</span>
-                            <div class="inline-block text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${badgeColor}">
-                                ${planned > 0 ? kpiPct + '% Success' : '0% Scope'}
+                        <div class="text-center mt-3 w-full space-y-1 font-mono">
+                            <span class="text-[11px] font-bold text-slate-200 block truncate uppercase tracking-tight">${name}</span>
+                            <div class="inline-block text-[9px] font-bold px-1.5 py-0.5 rounded-md ${badgeColor}">
+                                ${planned > 0 ? kpiPct + '% Cap' : '0% Scope'}
                             </div>
                         </div>
                     </div>`;
@@ -419,18 +464,18 @@
                     }
                 }
 
-                const bgRowColor = index % 2 === 0 ? 'bg-[#184480]' : 'bg-[#133d7a]';
+                const bgRowColor = index % 2 === 0 ? 'bg-[#091612]' : 'bg-[#0b1c17]';
 
                 tableHtml += `
-                    <tr class="${bgRowColor} hover:bg-[#1e5196] transition-colors">
-                        <td class="p-3 pl-4 text-slate-300 font-medium">${id}</td>
-                        <td class="p-3 text-[#a2cbef] text-[11px] font-medium">${quarter}</td>
-                        <td class="p-3"><span class="bg-[#10356c] border border-[#2d66af] text-white px-1.5 py-0.5 rounded text-[11px] font-bold">${assetId}</span></td>
+                    <tr class="${bgRowColor} hover:bg-[#123128] transition-colors">
+                        <td class="p-3 pl-4 text-slate-400 font-medium">${id}</td>
+                        <td class="p-3 text-[#70cbb0] text-[11px] font-medium">${quarter}</td>
+                        <td class="p-3"><span class="bg-[#06120e] border border-[#1f4d40] text-[#00f5a0] px-1.5 py-0.5 rounded text-[11px] font-bold font-mono">${assetId}</span></td>
                         <td class="p-3 text-white font-medium">${activity}</td>
-                        <td class="p-3 text-slate-300">${po || '---'}</td>
-                        <td class="p-3 text-[#00cd52] font-semibold">₱${budgetNum.toLocaleString()}</td>
+                        <td class="p-3 text-slate-400">${po || '---'}</td>
+                        <td class="p-3 text-[#10b981] font-semibold">₱${budgetNum.toLocaleString()}</td>
                         <td class="p-3 pr-4 text-right">
-                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'?'bg-emerald-500 text-[#10356c]':status==='With Documents'?'bg-yellow-400 text-[#10356c]':'bg-[#285eab] text-white'}">
+                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'||status==='Complete'?'bg-emerald-500 text-[#06120e]':status==='With Documents'?'bg-yellow-400 text-[#06120e]':'bg-[#1c3f35] text-slate-300'}">
                                 ${status}
                             </span>
                         </td>
@@ -466,9 +511,9 @@
                     labels: labels,
                     datasets: [{
                         data: financialData,
-                        backgroundColor: ['#00b4ff', '#ffaa00', '#a855f7'],
+                        backgroundColor: ['#22d3ee', '#fbbf24', '#a855f7'],
                         borderWidth: 3,
-                        borderColor: '#133d7a'
+                        borderColor: '#081310'
                     }]
                 },
                 options: {
@@ -478,7 +523,7 @@
                         legend: {
                             display: true,
                             position: 'bottom',
-                            labels: { color: '#a2cbef', font: { family: 'Inter', size: 11 } }
+                            labels: { color: '#8cd6be', font: { family: 'Inter', size: 11 } }
                         },
                         tooltip: {
                             callbacks: { label: function(context) { return ` Total: ₱${context.raw.toLocaleString()}`; } }
@@ -505,15 +550,15 @@
                     labels: labels,
                     datasets: [
                         { label: 'Planned Target Scope', data: plannedData, backgroundColor: '#0ea5e9', borderRadius: 4 },
-                        { label: 'Actual Volume Executed', data: actualData, backgroundColor: '#ff9020', borderRadius: 4 }
+                        { label: 'Actual Volume Executed', data: actualData, backgroundColor: '#10b981', borderRadius: 4 }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#a2cbef', font: { family: 'Inter', size: 11 } } },
-                        y: { grid: { color: '#255ba1' }, ticks: { color: '#6997d3', font: { family: 'monospace' }, stepSize: 1 } }
+                        x: { grid: { display: false }, ticks: { color: '#8cd6be', font: { family: 'Inter', size: 11 } } },
+                        y: { grid: { color: '#16382e' }, ticks: { color: '#529e84', font: { family: 'monospace' }, stepSize: 1 } }
                     },
                     plugins: {
                         legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: 'Inter', size: 11 } } },
@@ -559,18 +604,18 @@
                     backlogCount++;
                 }
 
-                const bgRowColor = index % 2 === 0 ? 'bg-[#184480]' : 'bg-[#133d7a]';
+                const bgRowColor = index % 2 === 0 ? 'bg-[#091612]' : 'bg-[#0b1c17]';
 
                 tableHtml += `
-                    <tr class="${bgRowColor} hover:bg-[#1e5196] transition-colors">
-                        <td class="p-3 pl-4 text-[#00b4ff] font-medium">${id}</td>
-                        <td class="p-3"><span class="bg-[#10356c] border border-[#2d66af] text-white px-1.5 py-0.5 rounded text-[11px] font-bold">${assetId}</span></td>
+                    <tr class="${bgRowColor} hover:bg-[#123128] transition-colors">
+                        <td class="p-3 pl-4 text-[#22d3ee] font-medium">${id}</td>
+                        <td class="p-3"><span class="bg-[#06120e] border border-[#1f4d40] text-white px-1.5 py-0.5 rounded text-[11px] font-bold">${assetId}</span></td>
                         <td class="p-3 text-white font-medium truncate max-w-[220px]">${desc}</td>
-                        <td class="p-3 text-[#00b4ff] font-semibold">${status === 'APPROVED' ? internalDays + ' d' : '---'}</td>
-                        <td class="p-3 text-[#00cd52] font-semibold">${status === 'APPROVED' ? procurementDays + ' d' : '---'}</td>
+                        <td class="p-3 text-[#22d3ee] font-semibold">${status === 'APPROVED' ? internalDays + ' d' : '---'}</td>
+                        <td class="p-3 text-[#10b981] font-semibold">${status === 'APPROVED' ? procurementDays + ' d' : '---'}</td>
                         <td class="p-3 text-yellow-400 font-bold">${status === 'APPROVED' ? grossLeadDays + ' d' : '---'}</td>
                         <td class="p-3 pr-4 text-right">
-                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='APPROVED'?'bg-[#00cd52] text-[#10356c]':'bg-yellow-400 text-[#10356c]'}">
+                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='APPROVED'?'bg-[#10b981] text-[#06120e]':'bg-yellow-400 text-[#06120e]'}">
                                 ${status}
                             </span>
                         </td>
@@ -587,7 +632,6 @@
             const partsTbody = document.getElementById("parts-table-rows");
             if (partsTbody && tableHtml) partsTbody.innerHTML = tableHtml;
 
-            // Generate Horizontal Stacked Timeline Chart
             buildAdvancedPartsPerformanceChart(
                 ['Approved Requests Cycle Time (Mean Average)'], 
                 [parseFloat(internalMean)], 
@@ -607,13 +651,13 @@
                         {
                             label: 'Internal Pipeline (Blue)',
                             data: internalData,
-                            backgroundColor: '#00b4ff', /* Screenshot bright Sky Blue */
+                            backgroundColor: '#22d3ee', 
                             barThickness: 55
                         },
                         {
                             label: 'Procurement Validation (Green)',
                             data: srcProcureData,
-                            backgroundColor: '#00cd52', /* Screenshot vibrant Grass Green */
+                            backgroundColor: '#10b981', 
                             barThickness: 55
                         }
                     ]
@@ -625,9 +669,9 @@
                     scales: {
                         x: { 
                             stacked: true, 
-                            grid: { color: '#255ba1' }, 
-                            ticks: { color: '#a2cbef', font: { family: 'monospace', size: 11 } },
-                            title: { display: true, text: 'Days Processed', color: '#a2cbef', font: { size: 11 } }
+                            grid: { color: '#16382e' }, 
+                            ticks: { color: '#8cd6be', font: { family: 'monospace', size: 11 } },
+                            title: { display: true, text: 'Days Processed', color: '#529e84', font: { size: 11 } }
                         },
                         y: { 
                             stacked: true, 
