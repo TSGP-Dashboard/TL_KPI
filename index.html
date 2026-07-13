@@ -4,24 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TL Operational Command Center</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN for High-Performance Chart Rendering -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Chart.js Datalabels Plugin CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-    <!-- Corporate Clean Typography -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #06120e; /* Deep obsidian background from reference */
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #06120e; }
+        .workspace-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .workspace-scrollbar::-webkit-scrollbar-track { background: #081310; border-radius: 4px; }
+        .workspace-scrollbar::-webkit-scrollbar-thumb { background: #1a3f34; border-radius: 4px; }
+        .workspace-scrollbar::-webkit-scrollbar-thumb:hover { background: #235747; }
         .chart-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
         .chart-scrollbar::-webkit-scrollbar-track { background: #0d1f1a; }
         .chart-scrollbar::-webkit-scrollbar-thumb { background: #1f473d; border-radius: 3px; }
         
-        /* Tactical Card Selection States & Glow Effects */
         .kpi-card {
             background-color: #0d1f1a;
             border: 1px solid #16382e;
@@ -31,34 +27,21 @@
         .kpi-card::before {
             content: '';
             position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 0px;
+            left: 0; top: 0; bottom: 0; width: 0px;
             background-color: #00f5a0;
             transition: width 0.2s ease;
             border-top-left-radius: 0.75rem;
             border-bottom-left-radius: 0.75rem;
         }
-        .kpi-card:hover {
-            background-color: #122b24;
-            border-color: #1f4d40;
-            transform: translateY(-1px);
-        }
-        .kpi-card.active-panel {
-            background-color: #112d24;
-            border-color: #00f5a0;
-            box-shadow: 0 0 25px rgba(0, 245, 160, 0.12);
-        }
-        .kpi-card.active-panel::before {
-            width: 4px;
-        }
+        .kpi-card:hover { background-color: #122b24; border-color: #1f4d40; transform: translateY(-1px); }
+        .kpi-card.active-panel { background-color: #112d24; border-color: #00f5a0; box-shadow: 0 0 25px rgba(0, 245, 160, 0.12); }
+        .kpi-card.active-panel::before { width: 4px; }
     </style>
 </head>
-<body class="text-slate-100 antialiased min-h-screen flex flex-col">
+<body class="text-slate-100 antialiased h-screen flex flex-col overflow-hidden">
 
-    <!-- EXECUTIVE CYBER HEADER -->
-    <header class="bg-[#0a1815] border-b border-[#16382e] px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl z-20">
+    <!-- HEADER -->
+    <header class="bg-[#0a1815] border-b border-[#16382e] px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl z-20 shrink-0">
         <div class="flex items-center gap-4">
             <div class="h-3 w-3 rounded-full bg-[#00f5a0] animate-pulse shadow-[0_0_10px_#00f5a0]"></div>
             <div>
@@ -66,8 +49,6 @@
                 <p class="text-xs text-[#529e84] font-mono mt-0.5">Matrix Pipeline Status: <span class="text-[#00f5a0]">Online</span></p>
             </div>
         </div>
-
-        <!-- System Controls -->
         <div class="flex items-center gap-4">
             <div class="text-right hidden sm:block font-mono">
                 <p class="text-xs text-[#70cbb0] font-medium">Global Enterprise Deck</p>
@@ -76,98 +57,91 @@
         </div>
     </header>
 
-    <!-- CORE WORKSPACE WITH INTEGRATED LEFT DECK -->
-    <div class="flex-1 flex flex-col lg:flex-row w-full max-w-[1750px] mx-auto p-6 gap-6">
+    <!-- CORE WORKSPACE WITH 20% / 80% RATIO SPLIT -->
+    <div class="flex-1 flex flex-col lg:flex-row w-full max-w-[1850px] mx-auto p-6 gap-6 h-[calc(100vh-73px)] overflow-hidden">
         
-        <!-- SIDEBAR DECK: PERSISTENT VERTICAL SUMMARY CHANNELS -->
-        <aside class="w-full lg:w-[400px] flex flex-col gap-4 shrink-0">
-            <div class="text-[10px] font-mono tracking-widest text-[#529e84] uppercase px-1 font-bold mb-1">
-                Operational Framework Segments
+        <!-- SIDEBAR DECK: EXACTLY 20% WIDTH -->
+        <aside class="w-full lg:w-1/5 flex flex-col gap-4 shrink-0 overflow-y-auto lg:overflow-visible pr-1 lg:pr-0">
+            <div class="text-[10px] font-mono tracking-widest text-[#529e84] uppercase px-1 font-bold shrink-0">
+                Operational Framework
             </div>
 
             <!-- Panel 1: Planner Compliance -->
-            <div id="panel-compliance" class="kpi-card active-panel p-5 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('compliance')">
-                <div class="flex justify-between items-start w-full">
-                    <div class="space-y-1">
-                        <h2 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider">Planner Compliance</h2>
+            <div id="panel-compliance" class="kpi-card active-panel p-4 rounded-xl flex flex-col justify-between cursor-pointer group shrink-0" onclick="switchView('compliance')">
+                <div class="flex justify-between items-start w-full gap-2">
+                    <div class="space-y-1 min-w-0">
+                        <h2 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider truncate">Planner Compliance</h2>
                         <div class="text-[10px] font-mono text-[#41826b] flex items-center gap-1.5 mt-1">
                             <span class="w-1.5 h-1.5 rounded-full bg-[#00f5a0]"></span> Target: &gt;85%
                         </div>
                     </div>
-                    <div class="text-4xl font-mono font-bold tracking-tight text-[#00f5a0]" id="kpi-compliance">--%</div>
+                    <div class="text-3xl font-mono font-bold tracking-tight text-[#00f5a0]" id="kpi-compliance">--%</div>
                 </div>
-                <div class="mt-4 flex items-center justify-between border-t border-[#1a3f34] pt-2.5 text-[10px] font-mono text-[#529e84]">
-                    <span>View Chart Visualizer</span>
-                    <span class="text-[#00f5a0]">Select Matrix</span>
+                <div class="mt-3 flex items-center justify-between border-t border-[#1a3f34] pt-2 text-[10px] font-mono text-[#529e84]">
+                    <span>Chart Matrix</span>
+                    <span class="text-[#00f5a0]">Select</span>
                 </div>
             </div>
 
             <!-- Panel 2: CAPEX Projects -->
-            <div id="panel-capex" class="kpi-card p-5 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('capex')">
-                <div class="flex justify-between items-start w-full">
-                    <div class="space-y-1">
-                        <h2 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider">CAPEX Pipeline Total</h2>
-                        <div class="text-[10px] font-mono text-yellow-400/90 truncate max-w-[180px]" id="kpi-capex-count">
-                            Loading status...
-                        </div>
+            <div id="panel-capex" class="kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer group shrink-0" onclick="switchView('capex')">
+                <div class="flex justify-between items-start w-full gap-2">
+                    <div class="space-y-1 min-w-0">
+                        <h2 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider truncate">CAPEX Pipeline</h2>
+                        <div class="text-[10px] font-mono text-yellow-400/90 truncate" id="kpi-capex-count">Loading...</div>
                     </div>
-                    <div class="text-3xl font-mono font-bold tracking-tight text-white" id="kpi-capex">₱0.00M</div>
+                    <div class="text-2xl font-mono font-bold tracking-tight text-white whitespace-nowrap" id="kpi-capex">₱0M</div>
                 </div>
-                <div class="mt-4 flex items-center justify-between border-t border-[#1a3f34] pt-2.5 text-[10px] font-mono text-[#529e84]">
-                    <span>Gross DB Ledger Scope</span>
-                    <span class="text-[#00f5a0] opacity-0 group-hover:opacity-100 transition-opacity">Select Matrix</span>
+                <div class="mt-3 flex items-center justify-between border-t border-[#1a3f34] pt-2 text-[10px] font-mono text-[#529e84]">
+                    <span>Gross Ledger</span>
+                    <span class="text-[#00f5a0] opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
                 </div>
             </div>
 
             <!-- Panel 3: Parts Request Speed -->
-            <div id="panel-parts" class="kpi-card p-5 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('parts')">
-                <div class="flex justify-between items-start w-full">
-                    <div class="space-y-1">
-                        <h2 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider">Parts Request Speed</h2>
-                        <div class="text-[10px] font-mono text-[#66d1ff] truncate max-w-[180px]" id="kpi-parts-count">
-                            Calculating indicators...
-                        </div>
+            <div id="panel-parts" class="kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer group shrink-0" onclick="switchView('parts')">
+                <div class="flex justify-between items-start w-full gap-2">
+                    <div class="space-y-1 min-w-0">
+                        <h2 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider truncate">Request Speed</h2>
+                        <div class="text-[10px] font-mono text-[#66d1ff] truncate" id="kpi-parts-count">Calculating...</div>
                     </div>
-                    <div class="text-3xl font-mono font-bold tracking-tight text-[#22d3ee]" id="kpi-parts">0.0 Days</div>
+                    <div class="text-2xl font-mono font-bold tracking-tight text-[#22d3ee] whitespace-nowrap" id="kpi-parts">0.0d</div>
                 </div>
-                <div class="mt-4 flex items-center justify-between border-t border-[#1a3f34] pt-2.5 text-[10px] font-mono text-[#529e84]">
-                    <span>Procurement Turnaround</span>
-                    <span class="text-[#00f5a0] opacity-0 group-hover:opacity-100 transition-opacity">Select Matrix</span>
+                <div class="mt-3 flex items-center justify-between border-t border-[#1a3f34] pt-2 text-[10px] font-mono text-[#529e84]">
+                    <span>Turnaround</span>
+                    <span class="text-[#00f5a0] opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
                 </div>
             </div>
 
             <!-- Panel 4: Tire Lifespan -->
-            <div class="bg-[#0b1613] border border-[#122822]/60 p-5 rounded-xl flex flex-col justify-between opacity-75">
-                <div class="flex justify-between items-start w-full">
-                    <div class="space-y-1">
-                        <h2 class="text-xs font-semibold text-[#529e84] uppercase tracking-wider">Tire Mileage Leader</h2>
-                        <div class="text-[10px] font-mono text-[#41826b]">Continuous Fleet Logs</div>
+            <div class="bg-[#0b1613] border border-[#122822]/60 p-4 rounded-xl flex flex-col justify-between opacity-75 shrink-0">
+                <div class="flex justify-between items-start w-full gap-2">
+                    <div class="space-y-1 min-w-0">
+                        <h2 class="text-xs font-semibold text-[#529e84] uppercase tracking-wider truncate">Tire Mileage</h2>
+                        <div class="text-[10px] font-mono text-[#41826b]">Continuous Logs</div>
                     </div>
-                    <div class="text-3xl font-mono font-bold tracking-tight text-slate-400" id="kpi-tires">-- KM</div>
+                    <div class="text-2xl font-mono font-bold tracking-tight text-slate-400 whitespace-nowrap" id="kpi-tires">-- KM</div>
                 </div>
-                <div class="mt-4 flex items-center justify-between border-t border-[#122822] pt-2.5 text-[10px] font-mono text-[#41826b]">
-                    <span>Asset Performance Ceiling</span>
-                    <span>Locked View</span>
+                <div class="mt-3 flex items-center justify-between border-t border-[#122822] pt-2 text-[10px] font-mono text-[#41826b]">
+                    <span>Performance Ceiling</span>
+                    <span>Locked</span>
                 </div>
             </div>
         </aside>
 
-        <!-- MAIN MAIN HUB INTERFACE DISPLAY SCREEN -->
-        <main class="flex-1 bg-[#0d1f1a] rounded-xl border border-[#16382e] p-6 shadow-2xl overflow-hidden">
+        <!-- DYNAMIC CONTENT HUD: EXACTLY 80% WIDTH WITH SCROLL -->
+        <main class="w-full lg:w-4/5 bg-[#0d1f1a] rounded-xl border border-[#16382e] p-6 shadow-2xl overflow-y-auto workspace-scrollbar h-full">
             
-            <!-- VIEW 1: COMPLIANCE MATRIX WORKSTAGE -->
+            <!-- VIEW 1: COMPLIANCE -->
             <div id="view-compliance-container" class="space-y-6">
-                <div class="border-b border-[#1f4d40] pb-4 flex flex-col md:flex-row justify-between md:items-center gap-4">
+                <div class="border-b border-[#1f4d40] pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                     <div>
                         <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Schedule Compliance Variance Matrix</h3>
                         <p class="text-xs text-[#70cbb0] font-mono mt-0.5">PM tasks assigned vs. successfully executed records</p>
                     </div>
-                    
-                    <!-- Integrated Context Controls -->
                     <div class="flex flex-wrap items-center gap-4 text-[10px] font-mono">
                         <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-[#0ea5e9] rounded-sm inline-block"></span> <span class="text-slate-300">PLANNED TARGET</span></div>
                         <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-[#10b981] rounded-sm inline-block"></span> <span class="text-slate-300">ACTUAL EXECUTED</span></div>
-                        
                         <select id="week-selector" onchange="changeWeekFilter()" class="bg-[#091512] text-white border border-[#1f4d40] rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-[#00f5a0] cursor-pointer transition-colors shadow-md">
                             <option value="">Loading cycles...</option>
                         </select>
@@ -179,54 +153,46 @@
                         <div class="w-full border-t border-[#1a3c31] relative"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">100% Volume Tracking</span></div>
                         <div class="w-full border-t border-[#1a3c31]/60 relative"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">75% Target Threshold</span></div>
                         <div class="w-full border-t border-[#1a3c31]/60 relative"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">50% Midline Vol</span></div>
-                        <div class="w-full border-t border-[#1a3c31]/60 relative"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">25% Capacity Baseline</span></div>
                     </div>
-
                     <div class="overflow-x-auto pt-6 pl-14 chart-scrollbar relative z-10">
                         <div class="min-w-[850px] h-[260px] flex items-end justify-around border-b border-[#1f4d40] pb-1" id="planners-graph-container">
-                            <div class="text-[#529e84] text-xs font-mono w-full text-center pb-20">Syncing structural matrix from spreadsheet engine...</div>
+                            <div class="text-[#529e84] text-xs font-mono w-full text-center pb-20">Syncing structural matrix...</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- VIEW 2: FULL CAPEX GRAPH AND LEDGER ARCHITECTURE -->
+            <!-- VIEW 2: CAPEX -->
             <div id="view-capex-container" class="hidden space-y-6">
-                <div class="border-b border-[#1f4d40] pb-4 flex items-center justify-between">
-                    <div>
-                        <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">CAPEX Advanced Metrics Engine</h3>
-                        <p class="text-xs text-[#70cbb0] font-mono mt-0.5">Allocation streams and physical asset deployment breakdown</p>
-                    </div>
+                <div class="border-b border-[#1f4d40] pb-4">
+                    <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">CAPEX Advanced Metrics Engine</h3>
+                    <p class="text-xs text-[#70cbb0] font-mono mt-0.5">Allocation streams and physical asset deployment breakdown</p>
                 </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <div class="lg:col-span-2 bg-[#081310] border border-[#16382e] rounded-xl p-5 flex flex-col items-center">
-                        <h4 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider mb-4 w-full text-left font-mono">Financial Allocation per Asset Group</h4>
+                <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+                    <div class="xl:col-span-2 bg-[#081310] border border-[#16382e] rounded-xl p-5 flex flex-col items-center">
+                        <h4 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider mb-4 w-full text-left font-mono">Asset Allocation</h4>
                         <div class="w-full max-w-[280px] h-[280px] flex items-center justify-center relative">
                             <canvas id="capex-doughnut-canvas"></canvas>
                         </div>
                     </div>
-                    
-                    <div class="lg:col-span-3 bg-[#081310] border border-[#16382e] rounded-xl p-5">
-                        <h4 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider mb-4 font-mono">Equipment Categories: Planned vs Actual</h4>
+                    <div class="xl:col-span-3 bg-[#081310] border border-[#16382e] rounded-xl p-5">
+                        <h4 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider mb-4 font-mono">Equipment Categories</h4>
                         <div class="w-full h-[280px]">
                             <canvas id="capex-bar-canvas"></canvas>
                         </div>
                     </div>
                 </div>
-
                 <div class="overflow-x-auto chart-scrollbar bg-[#081310] rounded-xl border border-[#16382e] p-4">
-                    <h4 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider mb-3 font-mono px-2">Complete Database Registry Ledger</h4>
                     <table class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
                         <thead>
                             <tr class="bg-[#10b981] text-[#06120e] uppercase tracking-wider text-[11px] font-bold rounded-lg">
                                 <th class="p-3 pl-4 rounded-l-lg">Index</th>
                                 <th class="p-3">Reporting Cycle</th>
                                 <th class="p-3">Asset ID</th>
-                                <th class="p-3">Operational Activity Work Item</th>
+                                <th class="p-3">Operational Activity</th>
                                 <th class="p-3">PO Ref</th>
                                 <th class="p-3">Allocation</th>
-                                <th class="p-3 pr-4 text-right rounded-r-lg">Pipeline Status</th>
+                                <th class="p-3 pr-4 text-right rounded-r-lg">Status</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-[#16382e] text-slate-200" id="capex-table-rows">
@@ -236,37 +202,29 @@
                 </div>
             </div>
 
-            <!-- VIEW 3: PARTS PROCUREMENT PERFORMANCE HUB -->
+            <!-- VIEW 3: PARTS REQUEST -->
             <div id="view-parts-container" class="hidden space-y-6">
-                <div class="border-b border-[#1f4d40] pb-4 flex items-center justify-between">
-                    <div>
-                        <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Procurement Turnaround Analytics Matrix</h3>
-                        <p class="text-xs text-[#cbd5e1] font-mono mt-1">
-                            💡 <strong class="text-[#22d3ee]">Internal Timeline (Blue):</strong> Generation to approval. 
-                            | <strong class="text-[#00f5a0]">Procurement Turnaround (Green):</strong> Acquisition cycle.
-                        </p>
-                    </div>
+                <div class="border-b border-[#1f4d40] pb-4">
+                    <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Procurement Turnaround Analytics Matrix</h3>
+                    <p class="text-xs text-[#cbd5e1] font-mono mt-1">
+                        💡 <strong class="text-[#22d3ee]">Internal (Blue):</strong> Generation to approval. | <strong class="text-[#00f5a0]">Procurement (Green):</strong> Acquisition cycle.
+                    </p>
                 </div>
-
-                <!-- Horizontal Stacked Process Timeline Bar Chart -->
                 <div class="bg-[#081310] border border-[#16382e] rounded-xl p-6">
-                    <h4 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider mb-5 font-mono">Macro Pipeline Turnaround Stack: Average Total Lead Days Breakdown</h4>
+                    <h4 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider mb-5 font-mono">Average Total Lead Days Breakdown</h4>
                     <div class="w-full h-[150px]">
                         <canvas id="parts-performance-canvas"></canvas>
                     </div>
                 </div>
-
-                <!-- Raw Parts Ledger View Container -->
                 <div class="overflow-x-auto chart-scrollbar bg-[#081310] rounded-xl border border-[#16382e] p-4">
-                    <h4 class="text-xs font-semibold text-[#8cd6be] uppercase tracking-wider mb-3 font-mono px-2">Parts Pipeline Registry Ledger</h4>
                     <table class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
                         <thead>
                             <tr class="bg-[#10b981] text-[#06120e] uppercase tracking-wider text-[11px] font-bold rounded-lg">
                                 <th class="p-3 pl-4 rounded-l-lg">Request ID</th>
-                                <th class="p-3">Asset Reference</th>
+                                <th class="p-3">Asset Ref</th>
                                 <th class="p-3">Component Description</th>
-                                <th class="p-3">Our End (Days)</th>
-                                <th class="p-3">Procurement (Days)</th>
+                                <th class="p-3">Our End</th>
+                                <th class="p-3">Procurement</th>
                                 <th class="p-3">Gross Lead Time</th>
                                 <th class="p-3 pr-4 text-right rounded-r-lg">Workflow Status</th>
                             </tr>
@@ -294,13 +252,8 @@
         let partsChartInstance = null;
 
         document.addEventListener("DOMContentLoaded", async () => {
-            // Register Chart.js Datalabels plugin globally
             Chart.register(ChartDataLabels);
-
-            if(SHEET_DB_API_URL === 'YOUR_COPIED_GOOGLE_WEB_APP_URL_HERE' || SHEET_DB_API_URL.includes('...')) {
-                console.warn("API Deployment Endpoint Configuration Required.");
-                return;
-            }
+            if(SHEET_DB_API_URL === 'YOUR_COPIED_GOOGLE_WEB_APP_URL_HERE' || SHEET_DB_API_URL.includes('...')) return;
             try {
                 const res = await fetch(SHEET_DB_API_URL, { method: 'GET', mode: 'cors', credentials: 'omit' });
                 if (!res.ok) throw new Error(`HTTP Error Status: ${res.status}`);
@@ -313,44 +266,33 @@
                     rawPartsRows = db.parts_requests || [];
                     
                     const defaultWeek = populateWeekSelector(rawPlannerRows);
-                    
                     renderPlannerVisualizer(rawPlannerRows, defaultWeek); 
                     renderCapexSummary(rawCapexRows);
                     renderPartsSummary(rawPartsRows);
                     renderTireSummary(db.tire_maintenance || []);
                 }
             } catch (err) {
-                console.error("System connection failure: ", err);
-                document.getElementById('planners-graph-container').innerHTML = `
-                    <div class="text-rose-400 text-xs font-mono py-4 text-center w-full border border-rose-900/60 bg-rose-950/20 rounded-lg">
-                        CRITICAL PIPELINE INTERRUPTION: VERIFY SECURE ENDPOINT HANDSHAKE VIA DEVELOPER CONSOLE.
-                    </div>`;
+                console.error(err);
+                document.getElementById('planners-graph-container').innerHTML = `<div class="text-rose-400 text-xs font-mono py-4 text-center w-full">CRITICAL PIPELINE INTERRUPTION: VERIFY HANDSHAKE.</div>`;
             }
         });
 
         function switchView(targetView) {
-            const complianceBox = document.getElementById('view-compliance-container');
-            const capexBox = document.getElementById('view-capex-container');
-            const partsBox = document.getElementById('view-parts-container');
-
-            // Toggle Content Views
-            complianceBox.classList.add('hidden');
-            capexBox.classList.add('hidden');
-            partsBox.classList.add('hidden');
-
-            // Manage Active States on Sidebar Cards
+            document.getElementById('view-compliance-container').classList.add('hidden');
+            document.getElementById('view-capex-container').classList.add('hidden');
+            document.getElementById('view-parts-container').classList.add('hidden');
             document.getElementById('panel-compliance').classList.remove('active-panel');
             document.getElementById('panel-capex').classList.remove('active-panel');
             document.getElementById('panel-parts').classList.remove('active-panel');
 
             if (targetView === 'capex') {
-                capexBox.classList.remove('hidden');
+                document.getElementById('view-capex-container').classList.remove('hidden');
                 document.getElementById('panel-capex').classList.add('active-panel');
             } else if (targetView === 'parts') {
-                partsBox.classList.remove('hidden');
+                document.getElementById('view-parts-container').classList.remove('hidden');
                 document.getElementById('panel-parts').classList.add('active-panel');
             } else {
-                complianceBox.classList.remove('hidden');
+                document.getElementById('view-compliance-container').classList.remove('hidden');
                 document.getElementById('panel-compliance').classList.add('active-panel');
             }
         }
@@ -361,8 +303,8 @@
             const uniqueWeeks = new Set();
             rows.forEach(row => { const w = String(row[0]).trim(); if (w && !isNaN(w)) uniqueWeeks.add(Number(w)); });
             const sortedWeeks = Array.from(uniqueWeeks).sort((a, b) => a - b);
-            if (sortedWeeks.length === 0) { selector.innerHTML = `<option value="">No Cycles</option>`; return ""; }
-            selector.innerHTML = sortedWeeks.map(wk => `<option value="${wk}">Reporting Week ${wk}</option>`).join('');
+            if (sortedWeeks.length === 0) return "";
+            selector.innerHTML = sortedWeeks.map(wk => `<option value="${wk}">Week ${wk}</option>`).join('');
             const latestWeek = sortedWeeks[sortedWeeks.length - 1];
             selector.value = latestWeek;
             return latestWeek;
@@ -370,19 +312,13 @@
 
         function changeWeekFilter() {
             switchView('compliance');
-            const targetWeek = document.getElementById('week-selector').value;
-            renderPlannerVisualizer(rawPlannerRows, targetWeek);
+            renderPlannerVisualizer(rawPlannerRows, document.getElementById('week-selector').value);
         }
 
         function renderPlannerVisualizer(rows, selectedWeek) {
             if (!rows.length || !selectedWeek) return;
             const weekFilteredRows = rows.filter(r => String(r[0]).trim() === String(selectedWeek).trim());
             let totalPlanned = 0, totalActual = 0, html = '';
-
-            if(!weekFilteredRows.length) {
-                document.getElementById('planners-graph-container').innerHTML = `<div class="text-slate-400 text-xs font-mono py-4 text-center w-full">Zero dataset returns configured for target Index ${selectedWeek}</div>`;
-                return;
-            }
 
             let maxVal = 10; 
             weekFilteredRows.forEach(row => {
@@ -399,75 +335,53 @@
 
                 const plannedHeight = Math.round((planned / maxVal) * 200);
                 const actualHeight = Math.round((actual / maxVal) * 200);
-                const badgeColor = kpiPct >= 85 ? 'bg-emerald-950/80 border border-emerald-500/50 text-[#00f5a0]' : 
-                                   kpiPct >= 70 ? 'bg-amber-950/80 border border-amber-500/50 text-amber-400' : 'bg-rose-950/80 border border-rose-500/50 text-rose-400';
+                const badgeColor = kpiPct >= 85 ? 'bg-emerald-950/80 border border-emerald-500/50 text-[#00f5a0]' : 'bg-rose-950/80 border border-rose-500/50 text-rose-400';
 
                 html += `
                     <div class="flex flex-col items-center h-full justify-end w-36 relative group">
                         <div class="flex items-end justify-center gap-2 w-full h-[210px] pb-1">
-                            <div class="w-8 bg-[#0ea5e9] rounded-t-sm transition-all duration-500 relative" style="height: ${plannedHeight}px;">
+                            <div class="w-8 bg-[#0ea5e9] rounded-t-sm relative" style="height: ${plannedHeight}px;">
                                 <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-300 font-mono">${planned}</span>
                             </div>
-                            <div class="w-8 bg-[#10b981] rounded-t-sm transition-all duration-500 relative" style="height: ${actualHeight}px;">
+                            <div class="w-8 bg-[#10b981] rounded-t-sm relative" style="height: ${actualHeight}px;">
                                 <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-[#00f5a0] font-mono">${actual}</span>
                             </div>
                         </div>
                         <div class="text-center mt-3 w-full space-y-1 font-mono">
                             <span class="text-[11px] font-bold text-slate-200 block truncate uppercase tracking-tight">${name}</span>
-                            <div class="inline-block text-[9px] font-bold px-1.5 py-0.5 rounded-md ${badgeColor}">
-                                ${planned > 0 ? kpiPct + '% Cap' : '0% Scope'}
-                            </div>
+                            <div class="inline-block text-[9px] font-bold px-1.5 py-0.5 rounded-md ${badgeColor}">${kpiPct}%</div>
                         </div>
                     </div>`;
             });
 
-            const teamAvg = totalPlanned > 0 ? Math.round((totalActual / totalPlanned) * 100) : 0;
-            document.getElementById('kpi-compliance').innerText = totalPlanned > 0 ? `${teamAvg}%` : '--%';
+            document.getElementById('kpi-compliance').innerText = totalPlanned > 0 ? `${Math.round((totalActual / totalPlanned) * 100)}%` : '--%';
             document.getElementById('planners-graph-container').innerHTML = html;
         }
 
         function renderCapexSummary(rows) {
             if (!rows.length) return;
-            
-            let totalDatabaseGrossBudget = 0; 
-            let documentPhaseCount = 0; 
-            let tableHtml = '';
-
+            let totalDatabaseGrossBudget = 0, documentPhaseCount = 0, tableHtml = '';
             let categoryFinancials = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
             let categoryVolumePlanned = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
             let categoryVolumeActual = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0 };
 
             rows.forEach((row, index) => {
                 if (!row[2] && !row[5]) return;
-
                 const id = row[0], quarter = row[1], assetId = String(row[2] || '').toUpperCase(), activity = row[3] || '', po = row[4], status = row[6] || '';
-                
-                let cleanText = String(row[5] || '').replace(/[^0-9.]/g, '');
-                const budgetNum = cleanText ? parseFloat(cleanText) : 0;
+                let budgetNum = parseFloat(String(row[5] || '').replace(/[^0-9.]/g, '')) || 0;
 
-                if (!isNaN(budgetNum)) {
-                    totalDatabaseGrossBudget = Number(totalDatabaseGrossBudget) + budgetNum;
-                }
-
+                totalDatabaseGrossBudget += budgetNum;
                 if(status === 'With Documents') documentPhaseCount++;
 
-                let targetedCategory = null;
-                if (assetId.startsWith("BH")) targetedCategory = "Backhoe";
-                else if (assetId.startsWith("BD")) targetedCategory = "Bulldozer";
-                else if (assetId.startsWith("CR")) targetedCategory = "Crane";
-
-                if (targetedCategory) {
-                    categoryFinancials[targetedCategory] += budgetNum;
-                    categoryVolumePlanned[targetedCategory] += 1;
-                    if (status === "Done" || status === "Complete") {
-                        categoryVolumeActual[targetedCategory] += 1;
-                    }
+                let cat = assetId.startsWith("BH") ? "Backhoe" : assetId.startsWith("BD") ? "Bulldozer" : assetId.startsWith("CR") ? "Crane" : null;
+                if (cat) {
+                    categoryFinancials[cat] += budgetNum;
+                    categoryVolumePlanned[cat] += 1;
+                    if (status === "Done" || status === "Complete") categoryVolumeActual[cat] += 1;
                 }
 
-                const bgRowColor = index % 2 === 0 ? 'bg-[#091612]' : 'bg-[#0b1c17]';
-
                 tableHtml += `
-                    <tr class="${bgRowColor} hover:bg-[#123128] transition-colors">
+                    <tr class="${index % 2 === 0 ? 'bg-[#091612]' : 'bg-[#0b1c17]'} hover:bg-[#123128] transition-colors">
                         <td class="p-3 pl-4 text-slate-400 font-medium">${id}</td>
                         <td class="p-3 text-[#70cbb0] text-[11px] font-medium">${quarter}</td>
                         <td class="p-3"><span class="bg-[#06120e] border border-[#1f4d40] text-[#00f5a0] px-1.5 py-0.5 rounded text-[11px] font-bold font-mono">${assetId}</span></td>
@@ -475,232 +389,75 @@
                         <td class="p-3 text-slate-400">${po || '---'}</td>
                         <td class="p-3 text-[#10b981] font-semibold">₱${budgetNum.toLocaleString()}</td>
                         <td class="p-3 pr-4 text-right">
-                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'||status==='Complete'?'bg-emerald-500 text-[#06120e]':status==='With Documents'?'bg-yellow-400 text-[#06120e]':'bg-[#1c3f35] text-slate-300'}">
-                                ${status}
-                            </span>
+                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'||status==='Complete'?'bg-emerald-500 text-[#06120e]':'bg-[#1c3f35] text-slate-300'}">${status}</span>
                         </td>
                     </tr>`;
             });
 
-            if (totalDatabaseGrossBudget >= 1000000000) {
-                document.getElementById('kpi-capex').innerText = `₱${(totalDatabaseGrossBudget / 1000000000).toFixed(2)}B`;
-            } else {
-                document.getElementById('kpi-capex').innerText = `₱${(totalDatabaseGrossBudget / 1000000).toFixed(2)}M`;
-            }
-            document.getElementById('kpi-capex-count').innerText = `● ${documentPhaseCount} Items Request Docs`;
-            
-            const tbody = document.getElementById("capex-table-rows");
-            if (tbody && tableHtml) tbody.innerHTML = tableHtml;
-
+            document.getElementById('kpi-capex').innerText = `₱${(totalDatabaseGrossBudget / 1000000).toFixed(1)}M`;
+            document.getElementById('kpi-capex-count').innerText = `● ${documentPhaseCount} Docs Pending`;
+            document.getElementById("capex-table-rows").innerHTML = tableHtml;
             buildAdvancedCapexCharts(categoryFinancials, categoryVolumePlanned, categoryVolumeActual);
         }
 
         function buildAdvancedCapexCharts(financialsMap, plannedMap, actualMap) {
-            const labels = Object.keys(financialsMap); 
-            const financialData = Object.values(financialsMap);
-            const totalFinancials = financialData.reduce((a, b) => a + b, 0);
-            
-            const plannedData = labels.map(lbl => plannedMap[lbl] || 0);
-            const actualData = labels.map(lbl => actualMap[lbl] || 0);
-
+            const labels = Object.keys(financialsMap), financialData = Object.values(financialsMap), totalFinancials = financialData.reduce((a, b) => a + b, 0);
             if (doughnutChartInstance) doughnutChartInstance.destroy();
-            const ctxDoughnut = document.getElementById('capex-doughnut-canvas').getContext('2d');
-            doughnutChartInstance = new Chart(ctxDoughnut, {
+            doughnutChartInstance = new Chart(document.getElementById('capex-doughnut-canvas').getContext('2d'), {
                 type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: financialData,
-                        backgroundColor: ['#22d3ee', '#fbbf24', '#a855f7'],
-                        borderWidth: 3,
-                        borderColor: '#081310'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'bottom',
-                            labels: { color: '#8cd6be', font: { family: 'Inter', size: 11 } }
-                        },
-                        tooltip: {
-                            callbacks: { label: function(context) { return ` Total: ₱${context.raw.toLocaleString()}`; } }
-                        },
-                        datalabels: {
-                            display: true,
-                            color: '#ffffff',
-                            font: { family: 'Inter', weight: 'bold', size: 11 },
-                            formatter: (value) => {
-                                if (totalFinancials === 0) return '0%';
-                                return ((value / totalFinancials) * 100).toFixed(1) + '%';
-                            }
-                        }
-                    },
-                    cutout: '55%'
-                }
+                data: { labels: labels, datasets: [{ data: financialData, backgroundColor: ['#22d3ee', '#fbbf24', '#a855f7'], borderWidth: 3, borderColor: '#081310' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: '#8cd6be', font: { size: 10 } } }, datalabels: { color: '#fff', formatter: (value) => ((value / totalFinancials) * 100).toFixed(0) + '%' } }, cutout: '60%' }
             });
 
             if (barChartInstance) barChartInstance.destroy();
-            const ctxBar = document.getElementById('capex-bar-canvas').getContext('2d');
-            barChartInstance = new Chart(ctxBar, {
+            barChartInstance = new Chart(document.getElementById('capex-bar-canvas').getContext('2d'), {
                 type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Planned Target Scope', data: plannedData, backgroundColor: '#0ea5e9', borderRadius: 4 },
-                        { label: 'Actual Volume Executed', data: actualData, backgroundColor: '#10b981', borderRadius: 4 }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: '#8cd6be', font: { family: 'Inter', size: 11 } } },
-                        y: { grid: { color: '#16382e' }, ticks: { color: '#529e84', font: { family: 'monospace' }, stepSize: 1 } }
-                    },
-                    plugins: {
-                        legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: 'Inter', size: 11 } } },
-                        datalabels: {
-                            display: true,
-                            anchor: 'end',
-                            align: 'top',
-                            color: '#ffffff',
-                            font: { family: 'monospace', size: 11, weight: 'bold' },
-                            offset: 2
-                        }
-                    }
-                }
+                data: { labels: labels, datasets: [{ label: 'Target', data: labels.map(l => plannedMap[l]), backgroundColor: '#0ea5e9' }, { label: 'Actual', data: labels.map(l => actualMap[l]), backgroundColor: '#10b981' }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#8cd6be' } }, y: { grid: { color: '#16382e' }, ticks: { color: '#529e84' } } }, plugins: { legend: { labels: { color: '#cbd5e1' } }, datalabels: { color: '#fff', anchor: 'end', align: 'top' } } }
             });
         }
 
         function renderPartsSummary(rows) {
             if (!rows.length) return;
-
-            let totalOverallDays = 0;
-            let totalInternalDays = 0;
-            let totalProcurementDays = 0;
-            
-            let approvedCount = 0;
-            let backlogCount = 0;
-            let tableHtml = '';
+            let totalOverallDays = 0, totalInternalDays = 0, totalProcurementDays = 0, approvedCount = 0, backlogCount = 0, tableHtml = '';
 
             rows.forEach((row, index) => {
-                if (!row[19]) return; 
-
-                const id = row[0] || 'PR-?', assetId = String(row[2] || '').toUpperCase(), desc = row[3] || 'Unspecified Component', status = String(row[19]).trim().toUpperCase();
-                
-                const internalDays = parseFloat(String(row[11]).replace(/[^0-9.]/g, '')) || 0;
-                const procurementDays = parseFloat(String(row[18]).replace(/[^0-9.]/g, '')) || 0;
-                const grossLeadDays = parseFloat(String(row[20]).replace(/[^0-9.]/g, '')) || 0;
+                if (!row[19]) return;
+                const id = row[0], assetId = String(row[2]).toUpperCase(), desc = row[3], status = String(row[19]).trim().toUpperCase();
+                const internalDays = parseFloat(row[11]) || 0, procurementDays = parseFloat(row[18]) || 0, grossLeadDays = parseFloat(row[20]) || 0;
 
                 if (status === "APPROVED") {
-                    totalOverallDays += grossLeadDays;
-                    totalInternalDays += internalDays;
-                    totalProcurementDays += procurementDays;
-                    approvedCount++;
-                } else {
-                    backlogCount++;
-                }
-
-                const bgRowColor = index % 2 === 0 ? 'bg-[#091612]' : 'bg-[#0b1c17]';
+                    totalOverallDays += grossLeadDays; totalInternalDays += internalDays; totalProcurementDays += procurementDays; approvedCount++;
+                } else { backlogCount++; }
 
                 tableHtml += `
-                    <tr class="${bgRowColor} hover:bg-[#123128] transition-colors">
+                    <tr class="${index % 2 === 0 ? 'bg-[#091612]' : 'bg-[#0b1c17]'} hover:bg-[#123128] transition-colors">
                         <td class="p-3 pl-4 text-[#22d3ee] font-medium">${id}</td>
                         <td class="p-3"><span class="bg-[#06120e] border border-[#1f4d40] text-white px-1.5 py-0.5 rounded text-[11px] font-bold">${assetId}</span></td>
                         <td class="p-3 text-white font-medium truncate max-w-[220px]">${desc}</td>
-                        <td class="p-3 text-[#22d3ee] font-semibold">${status === 'APPROVED' ? internalDays + ' d' : '---'}</td>
-                        <td class="p-3 text-[#10b981] font-semibold">${status === 'APPROVED' ? procurementDays + ' d' : '---'}</td>
-                        <td class="p-3 text-yellow-400 font-bold">${status === 'APPROVED' ? grossLeadDays + ' d' : '---'}</td>
+                        <td class="p-3 text-[#22d3ee] font-semibold">${status==='APPROVED'?internalDays+'d':'—'}</td>
+                        <td class="p-3 text-[#10b981] font-semibold">${status==='APPROVED'?procurementDays+'d':'—'}</td>
+                        <td class="p-3 text-yellow-400 font-bold">${status==='APPROVED'?grossLeadDays+'d':'—'}</td>
                         <td class="p-3 pr-4 text-right">
-                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='APPROVED'?'bg-[#10b981] text-[#06120e]':'bg-yellow-400 text-[#06120e]'}">
-                                ${status}
-                            </span>
+                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='APPROVED'?'bg-[#10b981] text-[#06120e]':'bg-yellow-400 text-[#06120e]'}">${status}</span>
                         </td>
                     </tr>`;
             });
 
             const globalMean = approvedCount > 0 ? (totalOverallDays / approvedCount).toFixed(1) : "0.0";
-            const internalMean = approvedCount > 0 ? (totalInternalDays / approvedCount).toFixed(1) : "0.0";
-            const procurementMean = approvedCount > 0 ? (totalProcurementDays / approvedCount).toFixed(1) : "0.0";
+            document.getElementById('kpi-parts').innerText = `${globalMean}d`;
+            document.getElementById('kpi-parts-count').innerText = `Int: ${(totalInternalDays/approvedCount).toFixed(1)}d | Pro: ${(totalProcurementDays/approvedCount).toFixed(1)}d`;
+            document.getElementById("parts-table-rows").innerHTML = tableHtml;
 
-            document.getElementById('kpi-parts').innerText = `${globalMean} Days`;
-            document.getElementById('kpi-parts-count').innerText = `Internal: ${internalMean}d | Procure: ${procurementMean}d [${backlogCount} items]`;
-
-            const partsTbody = document.getElementById("parts-table-rows");
-            if (partsTbody && tableHtml) partsTbody.innerHTML = tableHtml;
-
-            buildAdvancedPartsPerformanceChart(
-                ['Approved Requests Cycle Time (Mean Average)'], 
-                [parseFloat(internalMean)], 
-                [parseFloat(procurementMean)]
-            );
+            buildAdvancedPartsPerformanceChart(['Cycle Time'], [parseFloat((totalInternalDays/approvedCount).toFixed(1))], [parseFloat((totalProcurementDays/approvedCount).toFixed(1))]);
         }
 
         function buildAdvancedPartsPerformanceChart(labels, internalData, srcProcureData) {
             if (partsChartInstance) partsChartInstance.destroy();
-            const ctxParts = document.getElementById('parts-performance-canvas').getContext('2d');
-            
-            partsChartInstance = new Chart(ctxParts, {
+            partsChartInstance = new Chart(document.getElementById('parts-performance-canvas').getContext('2d'), {
                 type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Internal Pipeline (Blue)',
-                            data: internalData,
-                            backgroundColor: '#22d3ee', 
-                            barThickness: 55
-                        },
-                        {
-                            label: 'Procurement Validation (Green)',
-                            data: srcProcureData,
-                            backgroundColor: '#10b981', 
-                            barThickness: 55
-                        }
-                    ]
-                },
-                options: {
-                    indexAxis: 'y', 
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { 
-                            stacked: true, 
-                            grid: { color: '#16382e' }, 
-                            ticks: { color: '#8cd6be', font: { family: 'monospace', size: 11 } },
-                            title: { display: true, text: 'Days Processed', color: '#529e84', font: { size: 11 } }
-                        },
-                        y: { 
-                            stacked: true, 
-                            grid: { display: false }, 
-                            ticks: { color: '#ffffff', font: { family: 'Inter', size: 12, weight: 'bold' } } 
-                        }
-                    },
-                    plugins: {
-                        legend: { 
-                            position: 'top', 
-                            labels: { color: '#cbd5e1', font: { family: 'Inter', size: 12 }, padding: 15 } 
-                        },
-                        datalabels: {
-                            display: true,
-                            color: '#ffffff',
-                            font: { family: 'Inter', size: 12, weight: 'bold' },
-                            formatter: (value, context) => {
-                                if (value === 0) return '';
-                                
-                                if(context.datasetIndex === 1) {
-                                    let internalVal = context.chart.data.datasets[0].data[context.dataIndex];
-                                    let grandTotal = (internalVal + value).toFixed(1);
-                                    return `${value}d (Total: ${grandTotal} Days)`;
-                                }
-                                return `${value} Days`;
-                            }
-                        }
-                    }
-                }
+                data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: '#22d3ee', barThickness: 45 }, { label: 'Procurement', data: srcProcureData, backgroundColor: '#10b981', barThickness: 45 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#8cd6be' } }, y: { stacked: true, ticks: { color: '#fff' } } }, plugins: { legend: { labels: { color: '#cbd5e1' } }, datalabels: { color: '#fff' } } }
             });
         }
 
