@@ -3,293 +3,351 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Performance Dashboard</title>
-    <!-- Tailwind CSS CDN -->
+    <title>TL Operational Command Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js & DataLabels Plugin CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0b0f19;
+        body { font-family: 'Inter', sans-serif; background-color: #0b0f19; }
+        .workspace-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .workspace-scrollbar::-webkit-scrollbar-track { background: #0f172a; border-radius: 4px; }
+        .workspace-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        .workspace-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
+        .chart-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .chart-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+        .chart-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        
+        /* Glassmorphic Glossy Cards */
+        .kpi-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            backdrop-filter: blur(12px);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 4px 20px rgba(0, 0, 0, 0.25);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        /* Custom scrollbar styling for seamless dark UI */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0; width: 0px;
+            background: linear-gradient(to bottom, #00f2fe, #4facfe);
+            transition: width 0.2s ease;
+            border-top-left-radius: 0.75rem;
+            border-bottom-left-radius: 0.75rem;
         }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
+        .kpi-card:hover { 
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.15); 
+            transform: translateY(-2px);
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2), 0 8px 25px rgba(0, 0, 0, 0.35);
         }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 3px;
+        .kpi-card.active-panel { 
+            background: linear-gradient(135deg, rgba(14, 116, 144, 0.25) 0%, rgba(15, 23, 42, 0.8) 100%);
+            border-color: #00f2fe; 
+            box-shadow: inset 0 1px 2px rgba(0, 242, 254, 0.2), 0 0 30px rgba(0, 242, 254, 0.15); 
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
+        .kpi-card.active-panel::before { width: 4px; }
+
+        .filterable-row { transition: all 0.15s ease-out; cursor: pointer; }
+        .filterable-row.hidden-row { display: none !important; }
+        
+        .filter-pill {
+            background-color: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #94a3b8;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
-        .active-panel {
-            background-color: #1e293b !important;
-            border-color: #3b82f6 !important;
-            color: #ffffff !important;
+        .filter-pill.active-pill {
+            background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+            border-color: #10b981;
+            color: #0f172a;
+            font-weight: 700;
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
         }
-        .active-pill {
-            background-color: #3b82f6 !important;
-            color: #ffffff !important;
-        }
-        .hidden-row {
-            display: none !important;
+
+        .detail-drawer { display: none; background-color: #090d16; }
+        .detail-drawer.open-drawer { display: table-row; }
+
+        @media print {
+            body { background: #ffffff !important; color: #000000 !important; font-size: 12px; overflow: visible !important; }
+            header, aside, .filter-pill, input, select, #chart-filter-badge, .utility-hub-bar, #copy-toast { display: none !important; }
+            main { width: 100% !important; background: transparent !important; padding: 0 !important; border: none !important; overflow: visible !important; height: auto !important; }
+            #view-compliance-container, #view-capex-container, #view-parts-container { display: block !important; page-break-after: always; }
+            .bg-slate-950, .bg-slate-950\/60, .bg-slate-900\/60, .bg-slate-800 { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; }
+            tr { page-break-inside: avoid; }
+            th { background: #e2e8f0 !important; color: #0f172a !important; border-bottom: 2px solid #94a3b8 !important; }
+            td { color: #334155 !important; border-bottom: 1px solid #e2e8f0 !important; }
+            .text-cyan-400, .text-emerald-400, .text-amber-400, .text-purple-400 { color: #0f172a !important; font-weight: bold; }
+            canvas { max-height: 250px !important; }
+            .detail-drawer { display: none !important; }
         }
     </style>
 </head>
-<body class="text-slate-100 min-h-screen flex flex-col antialiased">
+<body class="text-slate-200 antialiased min-h-screen flex flex-col lg:h-screen lg:overflow-hidden">
 
-    <!-- TOP NAVIGATION BAR -->
-    <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex flex-wrap justify-between items-center gap-4 shadow-xl sticky top-0 z-50">
-        <div class="flex items-center space-x-3">
-            <div class="h-8 w-8 bg-gradient-to-tr from-blue-600 to-emerald-500 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/20">E</div>
+    <!-- CLIPBOARD TOAST NOTIFICATION HUD -->
+    <div id="copy-toast" class="fixed top-6 right-6 z-50 transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300 bg-cyan-400 text-slate-950 font-mono text-xs font-bold px-4 py-3 rounded-lg shadow-2xl flex items-center gap-2">
+        <span>📋</span> ASSET COPIED TO SYSTEM CLIPBOARD
+    </div>
+
+    <!-- HEADER -->
+    <header class="bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-800 px-4 sm:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl z-20 shrink-0">
+        <div class="flex items-center gap-4">
+            <div id="sync-indicator" class="h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_10px_#10b981] transition-all duration-300"></div>
             <div>
-                <h1 class="font-bold text-base tracking-tight">Enterprise Performance Analytics</h1>
-                <p class="text-xs text-slate-400 font-medium">Operations Stream Control & Optimization</p>
+                <h1 class="text-base sm:text-lg font-bold tracking-wider text-white uppercase font-mono">TL Operational Command Center</h1>
+                <p class="text-xs text-slate-400 font-mono mt-0.5">
+                    Database Feed: <span id="sync-status" class="text-emerald-400 font-bold">Connected</span>
+                </p>
             </div>
         </div>
-
-        <!-- System Core Live Stream Updates Indicator Status -->
-        <div class="flex items-center space-x-6 bg-slate-950/60 px-4 py-2 rounded-xl border border-slate-800/80">
-            <div class="flex items-center space-x-2.5">
-                <div id="sync-indicator" class="h-3 w-3 rounded-full bg-slate-600 transition-all duration-500"></div>
-                <div class="flex flex-col">
-                    <span class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Data Pipeline</span>
-                    <span id="sync-status" class="text-slate-400 font-bold text-xs font-mono mt-0.5">Initializing</span>
-                </div>
-            </div>
-            <div class="h-6 w-px bg-slate-800"></div>
-            <div class="flex items-center space-x-3">
-                <label class="relative inline-flex items-center cursor-pointer select-none">
-                    <input type="checkbox" id="auto-sync-toggle" checked onchange="toggleAutoSyncMode()" class="sr-only peer">
-                    <div class="w-8 h-4 bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500 peer-checked:after:bg-white"></div>
-                    <span class="ml-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Auto Sync (1m)</span>
+        <div class="flex items-center gap-4">
+            <!-- PRESENTATION-SAFE SYNC SWITCHBOARD -->
+            <div class="flex items-center bg-slate-950/80 border border-slate-800 rounded-lg p-1.5 gap-3 font-mono text-xs">
+                <label class="flex items-center gap-2 cursor-pointer select-none text-slate-400 pl-1.5">
+                    <input type="checkbox" id="auto-sync-toggle" checked onchange="toggleAutoSyncMode()" class="rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-0 focus:ring-offset-0 cursor-pointer">
+                    <span>Auto-Refresh (60s)</span>
                 </label>
+                <div class="h-4 w-[1px] bg-slate-800"></div>
+                <button onclick="fetchLatestDataStream()" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-2.5 py-1 rounded transition-colors border border-slate-700 flex items-center gap-1">
+                    🔄 Sync Now
+                </button>
+            </div>
+            <div class="text-right hidden sm:block font-mono">
+                <p class="text-xs text-slate-300 font-medium">Global Enterprise Deck</p>
+                <p class="text-[11px] text-slate-500">v4.2.1-clean-feed</p>
             </div>
         </div>
     </header>
 
-    <!-- CONTENT ROOT WRAPPER -->
-    <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 lg:p-6 flex flex-col lg:flex-row gap-6">
+    <!-- CORE WORKSPACE -->
+    <div class="flex-1 flex flex-col lg:flex-row w-full max-w-[1850px] mx-auto p-4 sm:p-6 gap-6 overflow-y-auto lg:h-[calc(100vh-73px)] lg:overflow-hidden">
         
-        <!-- SIDE NAVIGATION DIRECTORY BAR -->
-        <aside class="w-full lg:w-64 shrink-0 flex flex-row lg:flex-col gap-2 bg-slate-900/50 p-2 lg:p-3 rounded-2xl border border-slate-800/60 backdrop-blur-md h-fit">
-            <button id="panel-compliance" onclick="switchView('compliance')" class="active-panel flex-1 lg:flex-none flex items-center justify-center lg:justify-start space-x-3 px-4 py-3 rounded-xl border border-transparent text-slate-400 hover:text-white transition-all text-sm font-medium group">
-                <span class="text-base group-hover:scale-110 transition-transform">📊</span>
-                <span class="hidden sm:inline">Compliance Metrics</span>
-            </button>
-            <button id="panel-capex" onclick="switchView('capex')" class="flex-1 lg:flex-none flex items-center justify-center lg:justify-start space-x-3 px-4 py-3 rounded-xl border border-transparent text-slate-400 hover:text-white transition-all text-sm font-medium group">
-                <span class="text-base group-hover:scale-110 transition-transform">🏗️</span>
-                <span class="hidden sm:inline">Capex Analytics</span>
-            </button>
-            <button id="panel-parts" onclick="switchView('parts')" class="flex-1 lg:flex-none flex items-center justify-center lg:justify-start space-x-3 px-4 py-3 rounded-xl border border-transparent text-slate-400 hover:text-white transition-all text-sm font-medium group">
-                <span class="text-base group-hover:scale-110 transition-transform">⚙️</span>
-                <span class="hidden sm:inline">Parts & SLA Logistics</span>
-            </button>
+        <!-- SIDEBAR DECK -->
+        <aside class="w-full lg:w-1/5 flex flex-col gap-4 shrink-0">
+            <div class="text-[10px] font-mono tracking-widest text-slate-400 uppercase px-1 font-bold">
+                Operational Framework
+            </div>
+
+            <!-- Panel 1: Planner Compliance -->
+            <div id="panel-compliance" class="kpi-card active-panel p-4 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('compliance')">
+                <div class="flex justify-between items-start w-full gap-2">
+                    <div class="space-y-1 min-w-0">
+                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Planner Compliance</h2>
+                        <div class="text-[10px] font-mono text-slate-400 flex items-center gap-1.5 mt-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Target: &gt;85%
+                        </div>
+                    </div>
+                    <div class="text-3xl font-mono font-bold tracking-tight text-cyan-400" id="kpi-compliance">--%</div>
+                </div>
+                <div class="mt-3 flex items-center justify-between border-t border-slate-700/50 pt-2 text-[10px] font-mono text-slate-400">
+                    <span>Chart Matrix</span>
+                    <span class="text-cyan-400 font-bold">Select</span>
+                </div>
+            </div>
+
+            <!-- Panel 2: CAPEX Projects -->
+            <div id="panel-capex" class="kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('capex')">
+                <div class="flex justify-between items-start w-full gap-2">
+                    <div class="space-y-1 min-w-0">
+                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">CAPEX Pipeline</h2>
+                        <div class="text-[10px] font-mono text-amber-400 truncate" id="kpi-capex-count">Loading...</div>
+                    </div>
+                    <div class="text-xl font-mono font-bold tracking-tight text-white whitespace-nowrap" id="kpi-capex">PHP 0M</div>
+                </div>
+                <div class="mt-3 flex items-center justify-between border-t border-slate-700/50 pt-2 text-[10px] font-mono text-slate-400">
+                    <span>Gross Ledger</span>
+                    <span class="text-cyan-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+                </div>
+            </div>
+
+            <!-- Panel 3: Parts Request Speed -->
+            <div id="panel-parts" class="kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('parts')">
+                <div class="flex justify-between items-start w-full gap-2">
+                    <div class="space-y-1 min-w-0">
+                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Request Speed</h2>
+                        <div class="text-[10px] font-mono text-purple-400 truncate" id="kpi-parts-count">Calculating...</div>
+                    </div>
+                    <div class="text-2xl font-mono font-bold tracking-tight text-purple-400 whitespace-nowrap" id="kpi-parts">0.0d</div>
+                </div>
+                <div class="mt-3 flex items-center justify-between border-t border-slate-700/50 pt-2 text-[10px] font-mono text-slate-400">
+                    <span>Turnaround</span>
+                    <span class="text-cyan-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+                </div>
+            </div>
         </aside>
 
-        <!-- DASHBOARD CONTAINER SECTIONS -->
-        <section class="flex-1 min-w-0">
-
-            <!-- MODULE 1: COMPLIANCE METRICS PERFORMANCE VIEW -->
+        <!-- DYNAMIC CONTENT HUD -->
+        <main class="w-full lg:w-4/5 bg-slate-900/60 backdrop-blur-md rounded-xl border border-slate-800 p-4 sm:p-6 shadow-2xl lg:overflow-y-auto workspace-scrollbar lg:h-full">
+            
+            <!-- VIEW 1: COMPLIANCE -->
             <div id="view-compliance-container" class="space-y-6">
-                <!-- TOP HEADER COMPONENT BLOCK -->
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/60 backdrop-blur-sm">
+                <div class="border-b border-slate-800 pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                     <div>
-                        <h2 class="text-lg font-bold text-white tracking-tight">Compliance Tracker</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Planner volume allocations versus real-world completion performance streams</p>
+                        <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Schedule Compliance Variance Matrix</h3>
+                        <p class="text-xs text-slate-400 font-mono mt-0.5">Dual Axis Setup: Volume Bars vs Efficiency Curves</p>
                     </div>
-                    <div class="flex items-center space-x-3 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
-                        <span class="text-xs text-slate-500 font-bold px-2 uppercase tracking-wider">Select Range:</span>
-                        <select id="week-selector" onchange="changeWeekFilter()" class="bg-slate-900 border border-slate-700 rounded-lg text-xs font-semibold px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white cursor-pointer min-w-[120px]"></select>
-                    </div>
-                </div>
-
-                <!-- KPI CARD SUMMARY GRID ROW -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between relative overflow-hidden group">
-                        <div class="absolute top-0 right-0 p-6 text-3xl opacity-10 group-hover:scale-110 transition-transform select-none">📈</div>
-                        <div>
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Overall Compliance</span>
-                            <h3 id="kpi-compliance" class="text-3xl font-black text-white mt-1">--%</h3>
-                        </div>
-                        <p class="text-[11px] text-slate-500 mt-2 font-medium">Aggregated execution volume ratio</p>
+                    <div class="flex flex-wrap items-center gap-4 text-[10px] font-mono">
+                        <select id="week-selector" onchange="changeWeekFilter()" class="bg-slate-950 text-white border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-cyan-400 cursor-pointer transition-colors shadow-md w-full sm:w-auto">
+                            <option value="">Loading cycles...</option>
+                        </select>
                     </div>
                 </div>
 
-                <!-- ANALYTICS CANVAS ROW VISUALIZER GRAPH BLOCK -->
-                <div class="bg-slate-900/40 p-5 rounded-2xl border border-slate-800/60 backdrop-blur-sm">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Weekly Execution Output Distribution Matrix</h3>
-                    <div class="h-[400px] w-full relative">
+                <div class="w-full bg-slate-950/60 border border-slate-800 rounded-xl p-4 sm:p-6 shadow-inner">
+                    <div class="h-[340px] w-full relative">
                         <canvas id="planner-compliance-canvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- DYNAMICALLY SCOPED WORK GROUP LEGEND (Auto-hides with container scope switch) -->
+                <div class="bg-slate-950/40 border border-slate-800/80 rounded-xl p-4">
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 font-mono flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Planner Scope Assignment Reference
+                    </h4>
+                    <div class="overflow-x-auto chart-scrollbar">
+                        <table class="w-full text-left font-mono text-xs border border-slate-800">
+                            <thead>
+                                <tr class="bg-slate-900 text-slate-400 border-b border-slate-800 text-[10px] uppercase font-bold">
+                                    <th class="p-2.5">Planner Name</th>
+                                    <th class="p-2.5">Maintenance Jurisdiction / Type</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">PHILIP</td><td class="p-2">PMS</td></tr>
+                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">LEO</td><td class="p-2">CM (GEM, LOS AMIGOS)</td></tr>
+                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">VINCENT</td><td class="p-2">CM (REGION XIII, SINUDA)</td></tr>
+                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">GLENBERTH</td><td class="p-2">CM (REGION XI-A, XI-B)</td></tr>
+                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">ROICE</td><td class="p-2">CM (SAMAL, CRANEAGE)</td></tr>
+                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">JANE</td><td class="p-2">PM (REGION X) / CM (REGION X)</td></tr>
+                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">DIONAH</td><td class="p-2">SV, TM, TYRES</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <!-- MODULE 2: CAPEX PROJECT ANALYSIS VIEW PANEL -->
+            <!-- VIEW 2: CAPEX -->
             <div id="view-capex-container" class="hidden space-y-6">
-                <!-- TOP HEADER COMPONENT BLOCK -->
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/60 backdrop-blur-sm">
-                    <div>
-                        <h2 class="text-lg font-bold text-white tracking-tight">Capital Expenditure (Capex) Dashboard</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Heavy industrial equipment allocation deployments, financial budgets and documentation funnels</p>
-                    </div>
-                </div>
-
-                <!-- SUMMARY KPI CARDS ROW BANNER BLOCK -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between relative overflow-hidden group">
-                        <div class="absolute top-0 right-0 p-6 text-3xl opacity-10 group-hover:scale-110 transition-transform select-none">💰</div>
+                <div class="border-b border-slate-800 pb-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                         <div>
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Active Budget Allocations</span>
-                            <h3 id="kpi-capex" class="text-3xl font-black text-white mt-1">PHP 0.0M</h3>
+                            <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">CAPEX Advanced Metrics Engine</h3>
+                            <p class="text-xs text-slate-400 font-mono mt-0.5">Allocation streams and asset deployment breakdown (Click segment to cross-filter)</p>
                         </div>
-                        <p id="kpi-capex-count" class="text-[11px] text-emerald-400 mt-2 font-bold tracking-wide">● 0 Projects Identified</p>
+                        <div id="chart-filter-badge" class="hidden font-mono text-[10px] bg-cyan-950 border border-cyan-500 text-cyan-400 px-2 py-1 rounded animate-pulse shadow-md">
+                            Chart Filter Active: <span id="chart-filter-name" class="font-bold">None</span>
+                        </div>
                     </div>
                 </div>
-
-                <!-- INTERACTIVE CROSS-FILTER ANALYTICS PLOTS GRAPHICS BLOCKS -->
-                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <div class="lg:col-span-2 bg-slate-900/40 p-5 rounded-2xl border border-slate-800/60 backdrop-blur-sm flex flex-col">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Asset Allocation</h3>
-                            <div id="chart-filter-badge" class="hidden font-mono text-[10px] bg-emerald-950 border border-emerald-500 text-emerald-400 px-2 py-1 rounded">
-                                Filter: <span id="chart-filter-name" class="font-bold">None</span>
-                                <button onclick="resetChartCrossFilter()" class="ml-1 text-slate-400 hover:text-white font-sans text-xs">×</button>
-                            </div>
+                <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+                    <div class="xl:col-span-2 bg-slate-950/60 border border-slate-800 rounded-xl p-5 flex flex-col items-center">
+                        <div class="w-full flex justify-between items-center mb-4">
+                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">Asset Allocation</h4>
+                            <span class="text-[9px] font-mono text-slate-500 cursor-pointer hover:text-cyan-400 select-none" onclick="resetChartCrossFilter()">[Clear Filter]</span>
                         </div>
-                        <div class="h-[280px] w-full relative flex-1">
+                        <div class="w-full max-w-[280px] h-[280px] flex items-center justify-center relative">
                             <canvas id="capex-doughnut-canvas"></canvas>
                         </div>
                     </div>
-                    <div class="lg:col-span-3 bg-slate-900/40 p-5 rounded-2xl border border-slate-800/60 backdrop-blur-sm flex flex-col">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Equipment Categories</h3>
-                        <div class="h-[280px] w-full relative flex-1">
+                    <div class="xl:col-span-3 bg-slate-950/60 border border-slate-800 rounded-xl p-5">
+                        <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-4 font-mono">Equipment Categories</h4>
+                        <div class="w-full h-[280px]">
                             <canvas id="capex-bar-canvas"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <!-- DATA ENGINE FILTER UTILITIES SYSTEM CONTROL COMPONENT BAR -->
-                <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-950 p-3 rounded-2xl border border-slate-800">
-                    <div id="capex-status-pills" class="flex flex-wrap gap-1.5">
-                        <button id="capex-pill-ALL" onclick="filterCapexTable('ALL')" class="active-pill px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-all">All Streams</button>
-                        <button id="capex-pill-DONE" onclick="filterCapexTable('DONE')" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-all">Completed</button>
-                        <button id="capex-pill-WITH-DOCUMENTS" onclick="filterCapexTable('WITH DOCUMENTS')" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-all">With Documents</button>
-                        <button id="capex-pill-PENDING" onclick="filterCapexTable('PENDING')" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-all">Pending Docs</button>
+                <!-- UTILITY HUB BAR -->
+                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-950/40 p-3 rounded-xl border border-slate-800">
+                    <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="capex-status-pills">
+                        <button onclick="filterCapexTable('ALL')" id="capex-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL STATUSES</button>
+                        <button onclick="filterCapexTable('WITH DOCUMENTS')" id="capex-pill-WITH-DOCUMENTS" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">PENDING DOCS</button>
+                        <button onclick="filterCapexTable('DONE')" id="capex-pill-DONE" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">COMPLETE</button>
                     </div>
-                    <div class="w-full sm:w-72 relative">
-                        <input type="text" id="capex-search" onkeyup="searchCapexTable()" placeholder="Search asset ID or actual description..." class="w-full bg-slate-900 border border-slate-700 rounded-xl text-xs px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-slate-500">
-                        <span class="absolute left-2.5 top-2.5 text-xs text-slate-500 select-none pointer-events-none">🔍</span>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <input type="text" id="capex-search" oninput="searchCapexTable()" placeholder="🔍 Quick search..." class="w-full sm:w-48 bg-slate-950 text-slate-200 placeholder-slate-600 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400">
+                        <button onclick="exportViewToCSV('capex')" class="bg-cyan-950 text-cyan-400 hover:bg-cyan-900 border border-cyan-800 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
+                        <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
                     </div>
                 </div>
 
-                <!-- MAIN INTERACTIVE DATA GRID TABLE COMPONENT -->
-                <div class="bg-slate-900/40 rounded-2xl border border-slate-800/60 overflow-hidden backdrop-blur-sm shadow-xl">
-                    <div class="overflow-x-auto w-full">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
-                                    <th class="p-3 pl-4">ID</th>
-                                    <th class="p-3">Timeline Qtr</th>
-                                    <th class="p-3">Asset Registry Code</th>
-                                    <th class="p-3">Actual Classification Name</th>
-                                    <th class="p-3">PO Reference ID</th>
-                                    <th class="p-3">Financial Cost Budget Value</th>
-                                    <th class="p-3 pr-4 text-right">Fulfillment Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="capex-table-rows" class="divide-y divide-slate-800/20 font-medium"></tbody>
-                        </table>
-                    </div>
+                <div class="overflow-x-auto chart-scrollbar bg-slate-950/60 rounded-xl border border-slate-800 p-4">
+                    <table id="capex-data-table" class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
+                        <thead>
+                            <tr class="bg-slate-800 text-slate-200 uppercase tracking-wider text-[11px] font-bold rounded-lg border-b border-slate-700">
+                                <th class="p-3 pl-4 rounded-l-lg">Index</th>
+                                <th class="p-3">Reporting Cycle</th>
+                                <th class="p-3">Asset ID</th>
+                                <th class="p-3">Operational Activity</th>
+                                <th class="p-3">PO Ref</th>
+                                <th class="p-3" width="15%">Allocation</th>
+                                <th class="p-3 pr-4 text-right rounded-r-lg">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800 text-slate-300" id="capex-table-rows">
+                            <tr><td colspan="7" class="py-6 text-center text-slate-500">Querying database allocations...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- MODULE 3: PARTS PROCUREMENT & SLA SYSTEM LOGISTICS VIEW PANEL -->
+            <!-- VIEW 3: PARTS REQUEST -->
             <div id="view-parts-container" class="hidden space-y-6">
-                <!-- TOP HEADER COMPONENT BLOCK -->
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/60 backdrop-blur-sm">
-                    <div>
-                        <h2 class="text-lg font-bold text-white tracking-tight">Parts Procurement & SLA Control Engine</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Pipeline analytics tracking operational cycle turnarounds against fulfillment contracts</p>
-                    </div>
+                <div class="border-b border-slate-800 pb-4">
+                    <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Procurement Turnaround Analytics Matrix</h3>
+                    <p class="text-xs text-slate-400 font-mono mt-1">
+                        💡 <strong class="text-cyan-400">Internal:</strong> Admin Processing Speed. | <strong class="text-emerald-400">Procurement:</strong> Logistics Pipeline.
+                    </p>
                 </div>
-
-                <!-- SUMMARY KPI CARDS ROW BANNER BLOCK -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between relative overflow-hidden group">
-                        <div class="absolute top-0 right-0 p-6 text-3xl opacity-10 group-hover:scale-110 transition-transform select-none">⏱️</div>
-                        <div>
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Average Total Lead Days Breakdown</span>
-                            <h3 id="kpi-parts" class="text-3xl font-black text-amber-400 mt-1">0.0d</h3>
-                        </div>
-                        <p id="kpi-parts-count" class="text-[11px] text-slate-500 mt-2 font-mono">Int: 0.0d | Pro: 0.0d</p>
-                    </div>
-                </div>
-
-                <!-- GRAPH VISUAL LAYER BAR CHART ELEMENT METRIC SYSTEM -->
-                <div class="bg-slate-900/40 p-5 rounded-2xl border border-slate-800/60 backdrop-blur-sm">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Average Total Lead Days Breakdown</h3>
-                    <div class="h-[120px] w-full relative">
+                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 sm:p-6">
+                    <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-5 font-mono">Average Total Lead Days Breakdown</h4>
+                    <div class="w-full h-[150px]">
                         <canvas id="parts-performance-canvas"></canvas>
                     </div>
                 </div>
 
-                <!-- DATA ENGINE FILTER UTILITIES SYSTEM CONTROL COMPONENT BAR -->
-                <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-950 p-3 rounded-2xl border border-slate-800">
-                    <div id="parts-status-pills" class="flex flex-wrap gap-1.5">
-                        <button id="parts-pill-ALL" onclick="filterPartsTable('ALL')" class="active-pill px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-all">All Logs</button>
-                        <button id="parts-pill-APPROVED" onclick="filterPartsTable('APPROVED')" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-all">Approved</button>
-                        <button id="parts-pill-PENDING" onclick="filterPartsTable('PENDING')" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-all">Pending</button>
+                <!-- UTILITY HUB BAR -->
+                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-950/40 p-3 rounded-xl border border-slate-800">
+                    <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="parts-status-pills">
+                        <button onclick="filterPartsTable('ALL')" id="parts-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL</button>
+                        <button onclick="filterPartsTable('APPROVED')" id="parts-pill-APPROVED" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">APPROVED</button>
+                        <button onclick="filterPartsTable('PENDING')" id="parts-pill-PENDING" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">PENDING</button>
                     </div>
-                    <div class="w-full sm:w-72 relative">
-                        <input type="text" id="parts-search" onkeyup="searchPartsTable()" placeholder="Search active asset ID or parts log description..." class="w-full bg-slate-900 border border-slate-700 rounded-xl text-xs px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-slate-500">
-                        <span class="absolute left-2.5 top-2.5 text-xs text-slate-500 select-none pointer-events-none">🔍</span>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <input type="text" id="parts-search" oninput="searchPartsTable()" placeholder="🔍 Search description..." class="w-full sm:w-48 bg-slate-950 text-slate-200 placeholder-slate-600 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400">
+                        <button onclick="exportViewToCSV('parts')" class="bg-cyan-950 text-cyan-400 hover:bg-cyan-900 border border-cyan-800 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
+                        <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
                     </div>
                 </div>
 
-                <!-- MAIN INTERACTIVE DATA GRID LOG TABLE COMPONENT -->
-                <div class="bg-slate-900/40 rounded-2xl border border-slate-800/60 overflow-hidden backdrop-blur-sm shadow-xl">
-                    <div class="overflow-x-auto w-full">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
-                                    <th class="p-3 pl-4">Request Log ID</th>
-                                    <th class="p-3">Target Asset Key</th>
-                                    <th class="p-3">Material Component Description</th>
-                                    <th class="p-3">Internal SLA Process Time (Days)</th>
-                                    <th class="p-3">Procurement Logistics Target (Days)</th>
-                                    <th class="p-3">Gross Turnaround Total (Days)</th>
-                                    <th class="p-3 pr-4 text-right">Log Processing State</th>
-                                </tr>
-                            </thead>
-                            <tbody id="parts-table-rows" class="divide-y divide-slate-800/20 font-medium"></tbody>
-                        </table>
-                    </div>
+                <div class="overflow-x-auto chart-scrollbar bg-slate-950/60 rounded-xl border border-slate-800 p-4">
+                    <table id="parts-data-table" class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
+                        <thead>
+                            <tr class="bg-slate-800 text-slate-200 uppercase tracking-wider text-[11px] font-bold rounded-lg border-b border-slate-700">
+                                <th class="p-3 pl-4 rounded-l-lg">Request ID</th>
+                                <th class="p-3">Asset Ref</th>
+                                <th class="p-3">Component Description</th>
+                                <th class="p-3">Our End</th>
+                                <th class="p-3">Procurement</th>
+                                <th class="p-3">Gross Lead Time</th>
+                                <th class="p-3 pr-4 text-right rounded-r-lg">Workflow Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800 text-slate-300" id="parts-table-rows">
+                            <tr><td colspan="7" class="py-6 text-center text-slate-500">Retrieving logistical metrics...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-        </section>
-    </main>
-
-    <!-- CLIPBOARD TOAST NOTIFICATION NOTIFIER ALERT MODAL ELEMENT -->
-    <div id="copy-toast" class="fixed bottom-6 right-6 bg-slate-900 border border-emerald-500/50 text-white font-medium text-xs px-4 py-3 rounded-xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center space-x-2">
-        <span class="text-emerald-400 font-bold">✓</span>
-        <span>Target Registry ID key successfully mapped to workspace clipboard context</span>
+        </main>
     </div>
 
-    <!-- ENGINE SCRIPTS -->
+    <!-- DATA PIPELINE ENGINE -->
     <script>
         const SHEET_DB_API_URL = 'https://script.google.com/macros/s/AKfycbzqed0j2W4mevtpEANLXZTIpFoAS79_GXxzmNvDfZOls4hOlnHY7FDtWyyXUCHIawrePQ/exec';
 
@@ -309,14 +367,11 @@
 
         let autoSyncInterval = null;
 
-        // Apply Global Chart.js Defaults to kill the Times New Roman fallback
-        Chart.defaults.font.family = "'Inter', 'ui-monospace', monospace";
-        Chart.defaults.color = '#94a3b8';
-
-        function createGradient(ctx, start, end) {
-            const g = ctx.createLinearGradient(0, 0, 0, 300);
-            g.addColorStop(0, start); g.addColorStop(1, end);
-            return g;
+        function createVerticalGradient(ctx, colorStart, colorEnd) {
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, colorStart);
+            gradient.addColorStop(1, colorEnd);
+            return gradient;
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -327,14 +382,19 @@
 
         function initBackgroundTimerStreamer() {
             if(autoSyncInterval) clearInterval(autoSyncInterval);
+            
             autoSyncInterval = setInterval(() => {
-                if(document.getElementById('auto-sync-toggle').checked) fetchLatestDataStream();
+                const isAutoEnabled = document.getElementById('auto-sync-toggle').checked;
+                if(isAutoEnabled) {
+                    fetchLatestDataStream();
+                }
             }, 60000);
         }
 
         function toggleAutoSyncMode() {
             const isAutoEnabled = document.getElementById('auto-sync-toggle').checked;
             const statusTxt = document.getElementById('sync-status');
+            
             if(!isAutoEnabled) {
                 statusTxt.innerText = "Paused (Manual Mode)";
                 statusTxt.className = "text-slate-400 font-bold text-xs font-mono mt-0.5";
@@ -346,40 +406,129 @@
         }
 
         async function fetchLatestDataStream() {
+            if(SHEET_DB_API_URL === 'YOUR_COPIED_GOOGLE_WEB_APP_URL_HERE' || SHEET_DB_API_URL.includes('...')) return;
+            
             const indicator = document.getElementById('sync-indicator');
             const statusTxt = document.getElementById('sync-status');
-            indicator.className = "h-3 w-3 rounded-full bg-amber-400 shadow-[0_0_10px_#f59e0b]";
-            statusTxt.innerText = "Syncing...";
+            const isAutoEnabled = document.getElementById('auto-sync-toggle').checked;
+            
+            indicator.classList.replace('bg-emerald-400', 'bg-amber-400');
+            indicator.classList.replace('shadow-[0_0_10px_#10b981]', 'shadow-[0_0_10px_#f59e0b]');
+            statusTxt.innerText = "Syncing with cloud...";
+            statusTxt.className = "text-amber-400 font-bold text-xs font-mono mt-0.5";
 
             try {
-                const res = await fetch(SHEET_DB_API_URL);
+                const res = await fetch(SHEET_DB_API_URL, { method: 'GET', mode: 'cors', credentials: 'omit' });
+                if (!res.ok) throw new Error(`HTTP Error Status: ${res.status}`);
                 const payload = await res.json();
                 
                 if (payload.status === "success") {
-                    rawPlannerRows = payload.data.planner_performance || [];
-                    rawCapexRows = payload.data.capex_projects || [];
-                    rawPartsRows = payload.data.parts_requests || [];
+                    const db = payload.data;
+                    rawPlannerRows = db.planner_performance || [];
+                    rawCapexRows = db.capex_projects || [];
+                    rawPartsRows = db.parts_requests || [];
                     
                     const selector = document.getElementById('week-selector');
-                    const saved = selector.value;
-                    const defaultWk = populateWeekSelector(rawPlannerRows);
-                    const activeWk = (saved && Array.from(selector.options).some(o => o.value === saved)) ? saved : defaultWk;
-                    selector.value = activeWk;
+                    const savedWeekSelection = selector.value;
                     
-                    renderPlannerVisualizer(rawPlannerRows, activeWk);
+                    const defaultWeek = populateWeekSelector(rawPlannerRows);
+                    if(savedWeekSelection && Array.from(selector.options).some(o => o.value === savedWeekSelection)) {
+                        selector.value = savedWeekSelection;
+                        renderPlannerVisualizer(rawPlannerRows, savedWeekSelection);
+                    } else {
+                        renderPlannerVisualizer(rawPlannerRows, defaultWeek); 
+                    }
+                    
                     renderCapexSummary(rawCapexRows);
                     renderPartsSummary(rawPartsRows);
 
-                    indicator.className = "h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_10px_#10b981]";
-                    statusTxt.innerText = document.getElementById('auto-sync-toggle').checked ? "Connected" : "Paused";
+                    indicator.classList.replace('bg-amber-400', 'bg-emerald-400');
+                    indicator.classList.replace('shadow-[0_0_10px_#f59e0b]', 'shadow-[0_0_10px_#10b981]');
+                    
+                    if (isAutoEnabled) {
+                        statusTxt.innerText = "Connected";
+                        statusTxt.className = "text-emerald-400 font-bold text-xs font-mono mt-0.5";
+                    } else {
+                        statusTxt.innerText = "Paused (Manual Mode)";
+                        statusTxt.className = "text-slate-400 font-bold text-xs font-mono mt-0.5";
+                    }
                 }
             } catch (err) {
-                statusTxt.innerText = "Sync Error";
-                indicator.className = "h-3 w-3 rounded-full bg-rose-500 shadow-[0_0_10px_#f43f5e]";
+                console.error("Streamer sync error:", err);
+                statusTxt.innerText = "Sync Timeout - Reconnecting";
+                statusTxt.className = "text-rose-500 font-bold text-xs font-mono mt-0.5";
+                indicator.classList.replace('bg-emerald-400', 'bg-rose-500');
             }
         }
 
-        function switchView(target) {
+        function exportViewToCSV(viewType) {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            let fileName = "";
+            
+            if (viewType === 'capex') {
+                fileName = "CAPEX_Pipeline_Export.csv";
+                csvContent += "Index,Reporting Cycle,Asset ID,Operational Activity,PO Ref,Allocation,Status\n";
+                const visibleRows = document.querySelectorAll('#capex-table-rows .filterable-row:not(.hidden-row)');
+                if(visibleRows.length === 0) { alert("No visible data data rows found to export."); return; }
+                visibleRows.forEach(row => {
+                    const tds = row.querySelectorAll('td');
+                    const idx = tds[0].innerText;
+                    const cycle = tds[1].innerText;
+                    const asset = tds[2].innerText.replace('📋', '').trim();
+                    const activity = `"${tds[3].innerText.replace(/"/g, '""')}"`;
+                    const po = tds[4].innerText;
+                    const allocation = `"${tds[5].innerText.replace(/[^0-9.]/g, '')}"`;
+                    const status = tds[6].innerText;
+                    csvContent += `${idx},${cycle},${asset},${activity},${po},${allocation},${status}\n`;
+                });
+            } else if (viewType === 'parts') {
+                fileName = "Procurement_Turnaround_Export.csv";
+                csvContent += "Request ID,Asset Ref,Component Description,Internal Days,Procurement Days,Gross Lead Time,Status\n";
+                const visibleRows = document.querySelectorAll('#parts-table-rows .filterable-row:not(.hidden-row)');
+                if(visibleRows.length === 0) { alert("No visible data data rows found to export."); return; }
+                visibleRows.forEach(row => {
+                    const tds = row.querySelectorAll('td');
+                    const reqId = tds[0].innerText;
+                    const assetRef = tds[1].innerText.replace('📋', '').trim();
+                    const desc = `"${tds[2].innerText.replace(/"/g, '""')}"`;
+                    const internal = tds[3].innerText.replace('d', '');
+                    const procurement = tds[4].innerText.replace('d', '');
+                    const gross = tds[5].innerText.replace('d', '');
+                    const status = tds[6].innerText;
+                    csvContent += `${reqId},${assetRef},${desc},${internal},${procurement},${gross},${status}\n`;
+                });
+            }
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function copyAssetIdToClipboard(event, value) {
+            event.stopPropagation(); 
+            navigator.clipboard.writeText(value).then(() => {
+                const toast = document.getElementById('copy-toast');
+                toast.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+                }, 1800);
+            });
+        }
+
+        function toggleRowDetailDrawer(rowId) {
+            const drawer = document.getElementById(`drawer-${rowId}`);
+            if(drawer.classList.contains('open-drawer')) {
+                drawer.classList.remove('open-drawer');
+            } else {
+                drawer.classList.add('open-drawer');
+            }
+        }
+
+        function switchView(targetView) {
             document.getElementById('view-compliance-container').classList.add('hidden');
             document.getElementById('view-capex-container').classList.add('hidden');
             document.getElementById('view-parts-container').classList.add('hidden');
@@ -387,11 +536,11 @@
             document.getElementById('panel-capex').classList.remove('active-panel');
             document.getElementById('panel-parts').classList.remove('active-panel');
 
-            if (target === 'capex') {
+            if (targetView === 'capex') {
                 document.getElementById('view-capex-container').classList.remove('hidden');
                 document.getElementById('panel-capex').classList.add('active-panel');
                 applyCapexCombinedFilter();
-            } else if (target === 'parts') {
+            } else if (targetView === 'parts') {
                 document.getElementById('view-parts-container').classList.remove('hidden');
                 document.getElementById('panel-parts').classList.add('active-panel');
                 applyPartsCombinedFilter();
@@ -399,252 +548,332 @@
                 document.getElementById('view-compliance-container').classList.remove('hidden');
                 document.getElementById('panel-compliance').classList.add('active-panel');
             }
+            
+            if (window.innerWidth < 1024) {
+                document.querySelector('main').scrollIntoView({ behavior: 'smooth' });
+            }
         }
 
         function populateWeekSelector(rows) {
             const selector = document.getElementById('week-selector');
-            const weeks = new Set();
-            rows.forEach(r => { const w = String(r[0]).trim(); if (w && !isNaN(w)) weeks.add(Number(w)); });
-            const sorted = Array.from(weeks).sort((a, b) => a - b);
-            selector.innerHTML = sorted.map(w => `<option value="${w}">Week ${w}</option>`).join('');
-            return sorted[sorted.length - 1] || "";
+            if (!rows.length) return "";
+            const uniqueWeeks = new Set();
+            rows.forEach(row => { const w = String(row[0]).trim(); if (w && !isNaN(w)) uniqueWeeks.add(Number(w)); });
+            const sortedWeeks = Array.from(uniqueWeeks).sort((a, b) => a - b);
+            if (sortedWeeks.length === 0) return "";
+            selector.innerHTML = sortedWeeks.map(wk => `<option value="${wk}">Week ${wk}</option>`).join('');
+            const latestWeek = sortedWeeks[sortedWeeks.length - 1];
+            return latestWeek;
         }
 
-        function changeWeekFilter() { renderPlannerVisualizer(rawPlannerRows, document.getElementById('week-selector').value); }
+        function changeWeekFilter() {
+            switchView('compliance');
+            renderPlannerVisualizer(rawPlannerRows, document.getElementById('week-selector').value);
+        }
 
         function renderPlannerVisualizer(rows, selectedWeek) {
-            const filtered = rows.filter(r => String(r[0]).trim() === String(selectedWeek).trim());
-            let tPlanned = 0, tActual = 0;
-            const labels = [], pVol = [], aVol = [], comp = [], targets = [];
+            if (!rows.length || !selectedWeek) return;
+            
+            const weekFilteredRows = rows.filter(r => String(r[0]).trim() === String(selectedWeek).trim());
+            let totalPlanned = 0, totalActual = 0;
+            
+            const names = [];
+            const plannedVolumes = [];
+            const actualVolumes = [];
+            const compliancePercentages = [];
+            const targetLineData = [];
 
-            filtered.forEach(r => {
-                const name = String(r[1]).toUpperCase();
-                const plan = parseInt(r[3]) || 0;
-                const act = parseInt(r[4]) || 0;
-                tPlanned += plan; tActual += act;
+            weekFilteredRows.forEach(row => {
+                const name = (row[1] || 'Unassigned').toUpperCase();
+                const planned = parseInt(row[3]) || 0;
+                const actual = parseInt(row[4]) || 0;
+                const kpiPct = planned > 0 ? Math.round((actual / planned) * 100) : 0;
+                
+                totalPlanned += planned;
+                totalActual += actual;
 
-                labels.push(name); pVol.push(plan); aVol.push(act);
-                comp.push(plan > 0 ? Math.round((act / plan) * 100) : 0);
-                targets.push(globalComplianceThreshold);
+                names.push(name);
+                plannedVolumes.push(planned);
+                actualVolumes.push(actual);
+                compliancePercentages.push(kpiPct);
+                targetLineData.push(globalComplianceThreshold); 
             });
 
-            document.getElementById('kpi-compliance').innerText = tPlanned > 0 ? `${Math.round((tActual / tPlanned) * 100)}%` : '--%';
+            document.getElementById('kpi-compliance').innerText = totalPlanned > 0 ? `${Math.round((totalActual / totalPlanned) * 100)}%` : '--%';
 
             const ctx = document.getElementById('planner-compliance-canvas').getContext('2d');
             if (complianceChartInstance) complianceChartInstance.destroy();
+
+            const plannedGrad = createVerticalGradient(ctx, 'rgba(6, 182, 212, 0.85)', 'rgba(8, 145, 178, 0.4)');
+            const actualGrad = createVerticalGradient(ctx, 'rgba(16, 185, 129, 0.85)', 'rgba(5, 150, 105, 0.4)');
+
             complianceChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: names,
                     datasets: [
-                        { label: 'Planned Vol', data: pVol, backgroundColor: createGradient(ctx, '#475569', '#1e293b'), borderRadius: 4, yAxisID: 'yVol', order: 2 },
-                        { label: 'Actual Vol', data: aVol, backgroundColor: createGradient(ctx, '#10b981', '#047857'), borderRadius: 4, yAxisID: 'yVol', order: 3 },
-                        { label: 'Compliance %', data: comp, type: 'line', borderColor: '#eab308', backgroundColor: '#0b0f19', borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#eab308', yAxisID: 'yPct', order: 1 }
+                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: plannedGrad, borderColor: '#22d3ee', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
+                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: actualGrad, borderColor: '#34d399', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
+                        { label: 'Actual Compliance %', data: compliancePercentages, type: 'line', borderColor: '#38bdf8', backgroundColor: '#0b0f19', borderWidth: 3, pointBackgroundColor: '#38bdf8', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.2, yAxisID: 'yPercentage', order: 1 },
+                        { label: 'Target (85%)', data: targetLineData, type: 'line', borderColor: '#f43f5e', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'yPercentage', order: 2 }
                     ]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
-                        x: { ticks: { color: '#94a3b8', font: { family: "'Inter', sans-serif" } }, grid: { display: false } },
-                        yVol: { position: 'left', ticks: { color: '#94a3b8', font: { family: "'Inter', sans-serif" } }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                        yPct: { position: 'right', min: 0, max: 100, ticks: { color: '#eab308', font: { family: "'Inter', sans-serif" }, callback: v => v+'%' }, grid: { display: false } }
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Inter', size: 10, weight: '500' } } },
+                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 10, color: '#22d3ee', font: { family: 'Mono', size: 10 }, callback: function(value) { return value + ' Vol'; } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#94a3b8', font: { family: 'Mono', size: 10 }, callback: function(value) { return value + '%'; } }, grid: { display: false } }
                     },
-                    plugins: { legend: { labels: { color: '#cbd5e1', font: { family: "'Inter', sans-serif", weight: '500' } } }, datalabels: { display: false } }
+                    plugins: {
+                        legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } } },
+                        datalabels: { formatter: function(value, context) { if (context.dataset.yAxisID === 'yPercentage') { return context.datasetIndex === 2 ? value + '%' : ''; } return value; }, color: '#fff', anchor: 'end', align: 'top', offset: -1, font: { size: 9, weight: 'bold', family: 'Mono' } }
+                    }
                 }
             });
         }
 
         function renderCapexSummary(rows) {
-            let totalBudget = 0, docCount = 0, html = '';
-            let financials = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
-            let plannedCounts = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
-            let actualCounts = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
+            if (!rows.length) return;
+            let totalDatabaseGrossBudget = 0, documentPhaseCount = 0, tableHtml = '';
+            
+            let categoryFinancials = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
+            let categoryVolumePlanned = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
+            let categoryVolumeActual = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
 
             rows.forEach((row, index) => {
                 if (!row[2] && !row[5]) return;
-                const id = row[0], qtr = row[1], asset = String(row[2]).toUpperCase(), act = row[3], po = row[4], status = row[6] || '';
-                let budget = parseFloat(String(row[5]).replace(/[^0-9.]/g, '')) || 0;
+                const id = row[0], quarter = row[1], assetId = String(row[2] || '').toUpperCase(), activity = row[3] || '', po = row[4], status = row[6] || '';
+                let budgetNum = parseFloat(String(row[5] || '').replace(/[^0-9.]/g, '')) || 0;
 
-                totalBudget += budget;
-                if(status.toLowerCase().includes('doc') || id === "37") docCount++;
+                totalDatabaseGrossBudget += budgetNum;
+                if(status === 'With Documents' || status === 'Pending Documents' || id === "37") documentPhaseCount++;
 
-                let cat = asset.startsWith("BH") ? "Backhoe" : asset.startsWith("BD") ? "Bulldozer" : asset.startsWith("CR") ? "Crane" : asset.startsWith("DR") ? "Drill Rig" : null;
+                let cat = assetId.startsWith("BH") ? "Backhoe" : assetId.startsWith("BD") ? "Bulldozer" : assetId.startsWith("CR") ? "Crane" : assetId.startsWith("DR") ? "Drill Rig" : null;
                 if (cat) {
-                    financials[cat] += budget; plannedCounts[cat]++;
-                    if (status.toLowerCase() === 'done' || status.toLowerCase() === 'complete') actualCounts[cat]++;
+                    categoryFinancials[cat] += budgetNum;
+                    categoryVolumePlanned[cat] += 1;
+                    if (status === "Done" || status === "Complete") categoryVolumeActual[cat] += 1;
                 }
 
-                html += `
-                    <tr class="filterable-row ${index % 2 === 0 ? 'bg-slate-900/30' : 'bg-slate-900/70'} hover:bg-slate-800/60 border-b border-slate-800/40" 
-                        data-status="${status.toUpperCase()}" data-category="${cat ? cat.toUpperCase() : 'OTHER'}" data-search="${asset} ${act.toUpperCase()}">
-                        <td class="p-3 pl-4 text-slate-500">${id}</td>
-                        <td class="p-3 text-slate-400">${qtr}</td>
-                        <td class="p-3"><span onclick="copyAssetIdToClipboard(event, '${asset}')" class="bg-slate-950 border border-slate-700 text-emerald-400 px-1.5 py-0.5 rounded font-mono cursor-pointer">${asset} 📋</span></td>
-                        <td class="p-3 text-white font-medium">${act}</td>
+                tableHtml += `
+                    <tr class="filterable-row ${index % 2 === 0 ? 'bg-slate-900/30' : 'bg-slate-900/70'} hover:bg-slate-800/60 border-b border-slate-800/40 transition-colors" 
+                        data-status="${status.toUpperCase()}" 
+                        data-category="${cat ? cat.toUpperCase() : 'OTHER'}" 
+                        data-search="${assetId} ${activity.toUpperCase()}"
+                        onclick="toggleRowDetailDrawer('cx-${index}')">
+                        <td class="p-3 pl-4 text-slate-500 font-medium">${id}</td>
+                        <td class="p-3 text-slate-400 text-[11px] font-medium">${quarter}</td>
+                        <td class="p-3">
+                            <span onclick="copyAssetIdToClipboard(event, '${assetId}')" title="Click to copy asset code" class="bg-slate-950 border border-slate-700 text-cyan-400 hover:border-cyan-400 transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold font-mono">
+                                ${assetId} 📋
+                            </span>
+                        </td>
+                        <td class="p-3 text-white font-medium">${activity}</td>
                         <td class="p-3 text-slate-400">${po || '---'}</td>
-                        <td class="p-3 text-emerald-400 font-semibold">PHP ${budget.toLocaleString()}</td>
-                        <td class="p-3 pr-4 text-right"><span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status.toLowerCase()==='done'||status.toLowerCase()==='complete'?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40':'bg-slate-800 text-slate-400 border border-slate-700'}">${status || 'Pending Docs'}</span></td>
+                        <td class="p-3 text-emerald-400 font-semibold">PHP ${budgetNum.toLocaleString()}</td>
+                        <td class="p-3 pr-4 text-right">
+                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'||status==='Complete'?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40':'bg-slate-800 text-slate-400 border border-slate-700'}">${status || 'With Documents'}</span>
+                        </td>
+                    </tr>
+                    <tr id="drawer-cx-${index}" class="detail-drawer border-l-2 border-cyan-500 font-mono text-[11px] text-slate-400">
+                        <td colspan="7" class="p-4 space-y-2">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Pipeline ID Token</span> cx-ref-${id}00${index}</div>
+                                <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Deployment Phase</span> Tier-1 Operational Authorization</div>
+                                <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Ledger Sync Index</span> 0x${(index*143).toString(16).toUpperCase()}</div>
+                                <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Procurement Route</span> Direct Vendor Allocation</div>
+                            </div>
+                        </td>
                     </tr>`;
             });
 
-            document.getElementById('kpi-capex').innerText = `PHP ${(totalBudget / 1000000).toFixed(1)}M`;
-            document.getElementById('kpi-capex-count').innerText = `● ${docCount} Docs Pending`;
-            document.getElementById("capex-table-rows").innerHTML = html;
-            buildAdvancedCapexCharts(financials, plannedCounts, actualCounts);
+            document.getElementById('kpi-capex').innerText = `PHP ${(totalDatabaseGrossBudget / 1000000).toFixed(1)}M`;
+            document.getElementById('kpi-capex-count').innerText = `● ${documentPhaseCount} Docs Pending`;
+            document.getElementById("capex-table-rows").innerHTML = tableHtml;
+            buildAdvancedCapexCharts(categoryFinancials, categoryVolumePlanned, categoryVolumeActual);
         }
 
-        function buildAdvancedCapexCharts(financials, planned, actual) {
-            const labels = Object.keys(financials), values = Object.values(financials), total = values.reduce((a,b)=>a+b,0);
-            
-            const doughnutCtx = document.getElementById('capex-doughnut-canvas').getContext('2d');
-            if (doughnutChartInstance) doughnutChartInstance.destroy();
-            doughnutChartInstance = new Chart(doughnutCtx, {
-                type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: values, backgroundColor: ['#06b6d4','#f59e0b','#a855f7','#f43f5e'], borderWidth: 3, borderColor: '#0f172a', hoverOffset: 8 }] },
-                options: { 
-                    responsive: true, maintainAspectRatio: false, cutout: '75%',
-                    onClick: (e, el) => {
-                        if (el.length > 0) {
-                            const clickedLabel = labels[el[0].index].toUpperCase();
-                            currentCapexChartCategoryFilter = currentCapexChartCategoryFilter === clickedLabel ? 'ALL' : clickedLabel;
-                            document.getElementById('chart-filter-badge').className = currentCapexChartCategoryFilter === 'ALL' ? 'hidden' : 'font-mono text-[10px] bg-emerald-950 border border-emerald-500 text-emerald-400 px-2 py-1 rounded';
-                            document.getElementById('chart-filter-name').innerText = labels[el[0].index];
-                            applyCapexCombinedFilter();
-                        }
-                    },
-                    plugins: { 
-                        legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 12, padding: 15, font: { size: 11, family: "'Inter', sans-serif" } } }, 
-                        datalabels: { color: '#ffffff', font: { weight: 'bold', family: "'Inter', sans-serif", size: 11 }, formatter: v => v > 0 ? ((v / total) * 100).toFixed(0) + '%' : '' } 
-                    }
-                }
-            });
-
-            const barCtx = document.getElementById('capex-bar-canvas').getContext('2d');
-            if (barChartInstance) barChartInstance.destroy();
-            barChartInstance = new Chart(barCtx, {
-                type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Target Stream', data: labels.map(l => planned[l]), backgroundColor: '#0284c7', borderRadius: 4 }, { label: 'Completed', data: labels.map(l => actual[l]), backgroundColor: '#10b981', borderRadius: 4 }] },
-                options: { 
-                    responsive: true, maintainAspectRatio: false, 
-                    scales: { 
-                        x: { ticks: { color: '#94a3b8', font: { family: "'Inter', sans-serif" } }, grid: { display: false } }, 
-                        y: { ticks: { color: '#64748b', stepSize: 5, font: { family: "'Inter', sans-serif" } }, grid: { color: 'rgba(255,255,255,0.05)' } } 
-                    }, 
-                    plugins: { legend: { labels: { color: '#cbd5e1', font: { family: "'Inter', sans-serif" } } }, datalabels: { display: false } } 
-                }
-            });
-        }
-
-        function filterCapexTable(status) {
-            currentCapexFilter = status;
+        function filterCapexTable(statusType) {
+            currentCapexFilter = statusType;
             document.querySelectorAll('#capex-status-pills button').forEach(p => p.classList.remove('active-pill'));
-            document.getElementById(`capex-pill-${status.replace(' ', '-')}`).classList.add('active-pill');
+            document.getElementById(`capex-pill-${statusType.replace(' ', '-')}`).classList.add('active-pill');
             applyCapexCombinedFilter();
         }
 
-        function searchCapexTable() { applyCapexCombinedFilter(); }
+        function searchCapexTable() {
+            applyCapexCombinedFilter();
+        }
 
         function resetChartCrossFilter() {
             currentCapexChartCategoryFilter = 'ALL';
             document.getElementById('chart-filter-badge').classList.add('hidden');
             applyCapexCombinedFilter();
+            if (doughnutChartInstance) {
+                doughnutChartInstance.setActiveElements([]);
+                doughnutChartInstance.update();
+            }
         }
 
         function applyCapexCombinedFilter() {
             const query = document.getElementById('capex-search').value.toUpperCase().trim();
-            document.querySelectorAll('#capex-table-rows .filterable-row').forEach(row => {
-                const mStatus = (currentCapexFilter === 'ALL' || row.getAttribute('data-status') === currentCapexFilter || (currentCapexFilter === 'WITH DOCUMENTS' && row.getAttribute('data-status').includes('DOC')));
-                const mSearch = (query === "" || row.getAttribute('data-search').includes(query));
-                const mChart = (currentCapexChartCategoryFilter === 'ALL' || row.getAttribute('data-category') === currentCapexChartCategoryFilter);
-                row.className = (mStatus && mSearch && mChart) ? "filterable-row hover:bg-slate-800/60 border-b border-slate-800/40" : "filterable-row hidden-row";
-            });
-        }
-
-        function renderPartsSummary(rows) {
-            let totalOverall = 0, totalInt = 0, totalProc = 0, count = 0, html = '';
-
-            rows.forEach((row, index) => {
-                if (!row[19]) return;
-                const id = row[0], asset = String(row[2]).toUpperCase(), desc = row[3], status = String(row[19]).trim().toUpperCase();
-                const internal = parseFloat(row[11]) || 0, procurement = parseFloat(row[18]) || 0, gross = parseFloat(row[20]) || 0;
-
-                if (status === "APPROVED") {
-                    totalOverall += gross; totalInt += internal; totalProc += procurement; count++;
-                }
-
-                html += `
-                    <tr class="filterable-row ${index % 2 === 0 ? 'bg-slate-900/30' : 'bg-slate-900/70'} hover:bg-slate-800/60" data-status="${status}" data-search="${asset} ${desc.toUpperCase()}">
-                        <td class="p-3 pl-4 text-purple-400 font-medium">${id}</td>
-                        <td class="p-3"><span onclick="copyAssetIdToClipboard(event, '${asset}')" class="bg-slate-950 border border-slate-700 text-white px-1.5 py-0.5 rounded font-mono text-[11px] cursor-pointer">${asset} 📋</span></td>
-                        <td class="p-3 text-slate-200 max-w-[220px] truncate">${desc}</td>
-                        <td class="p-3 text-cyan-400 font-semibold">${status==='APPROVED'?internal+'d':'—'}</td>
-                        <td class="p-3 text-emerald-400 font-semibold">${status==='APPROVED'?procurement+'d':'—'}</td>
-                        <td class="p-3 text-amber-400 font-bold">${status==='APPROVED'?gross+'d':'—'}</td>
-                        <td class="p-3 pr-4 text-right"><span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='APPROVED'?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40':'bg-amber-500/20 text-amber-400 border border-amber-500/40'}">${status}</span></td>
-                    </tr>`;
-            });
-
-            const avgGross = count > 0 ? (totalOverall / count).toFixed(1) : "0.0";
-            const avgInt = count > 0 ? (totalInt / count).toFixed(1) : "0.0";
-            const avgProc = count > 0 ? (totalProc / count).toFixed(1) : "0.0";
-
-            document.getElementById('kpi-parts').innerText = `${avgGross}d`;
-            document.getElementById('kpi-parts-count').innerText = `Int: ${avgInt}d | Pro: ${avgProc}d`;
-            document.getElementById("parts-table-rows").innerHTML = html;
+            const rows = document.querySelectorAll('#capex-table-rows .filterable-row');
             
-            buildAdvancedPartsPerformanceChart(['Average Turnaround Cycle'], [parseFloat(avgInt)], [parseFloat(avgProc)]);
-        }
-
-        function buildAdvancedPartsPerformanceChart(labels, internal, procurement) {
-            const ctx = document.getElementById('parts-performance-canvas').getContext('2d');
-            if (partsChartInstance) partsChartInstance.destroy();
-            partsChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: { 
-                    labels: labels, 
-                    datasets: [
-                        { label: 'Internal SLA Process Time (Days)', data: internal, backgroundColor: '#06b6d4', borderRadius: 4 }, 
-                        { label: 'Procurement Logistics Target (Days)', data: procurement, backgroundColor: '#10b981', borderRadius: 4 }
-                    ] 
-                },
-                options: { 
-                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                    scales: { 
-                        x: { stacked: true, ticks: { color: '#94a3b8', font: { family: "'Inter', sans-serif" } }, grid: { color: 'rgba(255,255,255,0.05)' } }, 
-                        y: { stacked: true, ticks: { color: '#ffffff', font: { family: "'Inter', sans-serif", weight: 'bold' } } } 
-                    },
-                    plugins: { 
-                        legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: "'Inter', sans-serif", size: 11 } } }, 
-                        datalabels: { display: true, color: '#ffffff', font: { weight: 'bold', family: "'Inter', sans-serif", size: 11 }, formatter: v => v > 0 ? v + 'd' : '' } 
+            rows.forEach(row => {
+                const matchesStatus = (currentCapexFilter === 'ALL' || row.getAttribute('data-status') === currentCapexFilter || (currentCapexFilter === 'WITH DOCUMENTS' && row.getAttribute('data-status') === ''));
+                const matchesSearch = (query === "" || row.getAttribute('data-search').includes(query));
+                const matchesChart = (currentCapexChartCategoryFilter === 'ALL' || row.getAttribute('data-category') === currentCapexChartCategoryFilter);
+                
+                if(matchesStatus && matchesSearch && matchesChart) {
+                    row.classList.remove('hidden-row');
+                } else {
+                    row.classList.add('hidden-row');
+                    const nextDrawer = row.nextElementSibling;
+                    if(nextDrawer && nextDrawer.classList.contains('detail-drawer')) {
+                        nextDrawer.classList.remove('open-drawer');
                     }
                 }
             });
         }
 
-        function filterPartsTable(status) {
-            currentPartsFilter = status;
-            document.querySelectorAll('#parts-status-pills button').forEach(p => p.classList.remove('active-pill'));
-            document.getElementById(`parts-pill-${status}`).classList.add('active-pill');
-            applyPartsCombinedFilter();
-        }
+        function buildAdvancedCapexCharts(financialsMap, plannedMap, actualMap) {
+            const labels = Object.keys(financialsMap), financialData = Object.values(financialsMap), totalFinancials = financialData.reduce((a, b) => a + b, 0);
+            const doughnutCtx = document.getElementById('capex-doughnut-canvas').getContext('2d');
+            
+            if (doughnutChartInstance) doughnutChartInstance.destroy();
+            
+            const bhGrad = createVerticalGradient(doughnutCtx, 'rgba(6, 182, 212, 0.9)', 'rgba(8, 145, 178, 0.5)');
+            const bdGrad = createVerticalGradient(doughnutCtx, 'rgba(251, 191, 36, 0.9)', 'rgba(217, 119, 6, 0.5)');
+            const crGrad = createVerticalGradient(doughnutCtx, 'rgba(168, 85, 247, 0.9)', 'rgba(124, 58, 237, 0.5)');
+            const drGrad = createVerticalGradient(doughnutCtx, 'rgba(244, 63, 94, 0.9)', 'rgba(190, 24, 74, 0.5)'); 
 
-        function searchPartsTable() { applyPartsCombinedFilter(); }
+            doughnutChartInstance = new Chart(doughnutCtx, {
+                type: 'doughnut',
+                data: { labels: labels, datasets: [{ data: financialData, backgroundColor: [bhGrad, bdGrad, crGrad, drGrad], borderWidth: 2, borderColor: '#0f172a', hoverBorderColor: '#fff', hoverBorderWidth: 1.5 }] },
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    onClick: (event, activeElements) => {
+                        if (activeElements && activeElements.length > 0) {
+                            const index = activeElements[0].index;
+                            const clickedLabel = labels[index].toUpperCase();
+                            if (currentCapexChartCategoryFilter === clickedLabel) {
+                                currentCapexChartCategoryFilter = 'ALL';
+                                document.getElementById('chart-filter-badge').classList.add('hidden');
+                            } else {
+                                currentCapexChartCategoryFilter = clickedLabel;
+                                document.getElementById('chart-filter-name').innerText = labels[index];
+                                document.getElementById('chart-filter-badge').classList.remove('hidden');
+                            }
+                            applyCapexCombinedFilter();
+                        }
+                    },
+                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, family: 'Mono' } } }, datalabels: { color: '#fff', font: { weight: 'bold', family: 'Mono', size: 10 }, formatter: (value) => value > 0 ? ((value / totalFinancials) * 100).toFixed(0) + '%' : '' } }, cutout: '65%' 
+                }
+            });
 
-        function applyPartsCombinedFilter() {
-            const query = document.getElementById('parts-search').value.toUpperCase().trim();
-            document.querySelectorAll('#parts-table-rows .filterable-row').forEach(row => {
-                const mStatus = (currentPartsFilter === 'ALL' || row.getAttribute('data-status') === currentPartsFilter);
-                const mSearch = (query === "" || row.getAttribute('data-search').includes(query));
-                row.className = (mStatus && mSearch) ? "filterable-row hover:bg-slate-800/60 border-b border-slate-800/40" : "filterable-row hidden-row";
+            const barCtx = document.getElementById('capex-bar-canvas').getContext('2d');
+            if (barChartInstance) barChartInstance.destroy();
+
+            const targetGrad = createVerticalGradient(barCtx, 'rgba(14, 165, 233, 0.85)', 'rgba(2, 132, 199, 0.4)');
+            const baselineGrad = createVerticalGradient(barCtx, 'rgba(16, 185, 129, 0.85)', 'rgba(4, 120, 87, 0.4)');
+
+            barChartInstance = new Chart(barCtx, {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Target Count', data: labels.map(l => plannedMap[l]), backgroundColor: targetGrad, borderColor: '#38bdf8', borderWidth: 1, borderRadius: 4 }, { label: 'Actual Completed', data: labels.map(l => actualMap[l]), backgroundColor: baselineGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8', font: { family: 'Mono' } }, grid: { display: false } }, y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', font: { family: 'Mono', stepSize: 1 } } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } } }, datalabels: { color: '#fff', anchor: 'end', align: 'top', font: { family: 'Mono', size: 10 } } } }
             });
         }
 
-        function copyAssetIdToClipboard(event, val) {
-            event.stopPropagation(); 
-            navigator.clipboard.writeText(val).then(() => {
-                const toast = document.getElementById('copy-toast');
-                toast.classList.remove('opacity-0', 'pointer-events-none');
-                setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 1800);
+        function renderPartsSummary(rows) {
+            if (!rows.length) return;
+            let totalOverallDays = 0, totalInternalDays = 0, totalProcurementDays = 0, approvedCount = 0, tableHtml = '';
+
+            rows.forEach((row, index) => {
+                if (!row[19]) return;
+                const id = row[0], assetId = String(row[2]).toUpperCase(), desc = row[3], status = String(row[19]).trim().toUpperCase();
+                const internalDays = parseFloat(row[11]) || 0, procurementDays = parseFloat(row[18]) || 0, grossLeadDays = parseFloat(row[20]) || 0;
+
+                if (status === "APPROVED") {
+                    totalOverallDays += grossLeadDays; totalInternalDays += internalDays; totalProcurementDays += procurementDays; approvedCount++;
+                }
+
+                tableHtml += `
+                    <tr class="filterable-row ${index % 2 === 0 ? 'bg-slate-900/30' : 'bg-slate-900/70'} hover:bg-slate-800/60 border-b border-slate-800/40 transition-colors" 
+                        data-status="${status}" 
+                        data-search="${assetId} ${desc.toUpperCase()}"
+                        onclick="toggleRowDetailDrawer('pt-${index}')">
+                        <td class="p-3 pl-4 text-purple-400 font-medium">${id}</td>
+                        <td class="p-3">
+                            <span onclick="copyAssetIdToClipboard(event, '${assetId}')" title="Click to copy reference" class="bg-slate-950 border border-slate-700 text-white hover:text-cyan-400 hover:border-cyan-400 transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold">
+                                ${assetId} 📋
+                            </span>
+                        </td>
+                        <td class="p-3 text-white font-medium truncate max-w-[220px]">${desc}</td>
+                        <td class="p-3 text-cyan-400 font-semibold">${status==='APPROVED'?internalDays+'d':'—'}</td>
+                        <td class="p-3 text-emerald-400 font-semibold">${status==='APPROVED'?procurementDays+'d':'—'}</td>
+                        <td class="p-3 text-amber-400 font-bold">${status==='APPROVED'?grossLeadDays+'d':'—'}</td>
+                        <td class="p-3 pr-4 text-right">
+                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='APPROVED'?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40':'bg-amber-500/20 text-amber-400 border border-amber-500/40'}">${status}</span>
+                        </td>
+                    </tr>
+                    <tr id="drawer-pt-${index}" class="detail-drawer border-l-2 border-purple-500 font-mono text-[11px] text-slate-400">
+                        <td colspan="7" class="p-4 space-y-1">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <div><strong class="text-slate-500">Internal Pipeline Speed:</strong> Approved within ${internalDays} working days.</div>
+                                <div><strong class="text-slate-500">Procurement Cycle:</strong> Field acquisition completed in ${procurementDays} days.</div>
+                                <div><strong class="text-slate-500">System Verification:</strong> Digital PO Stamp secure token verified.</div>
+                            </div>
+                        </td>
+                    </tr>`;
+            });
+
+            const globalMean = approvedCount > 0 ? (totalOverallDays / approvedCount).toFixed(1) : "0.0";
+            document.getElementById('kpi-parts').innerText = `${globalMean}d`;
+            document.getElementById('kpi-parts-count').innerText = `Int: ${(totalInternalDays/approvedCount).toFixed(1)}d | Pro: ${(totalProcurementDays/approvedCount).toFixed(1)}d`;
+            document.getElementById("parts-table-rows").innerHTML = tableHtml;
+
+            buildAdvancedPartsPerformanceChart(['Cycle Time'], [parseFloat((totalInternalDays/approvedCount).toFixed(1))], [parseFloat((totalProcurementDays/approvedCount).toFixed(1))]);
+        }
+
+        function filterPartsTable(statusType) {
+            currentPartsFilter = statusType;
+            document.querySelectorAll('#parts-status-pills button').forEach(p => p.classList.remove('active-pill'));
+            document.getElementById(`parts-pill-${statusType}`).classList.add('active-pill');
+            applyPartsCombinedFilter();
+        }
+
+        function applyPartsCombinedFilter() {
+            const query = document.getElementById('parts-search').value.toUpperCase().trim();
+            const rows = document.querySelectorAll('#parts-table-rows .filterable-row');
+            
+            rows.forEach(row => {
+                const matchesStatus = (currentPartsFilter === 'ALL' || row.getAttribute('data-status') === currentPartsFilter);
+                const matchesSearch = (query === "" || row.getAttribute('data-search').includes(query));
+                
+                if(matchesStatus && matchesSearch) {
+                    row.classList.remove('hidden-row');
+                } else {
+                    row.classList.add('hidden-row');
+                    const nextDrawer = row.nextElementSibling;
+                    if(nextDrawer && nextDrawer.classList.contains('detail-drawer')) {
+                        nextDrawer.classList.remove('open-drawer');
+                    }
+                }
+            });
+        }
+
+        function buildAdvancedPartsPerformanceChart(labels, internalData, srcProcureData) {
+            const partsCtx = document.getElementById('parts-performance-canvas').getContext('2d');
+            if (partsChartInstance) partsChartInstance.destroy();
+
+            const internalGrad = createVerticalGradient(partsCtx, 'rgba(34, 211, 238, 0.85)', 'rgba(14, 116, 144, 0.4)');
+            const procureGrad = createVerticalGradient(partsCtx, 'rgba(16, 185, 129, 0.85)', 'rgba(4, 120, 87, 0.4)');
+
+            partsChartInstance = new Chart(partsCtx, {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: internalGrad, borderColor: '#22d3ee', borderWidth: 1, borderRadius: 4, barThickness: 40 }, { label: 'Procurement', data: srcProcureData, backgroundColor: procureGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4, barThickness: 40 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#94a3b8', font: { family: 'Mono' } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y: { stacked: true, ticks: { color: '#fff', font: { family: 'Mono' } }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold', family: 'Mono' } } } }
             });
         }
     </script>
