@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #06120e; }
         .workspace-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -81,7 +81,7 @@
         <div class="flex items-center gap-4">
             <div class="text-right hidden sm:block font-mono">
                 <p class="text-xs text-[#70cbb0] font-medium">Global Enterprise Deck</p>
-                <p class="text-[11px] text-[#41826b]">v3.1.1-target-locked</p>
+                <p class="text-[11px] text-[#41826b]">v3.2.0-dual-axis</p>
             </div>
         </div>
     </header>
@@ -161,47 +161,23 @@
         <!-- DYNAMIC CONTENT HUD -->
         <main class="w-full lg:w-4/5 bg-[#0d1f1a] rounded-xl border border-[#16382e] p-4 sm:p-6 shadow-2xl lg:overflow-y-auto workspace-scrollbar lg:h-full">
             
-            <!-- VIEW 1: COMPLIANCE -->
+            <!-- VIEW 1: COMPLIANCE (DUAL-AXIS MODIFIED) -->
             <div id="view-compliance-container" class="space-y-6">
                 <div class="border-b border-[#1f4d40] pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                     <div>
                         <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Schedule Compliance Variance Matrix</h3>
-                        <p class="text-xs text-[#70cbb0] font-mono mt-0.5">PM tasks assigned vs. successfully executed records</p>
+                        <p class="text-xs text-[#70cbb0] font-mono mt-0.5">Dual Axis: Left (1-100 Task Volumes) vs Right (Efficiency Percentages)</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-4 text-[10px] font-mono">
-                        <div class="flex items-center gap-2 bg-[#091512] border border-[#1f4d40] rounded-lg px-3 py-1.5 text-[#00f5a0] font-bold">
-                            <span>⚙️ DEPT TARGET: 85%</span>
-                        </div>
                         <select id="week-selector" onchange="changeWeekFilter()" class="bg-[#091512] text-white border border-[#1f4d40] rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-[#00f5a0] cursor-pointer transition-colors shadow-md w-full sm:w-auto">
                             <option value="">Loading cycles...</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="relative w-full bg-[#081310] rounded-xl p-4 sm:p-6 border border-[#16382e]">
-                    <!-- GRAPH OVERLAY: DASHED METRIC LINES + RED TARGET LINE -->
-                    <div class="absolute inset-x-6 top-12 bottom-[70px] pointer-events-none font-mono text-[9px] text-[#2d5f4e]">
-                        <!-- 100% Grid -->
-                        <div class="absolute w-full border-t border-dashed border-[#164637] top-[0%]"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">100% Volume</span></div>
-                        <!-- 75% Grid -->
-                        <div class="absolute w-full border-t border-dashed border-[#164637]/70 top-[25%]"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">75% Vol</span></div>
-                        <!-- 50% Grid -->
-                        <div class="absolute w-full border-t border-dashed border-[#164637]/60 top-[50%]"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">50% Vol</span></div>
-                        <!-- 25% Grid -->
-                        <div class="absolute w-full border-t border-dashed border-[#164637]/40 top-[75%]"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">25% Vol</span></div>
-                        <!-- 10% Grid -->
-                        <div class="absolute w-full border-t border-dashed border-[#164637]/30 top-[90%]"><span class="absolute -top-2 left-0 bg-[#081310] pr-2">10% Vol</span></div>
-                        
-                        <!-- RED TARGET THRESHOLD INDICATOR LINE LOCKED TO 85% -->
-                        <div class="absolute w-full border-t-2 border-rose-500 z-10" style="top: 15%;">
-                            <span class="absolute -top-2.5 right-2 bg-[#081310] px-2 text-rose-400 font-bold border border-rose-900 rounded">TARGET: 85%</span>
-                        </div>
-                    </div>
-                    
-                    <div class="overflow-x-auto pt-6 pl-14 chart-scrollbar relative z-10">
-                        <div class="min-w-[850px] h-[260px] flex items-end justify-around border-b border-[#1f4d40] pb-1" id="planners-graph-container">
-                            <div class="text-[#529e84] text-xs font-mono w-full text-center pb-20">Syncing structural matrix...</div>
-                        </div>
+                <div class="w-full bg-[#081310] rounded-xl p-4 sm:p-6 border border-[#16382e]">
+                    <div class="h-[340px] w-full relative">
+                        <canvas id="planner-compliance-canvas"></canvas>
                     </div>
                 </div>
             </div>
@@ -321,6 +297,7 @@
         let rawCapexRows = [];
         let rawPartsRows = [];
         
+        let complianceChartInstance = null;
         let doughnutChartInstance = null;
         let barChartInstance = null;
         let partsChartInstance = null;
@@ -328,7 +305,7 @@
         let currentCapexFilter = 'ALL';
         let currentPartsFilter = 'ALL';
         let currentCapexChartCategoryFilter = 'ALL'; 
-        const globalComplianceThreshold = 85; // Fixed locked baseline for department
+        const globalComplianceThreshold = 85; 
 
         document.addEventListener("DOMContentLoaded", async () => {
             Chart.register(ChartDataLabels);
@@ -352,7 +329,6 @@
                 }
             } catch (err) {
                 console.error(err);
-                document.getElementById('planners-graph-container').innerHTML = `<div class="text-rose-400 text-xs font-mono py-4 text-center w-full">CRITICAL PIPELINE INTERRUPTION.</div>`;
             }
         });
 
@@ -376,7 +352,6 @@
             }
         }
 
-        view-compliance-container
         function switchView(targetView) {
             document.getElementById('view-compliance-container').classList.add('hidden');
             document.getElementById('view-capex-container').classList.add('hidden');
@@ -421,46 +396,147 @@
 
         function renderPlannerVisualizer(rows, selectedWeek) {
             if (!rows.length || !selectedWeek) return;
+            
             const weekFilteredRows = rows.filter(r => String(r[0]).trim() === String(selectedWeek).trim());
-            let totalPlanned = 0, totalActual = 0, html = '';
+            
+            let totalPlanned = 0;
+            let totalActual = 0;
+            
+            const names = [];
+            const plannedVolumes = [];
+            const actualVolumes = [];
+            const compliancePercentages = [];
+            const targetLineData = [];
 
-            let maxVal = 10; 
             weekFilteredRows.forEach(row => {
-                const p = parseInt(row[3]) || 0; const a = parseInt(row[4]) || 0;
-                if (p > maxVal) maxVal = p; if (a > maxVal) maxVal = a;
-            });
-
-            weekFilteredRows.forEach(row => {
-                const name = row[1] || 'Unassigned';
+                const name = (row[1] || 'Unassigned').toUpperCase();
                 const planned = parseInt(row[3]) || 0;
                 const actual = parseInt(row[4]) || 0;
                 const kpiPct = planned > 0 ? Math.round((actual / planned) * 100) : 0;
-                totalPlanned += planned; totalActual += actual;
-
-                const plannedHeight = Math.round((planned / maxVal) * 200);
-                const actualHeight = Math.round((actual / maxVal) * 200);
                 
-                const badgeColor = kpiPct >= globalComplianceThreshold ? 'bg-emerald-950/80 border border-emerald-500/50 text-[#00f5a0]' : 'bg-rose-950/80 border border-rose-500/50 text-rose-400';
+                totalPlanned += planned;
+                totalActual += actual;
 
-                html += `
-                    <div class="flex flex-col items-center h-full justify-end w-36 relative group">
-                        <div class="flex items-end justify-center gap-2 w-full h-[210px] pb-1">
-                            <div class="w-8 bg-[#0ea5e9] rounded-t-sm relative" style="height: ${plannedHeight}px;">
-                                <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-300 font-mono">${planned}</span>
-                            </div>
-                            <div class="w-8 bg-[#10b981] rounded-t-sm relative" style="height: ${actualHeight}px;">
-                                <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-[#00f5a0] font-mono">${actual}</span>
-                            </div>
-                        </div>
-                        <div class="text-center mt-3 w-full space-y-1 font-mono">
-                            <span class="text-[11px] font-bold text-slate-200 block truncate uppercase tracking-tight">${name}</span>
-                            <div class="inline-block text-[9px] font-bold px-1.5 py-0.5 rounded-md ${badgeColor}">${kpiPct}%</div>
-                        </div>
-                    </div>`;
+                names.push(name);
+                plannedVolumes.push(planned);
+                actualVolumes.push(actual);
+                compliancePercentages.push(kpiPct);
+                targetLineData.push(globalComplianceThreshold); 
             });
 
             document.getElementById('kpi-compliance').innerText = totalPlanned > 0 ? `${Math.round((totalActual / totalPlanned) * 100)}%` : '--%';
-            document.getElementById('planners-graph-container').innerHTML = html;
+
+            const ctx = document.getElementById('planner-compliance-canvas').getContext('2d');
+            if (complianceChartInstance) {
+                complianceChartInstance.destroy();
+            }
+
+            complianceChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: names,
+                    datasets: [
+                        {
+                            label: 'Planned Vol',
+                            data: plannedVolumes,
+                            backgroundColor: '#22d3ee', 
+                            borderColor: '#06b6d4',
+                            borderWidth: 1,
+                            yAxisID: 'yVolume',
+                            order: 3
+                        },
+                        {
+                            label: 'Actual Vol',
+                            data: actualVolumes,
+                            backgroundColor: '#10b981', 
+                            borderColor: '#059669',
+                            borderWidth: 1,
+                            yAxisID: 'yVolume',
+                            order: 4
+                        },
+                        {
+                            label: 'Actual Compliance %',
+                            data: compliancePercentages,
+                            type: 'line',
+                            borderColor: '#38bdf8', 
+                            backgroundColor: '#38bdf8',
+                            borderWidth: 3,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            tension: 0.1,
+                            yAxisID: 'yPercentage',
+                            order: 1
+                        },
+                        {
+                            label: 'Target (85%)',
+                            data: targetLineData,
+                            type: 'line',
+                            borderColor: '#f43f5e', 
+                            borderWidth: 2,
+                            borderDash: [6, 4],
+                            pointRadius: 0,
+                            fill: false,
+                            yAxisID: 'yPercentage',
+                            order: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#8cd6be', font: { family: 'Inter', size: 10, weight: 'bold' } }
+                        },
+                        yVolume: {
+                            type: 'linear',
+                            position: 'left',
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                stepSize: 10,
+                                color: '#a5f3fc',
+                                font: { family: 'Mono', size: 10 },
+                                callback: function(value) { return value + ' Vol'; }
+                            },
+                            grid: { color: '#16382e' }
+                        },
+                        yPercentage: {
+                            type: 'linear',
+                            position: 'right',
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                stepSize: 25,
+                                color: '#cbd5e1',
+                                font: { family: 'Mono', size: 10 },
+                                callback: function(value) { return value + '%'; }
+                            },
+                            grid: { display: false } 
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } }
+                        },
+                        datalabels: {
+                            formatter: function(value, context) {
+                                if (context.dataset.yAxisID === 'yPercentage') {
+                                    return context.datasetIndex === 2 ? value + '%' : '';
+                                }
+                                return value;
+                            },
+                            color: '#fff',
+                            anchor: 'end',
+                            align: 'top',
+                            offset: -2,
+                            font: { size: 9, weight: 'bold', family: 'Mono' }
+                        }
+                    }
+                }
+            });
         }
 
         function renderCapexSummary(rows) {
