@@ -775,7 +775,7 @@
             const barCtx = document.getElementById('capex-bar-canvas').getContext('2d');
             if (barChartInstance) barChartInstance.destroy();
 
-            const targetGrad = createVerticalGradient(barCtx, 'rgba(14, 165, 233, 0.85)', 'rgba(2, 132, 199, 0.4)');
+            const targetGrad = createVerticalGradient(barCtx, 'rgba(14, 165, 233, 0.85)', 'rgba(14, 165, 233, 0.4)');
             const baselineGrad = createVerticalGradient(barCtx, 'rgba(16, 185, 129, 0.85)', 'rgba(4, 120, 87, 0.4)');
 
             barChartInstance = new Chart(barCtx, {
