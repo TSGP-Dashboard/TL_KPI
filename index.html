@@ -22,7 +22,7 @@
         .kpi-card {
             background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-top: 1px solid rgba(255, 255, 255, 0.2); /* Highlight bevel rim */
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
             position: relative;
             backdrop-filter: blur(12px);
             box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 4px 20px rgba(0, 0, 0, 0.25);
@@ -68,12 +68,22 @@
             box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
         }
 
-        .detail-drawer {
-            display: none;
-            background-color: #090d16;
-        }
-        .detail-drawer.open-drawer {
-            display: table-row;
+        .detail-drawer { display: none; background-color: #090d16; }
+        .detail-drawer.open-drawer { display: table-row; }
+
+        /* ==================== EXECUTIVE PRINT PRINT RULES ==================== */
+        @media print {
+            body { background: #ffffff !important; color: #000000 !important; font-size: 12px; overflow: visible !important; }
+            header, aside, .filter-pill, input, select, #chart-filter-badge, .utility-hub-bar, #copy-toast { display: none !important; }
+            main { width: 100% !important; background: transparent !important; padding: 0 !important; border: none !important; overflow: visible !important; height: auto !important; }
+            #view-compliance-container, #view-capex-container, #view-parts-container { display: block !important; page-break-after: always; }
+            .bg-slate-950, .bg-slate-950\/60, .bg-slate-900\/60, .bg-slate-800 { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; }
+            tr { page-break-inside: avoid; }
+            th { background: #e2e8f0 !important; color: #0f172a !important; border-bottom: 2px solid #94a3b8 !important; }
+            td { color: #334155 !important; border-bottom: 1px solid #e2e8f0 !important; }
+            .text-cyan-400, .text-emerald-400, .text-amber-400, .text-purple-400 { color: #0f172a !important; font-weight: bold; }
+            canvas { max-height: 250px !important; }
+            .detail-drawer { display: none !important; }
         }
     </style>
 </head>
@@ -87,16 +97,25 @@
     <!-- HEADER -->
     <header class="bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-800 px-4 sm:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl z-20 shrink-0">
         <div class="flex items-center gap-4">
-            <div class="h-3 w-3 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_10px_#00f2fe]"></div>
+            <div id="sync-indicator" class="h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_10px_#10b981] transition-all duration-300"></div>
             <div>
                 <h1 class="text-base sm:text-lg font-bold tracking-wider text-white uppercase font-mono">TL Operational Command Center</h1>
-                <p class="text-xs text-slate-400 font-mono mt-0.5">Matrix Pipeline Status: <span class="text-cyan-400 font-bold">Online</span></p>
+                <p class="text-xs text-slate-400 font-mono mt-0.5">
+                    Streamer Feed: <span id="sync-status" class="text-emerald-400 font-bold">Live (60s loop)</span>
+                </p>
             </div>
         </div>
         <div class="flex items-center gap-4">
+            <!-- HOT-RELOAD HUB -->
+            <div class="flex items-center bg-slate-950/80 border border-slate-800 rounded-lg px-3 py-1.5 gap-3 font-mono text-xs">
+                <span class="text-slate-500">Next refresh: <span id="countdown-timer" class="text-cyan-400 font-bold">60</span>s</span>
+                <button onclick="fetchLatestDataStream()" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-2 py-0.5 rounded transition-colors border border-slate-700">
+                    🔄 Sync Now
+                </button>
+            </div>
             <div class="text-right hidden sm:block font-mono">
                 <p class="text-xs text-slate-300 font-medium">Global Enterprise Deck</p>
-                <p class="text-[11px] text-slate-500">v4.0.0-glossy-bevel</p>
+                <p class="text-[11px] text-slate-500">v4.2.0-live-hub</p>
             </div>
         </div>
     </header>
@@ -228,17 +247,22 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-950/40 p-3 rounded-xl border border-slate-800">
+                <!-- UTILITY HUB BAR -->
+                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-950/40 p-3 rounded-xl border border-slate-800">
                     <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="capex-status-pills">
                         <button onclick="filterCapexTable('ALL')" id="capex-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL STATUSES</button>
                         <button onclick="filterCapexTable('WITH DOCUMENTS')" id="capex-pill-WITH-DOCUMENTS" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">PENDING DOCS</button>
                         <button onclick="filterCapexTable('DONE')" id="capex-pill-DONE" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">COMPLETE</button>
                     </div>
-                    <input type="text" id="capex-search" oninput="searchCapexTable()" placeholder="🔍 Quick search ID or activity..." class="w-full sm:w-64 bg-slate-950 text-slate-200 placeholder-slate-600 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400">
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <input type="text" id="capex-search" oninput="searchCapexTable()" placeholder="🔍 Quick search..." class="w-full sm:w-48 bg-slate-950 text-slate-200 placeholder-slate-600 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400">
+                        <button onclick="exportViewToCSV('capex')" class="bg-cyan-950 text-cyan-400 hover:bg-cyan-900 border border-cyan-800 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
+                        <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto chart-scrollbar bg-slate-950/60 rounded-xl border border-slate-800 p-4">
-                    <table class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
+                    <table id="capex-data-table" class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
                         <thead>
                             <tr class="bg-slate-800 text-slate-200 uppercase tracking-wider text-[11px] font-bold rounded-lg border-b border-slate-700">
                                 <th class="p-3 pl-4 rounded-l-lg">Index</th>
@@ -272,17 +296,22 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-950/40 p-3 rounded-xl border border-slate-800">
+                <!-- UTILITY HUB BAR -->
+                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-950/40 p-3 rounded-xl border border-slate-800">
                     <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="parts-status-pills">
                         <button onclick="filterPartsTable('ALL')" id="parts-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL</button>
                         <button onclick="filterPartsTable('APPROVED')" id="parts-pill-APPROVED" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">APPROVED</button>
                         <button onclick="filterPartsTable('PENDING')" id="parts-pill-PENDING" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">PENDING</button>
                     </div>
-                    <input type="text" id="parts-search" oninput="searchPartsTable()" placeholder="🔍 Search components or asset IDs..." class="w-full sm:w-64 bg-slate-950 text-slate-200 placeholder-slate-600 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400">
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <input type="text" id="parts-search" oninput="searchPartsTable()" placeholder="🔍 Search description..." class="w-full sm:w-48 bg-slate-950 text-slate-200 placeholder-slate-600 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400">
+                        <button onclick="exportViewToCSV('parts')" class="bg-cyan-950 text-cyan-400 hover:bg-cyan-900 border border-cyan-800 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
+                        <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto chart-scrollbar bg-slate-950/60 rounded-xl border border-slate-800 p-4">
-                    <table class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
+                    <table id="parts-data-table" class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
                         <thead>
                             <tr class="bg-slate-800 text-slate-200 uppercase tracking-wider text-[11px] font-bold rounded-lg border-b border-slate-700">
                                 <th class="p-3 pl-4 rounded-l-lg">Request ID</th>
@@ -322,7 +351,10 @@
         let currentCapexChartCategoryFilter = 'ALL'; 
         const globalComplianceThreshold = 85; 
 
-        // Helper to produce glossy gradient styles inside canvas contexts
+        // Live Feed Core Streamer Variables
+        let refreshSecondsLeft = 60;
+        let countdownTimerInterval = null;
+
         function createVerticalGradient(ctx, colorStart, colorEnd) {
             const gradient = ctx.createLinearGradient(0, 0, 0, 300);
             gradient.addColorStop(0, colorStart);
@@ -330,9 +362,35 @@
             return gradient;
         }
 
-        document.addEventListener("DOMContentLoaded", async () => {
+        document.addEventListener("DOMContentLoaded", () => {
             Chart.register(ChartDataLabels);
+            fetchLatestDataStream();
+            initBackgroundTimerStreamer();
+        });
+
+        // REFRESH FEED STREAMER ENGINE
+        function initBackgroundTimerStreamer() {
+            if(countdownTimerInterval) clearInterval(countdownTimerInterval);
+            countdownTimerInterval = setInterval(() => {
+                refreshSecondsLeft--;
+                document.getElementById('countdown-timer').innerText = refreshSecondsLeft;
+                if(refreshSecondsLeft <= 0) {
+                    fetchLatestDataStream();
+                }
+            }, 1000);
+        }
+
+        async function fetchLatestDataStream() {
             if(SHEET_DB_API_URL === 'YOUR_COPIED_GOOGLE_WEB_APP_URL_HERE' || SHEET_DB_API_URL.includes('...')) return;
+            
+            const indicator = document.getElementById('sync-indicator');
+            const statusTxt = document.getElementById('sync-status');
+            
+            indicator.classList.replace('bg-emerald-400', 'bg-amber-400');
+            indicator.classList.replace('shadow-[0_0_10px_#10b981]', 'shadow-[0_0_10px_#f59e0b]');
+            statusTxt.innerText = "Syncing with cloud...";
+            statusTxt.classList.replace('text-emerald-400', 'text-amber-400');
+
             try {
                 const res = await fetch(SHEET_DB_API_URL, { method: 'GET', mode: 'cors', credentials: 'omit' });
                 if (!res.ok) throw new Error(`HTTP Error Status: ${res.status}`);
@@ -344,16 +402,86 @@
                     rawCapexRows = db.capex_projects || [];
                     rawPartsRows = db.parts_requests || [];
                     
+                    // Maintain current UI drop-down filter selection index context
+                    const selector = document.getElementById('week-selector');
+                    const savedWeekSelection = selector.value;
+                    
                     const defaultWeek = populateWeekSelector(rawPlannerRows);
-                    renderPlannerVisualizer(rawPlannerRows, defaultWeek); 
+                    if(savedWeekSelection && Array.from(selector.options).some(o => o.value === savedWeekSelection)) {
+                        selector.value = savedWeekSelection;
+                        renderPlannerVisualizer(rawPlannerRows, savedWeekSelection);
+                    } else {
+                        renderPlannerVisualizer(rawPlannerRows, defaultWeek); 
+                    }
+                    
                     renderCapexSummary(rawCapexRows);
                     renderPartsSummary(rawPartsRows);
                     renderTireSummary(db.tire_maintenance || []);
+
+                    // Soft flash indicator to flag success loop completion
+                    indicator.classList.replace('bg-amber-400', 'bg-emerald-400');
+                    indicator.classList.replace('shadow-[0_0_10px_#f59e0b]', 'shadow-[0_0_10px_#10b981]');
+                    statusTxt.innerText = "Live (60s loop)";
+                    statusTxt.classList.replace('text-amber-400', 'text-emerald-400');
                 }
             } catch (err) {
-                console.error(err);
+                console.error("Streamer sync error:", err);
+                statusTxt.innerText = "Sync Timeout - Reconnecting";
+                statusTxt.classList.replace('text-emerald-400', 'text-rose-500');
+                indicator.classList.replace('bg-emerald-400', 'bg-rose-500');
+            } finally {
+                refreshSecondsLeft = 60;
+                document.getElementById('countdown-timer').innerText = refreshSecondsLeft;
             }
-        });
+        }
+
+        // CSV EXTRACTION UTILITY
+        function exportViewToCSV(viewType) {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            let fileName = "";
+            
+            if (viewType === 'capex') {
+                fileName = "CAPEX_Pipeline_Export.csv";
+                csvContent += "Index,Reporting Cycle,Asset ID,Operational Activity,PO Ref,Allocation,Status\n";
+                const visibleRows = document.querySelectorAll('#capex-table-rows .filterable-row:not(.hidden-row)');
+                if(visibleRows.length === 0) { alert("No visible data data rows found to export."); return; }
+                visibleRows.forEach(row => {
+                    const tds = row.querySelectorAll('td');
+                    const idx = tds[0].innerText;
+                    const cycle = tds[1].innerText;
+                    const asset = tds[2].innerText.replace('📋', '').trim();
+                    const activity = `"${tds[3].innerText.replace(/"/g, '""')}"`;
+                    const po = tds[4].innerText;
+                    const allocation = `"${tds[5].innerText.replace(/[^0-9.]/g, '')}"`;
+                    const status = tds[6].innerText;
+                    csvContent += `${idx},${cycle},${asset},${activity},${po},${allocation},${status}\n`;
+                });
+            } else if (viewType === 'parts') {
+                fileName = "Procurement_Turnaround_Export.csv";
+                csvContent += "Request ID,Asset Ref,Component Description,Internal Days,Procurement Days,Gross Lead Time,Status\n";
+                const visibleRows = document.querySelectorAll('#parts-table-rows .filterable-row:not(.hidden-row)');
+                if(visibleRows.length === 0) { alert("No visible data data rows found to export."); return; }
+                visibleRows.forEach(row => {
+                    const tds = row.querySelectorAll('td');
+                    const reqId = tds[0].innerText;
+                    const assetRef = tds[1].innerText.replace('📋', '').trim();
+                    const desc = `"${tds[2].innerText.replace(/"/g, '""')}"`;
+                    const internal = tds[3].innerText.replace('d', '');
+                    const procurement = tds[4].innerText.replace('d', '');
+                    const gross = tds[5].innerText.replace('d', '');
+                    const status = tds[6].innerText;
+                    csvContent += `${reqId},${assetRef},${desc},${internal},${procurement},${gross},${status}\n`;
+                });
+            }
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
 
         function copyAssetIdToClipboard(event, value) {
             event.stopPropagation(); 
@@ -386,9 +514,11 @@
             if (targetView === 'capex') {
                 document.getElementById('view-capex-container').classList.remove('hidden');
                 document.getElementById('panel-capex').classList.add('active-panel');
+                applyCapexCombinedFilter();
             } else if (targetView === 'parts') {
                 document.getElementById('view-parts-container').classList.remove('hidden');
                 document.getElementById('panel-parts').classList.add('active-panel');
+                applyPartsCombinedFilter();
             } else {
                 document.getElementById('view-compliance-container').classList.remove('hidden');
                 document.getElementById('panel-compliance').classList.add('active-panel');
@@ -408,7 +538,6 @@
             if (sortedWeeks.length === 0) return "";
             selector.innerHTML = sortedWeeks.map(wk => `<option value="${wk}">Week ${wk}</option>`).join('');
             const latestWeek = sortedWeeks[sortedWeeks.length - 1];
-            selector.value = latestWeek;
             return latestWeek;
         }
 
@@ -450,7 +579,6 @@
             const ctx = document.getElementById('planner-compliance-canvas').getContext('2d');
             if (complianceChartInstance) complianceChartInstance.destroy();
 
-            // Formulate sophisticated glass gradients
             const plannedGrad = createVerticalGradient(ctx, 'rgba(6, 182, 212, 0.85)', 'rgba(8, 145, 178, 0.4)');
             const actualGrad = createVerticalGradient(ctx, 'rgba(16, 185, 129, 0.85)', 'rgba(5, 150, 105, 0.4)');
 
@@ -459,109 +587,23 @@
                 data: {
                     labels: names,
                     datasets: [
-                        {
-                            label: 'Planned Vol',
-                            data: plannedVolumes,
-                            backgroundColor: plannedGrad, 
-                            borderColor: '#22d3ee',
-                            borderWidth: 1.5,
-                            borderRadius: 4,
-                            yAxisID: 'yVolume',
-                            order: 3
-                        },
-                        {
-                            label: 'Actual Vol',
-                            data: actualVolumes,
-                            backgroundColor: actualGrad, 
-                            borderColor: '#34d399',
-                            borderWidth: 1.5,
-                            borderRadius: 4,
-                            yAxisID: 'yVolume',
-                            order: 4
-                        },
-                        {
-                            label: 'Actual Compliance %',
-                            data: compliancePercentages,
-                            type: 'line',
-                            borderColor: '#38bdf8', 
-                            backgroundColor: '#0b0f19',
-                            borderWidth: 3,
-                            pointBackgroundColor: '#38bdf8',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 1.5,
-                            pointRadius: 4,
-                            pointHoverRadius: 6,
-                            tension: 0.2,
-                            yAxisID: 'yPercentage',
-                            order: 1
-                        },
-                        {
-                            label: 'Target (85%)',
-                            data: targetLineData,
-                            type: 'line',
-                            borderColor: '#f43f5e', 
-                            borderWidth: 2,
-                            borderDash: [5, 5],
-                            pointRadius: 0,
-                            fill: false,
-                            yAxisID: 'yPercentage',
-                            order: 2
-                        }
+                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: plannedGrad, borderColor: '#22d3ee', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
+                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: actualGrad, borderColor: '#34d399', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
+                        { label: 'Actual Compliance %', data: compliancePercentages, type: 'line', borderColor: '#38bdf8', backgroundColor: '#0b0f19', borderWidth: 3, pointBackgroundColor: '#38bdf8', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.2, yAxisID: 'yPercentage', order: 1 },
+                        { label: 'Target (85%)', data: targetLineData, type: 'line', borderColor: '#f43f5e', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'yPercentage', order: 2 }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#94a3b8', font: { family: 'Inter', size: 10, weight: '500' } }
-                        },
-                        yVolume: {
-                            type: 'linear',
-                            position: 'left',
-                            min: 0,
-                            max: 100,
-                            ticks: {
-                                stepSize: 10,
-                                color: '#22d3ee',
-                                font: { family: 'Mono', size: 10 },
-                                callback: function(value) { return value + ' Vol'; }
-                            },
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
-                        },
-                        yPercentage: {
-                            type: 'linear',
-                            position: 'right',
-                            min: 0,
-                            max: 100,
-                            ticks: {
-                                stepSize: 25,
-                                color: '#94a3b8',
-                                font: { family: 'Mono', size: 10 },
-                                callback: function(value) { return value + '%'; }
-                            },
-                            grid: { display: false } 
-                        }
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Inter', size: 10, weight: '500' } } },
+                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 10, color: '#22d3ee', font: { family: 'Mono', size: 10 }, callback: function(value) { return value + ' Vol'; } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#94a3b8', font: { family: 'Mono', size: 10 }, callback: function(value) { return value + '%'; } }, grid: { display: false } }
                     },
                     plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } }
-                        },
-                        datalabels: {
-                            formatter: function(value, context) {
-                                if (context.dataset.yAxisID === 'yPercentage') {
-                                    return context.datasetIndex === 2 ? value + '%' : '';
-                                }
-                                return value;
-                            },
-                            color: '#fff',
-                            anchor: 'end',
-                            align: 'top',
-                            offset: -1,
-                            font: { size: 9, weight: 'bold', family: 'Mono' }
-                        }
+                        legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } } },
+                        datalabels: { formatter: function(value, context) { if (context.dataset.yAxisID === 'yPercentage') { return context.datasetIndex === 2 ? value + '%' : ''; } return value; }, color: '#fff', anchor: 'end', align: 'top', offset: -1, font: { size: 9, weight: 'bold', family: 'Mono' } }
                     }
                 }
             });
@@ -675,32 +717,19 @@
             
             if (doughnutChartInstance) doughnutChartInstance.destroy();
             
-            // Premium semi-translucent glass gradients for doughnut slices
             const bhGrad = createVerticalGradient(doughnutCtx, 'rgba(6, 182, 212, 0.9)', 'rgba(8, 145, 178, 0.5)');
             const bdGrad = createVerticalGradient(doughnutCtx, 'rgba(251, 191, 36, 0.9)', 'rgba(217, 119, 6, 0.5)');
             const crGrad = createVerticalGradient(doughnutCtx, 'rgba(168, 85, 247, 0.9)', 'rgba(124, 58, 237, 0.5)');
 
             doughnutChartInstance = new Chart(doughnutCtx, {
                 type: 'doughnut',
-                data: { 
-                    labels: labels, 
-                    datasets: [{ 
-                        data: financialData, 
-                        backgroundColor: [bhGrad, bdGrad, crGrad], 
-                        borderWidth: 2, 
-                        borderColor: '#0f172a',
-                        hoverBorderColor: '#fff',
-                        hoverBorderWidth: 1.5
-                    }] 
-                },
+                data: { labels: labels, datasets: [{ data: financialData, backgroundColor: [bhGrad, bdGrad, crGrad], borderWidth: 2, borderColor: '#0f172a', hoverBorderColor: '#fff', hoverBorderWidth: 1.5 }] },
                 options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     onClick: (event, activeElements) => {
                         if (activeElements && activeElements.length > 0) {
                             const index = activeElements[0].index;
                             const clickedLabel = labels[index].toUpperCase();
-                            
                             if (currentCapexChartCategoryFilter === clickedLabel) {
                                 currentCapexChartCategoryFilter = 'ALL';
                                 document.getElementById('chart-filter-badge').classList.add('hidden');
@@ -712,11 +741,7 @@
                             applyCapexCombinedFilter();
                         }
                     },
-                    plugins: { 
-                        legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, family: 'Mono' } } }, 
-                        datalabels: { color: '#fff', font: { weight: 'bold', family: 'Mono' }, formatter: (value) => ((value / totalFinancials) * 100).toFixed(0) + '%' } 
-                    }, 
-                    cutout: '65%' 
+                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, family: 'Mono' } } }, datalabels: { color: '#fff', font: { weight: 'bold', family: 'Mono' }, formatter: (value) => ((value / totalFinancials) * 100).toFixed(0) + '%' } }, cutout: '65%' 
                 }
             });
 
@@ -728,25 +753,8 @@
 
             barChartInstance = new Chart(barCtx, {
                 type: 'bar',
-                data: { 
-                    labels: labels, 
-                    datasets: [
-                        { label: 'Target', data: labels.map(l => plannedMap[l]), backgroundColor: targetGrad, borderColor: '#38bdf8', borderWidth: 1, borderRadius: 4 }, 
-                        { label: 'Actual', data: labels.map(l => actualMap[l]), backgroundColor: baselineGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4 }
-                    ] 
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    scales: { 
-                        x: { ticks: { color: '#94a3b8', font: { family: 'Mono' } }, grid: { display: false } }, 
-                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', font: { family: 'Mono' } } } 
-                    }, 
-                    plugins: { 
-                        legend: { labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } } }, 
-                        datalabels: { color: '#fff', anchor: 'end', align: 'top', font: { family: 'Mono', size: 10 } } 
-                    } 
-                }
+                data: { labels: labels, datasets: [{ label: 'Target', data: labels.map(l => plannedMap[l]), backgroundColor: targetGrad, borderColor: '#38bdf8', borderWidth: 1, borderRadius: 4 }, { label: 'Actual', data: labels.map(l => actualMap[l]), backgroundColor: baselineGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8', font: { family: 'Mono' } }, grid: { display: false } }, y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', font: { family: 'Mono' } } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } } }, datalabels: { color: '#fff', anchor: 'end', align: 'top', font: { family: 'Mono', size: 10 } } } }
             });
         }
 
@@ -785,9 +793,9 @@
                     <tr id="drawer-pt-${index}" class="detail-drawer border-l-2 border-purple-500 font-mono text-[11px] text-slate-400">
                         <td colspan="7" class="p-4 space-y-1">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                <div><strong class="text-slate-500">Internal Pipeline Speed:</strong> Approved within ${internalDays} working days from initial filing.</div>
-                                <div><strong class="text-slate-500">Procurement Cycle:</strong> Field acquisition completed in ${procurementDays} calendar days.</div>
-                                <div><strong class="text-slate-500">System Verification:</strong> Digital PO Stamp secure token matches active payload logs.</div>
+                                <div><strong class="text-slate-500">Internal Pipeline Speed:</strong> Approved within ${internalDays} working days.</div>
+                                <div><strong class="text-slate-500">Procurement Cycle:</strong> Field acquisition completed in ${procurementDays} days.</div>
+                                <div><strong class="text-slate-500">System Verification:</strong> Digital PO Stamp secure token verified.</div>
                             </div>
                         </td>
                     </tr>`;
@@ -837,26 +845,8 @@
 
             partsChartInstance = new Chart(partsCtx, {
                 type: 'bar',
-                data: { 
-                    labels: labels, 
-                    datasets: [
-                        { label: 'Internal', data: internalData, backgroundColor: internalGrad, borderColor: '#22d3ee', borderWidth: 1, borderRadius: 4, barThickness: 40 }, 
-                        { label: 'Procurement', data: srcProcureData, backgroundColor: procureGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4, barThickness: 40 }
-                    ] 
-                },
-                options: { 
-                    indexAxis: 'y', 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    scales: { 
-                        x: { stacked: true, ticks: { color: '#94a3b8', font: { family: 'Mono' } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, 
-                        y: { stacked: true, ticks: { color: '#fff', font: { family: 'Mono' } }, grid: { display: false } } 
-                    }, 
-                    plugins: { 
-                        legend: { labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } } }, 
-                        datalabels: { color: '#fff', font: { weight: 'bold', family: 'Mono' } } 
-                    } 
-                }
+                data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: internalGrad, borderColor: '#22d3ee', borderWidth: 1, borderRadius: 4, barThickness: 40 }, { label: 'Procurement', data: srcProcureData, backgroundColor: procureGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4, barThickness: 40 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#94a3b8', font: { family: 'Mono' } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y: { stacked: true, ticks: { color: '#fff', font: { family: 'Mono' } }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold', family: 'Mono' } } } }
             });
         }
 
