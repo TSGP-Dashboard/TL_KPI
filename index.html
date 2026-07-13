@@ -375,6 +375,9 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
+            // Fix Chart.js global typography default fallback engine bug
+            Chart.defaults.font.family = "'Inter', ui-sans-serif, system-ui, sans-serif";
+            
             Chart.register(ChartDataLabels);
             fetchLatestDataStream();
             initBackgroundTimerStreamer();
@@ -604,7 +607,7 @@
             const ctx = document.getElementById('planner-compliance-canvas').getContext('2d');
             if (complianceChartInstance) complianceChartInstance.destroy();
 
-            const plannedGrad = createVerticalGradient(ctx, 'rgba(11, 102, 35, 0.85)', 'rgba(8, 145, 178, 0.4)');
+            const plannedGrad = createVerticalGradient(ctx, 'rgba(11, 102, 35, 0.85)', 'rgba(11, 102, 35, 0.4)');
             const actualGrad = createVerticalGradient(ctx, 'rgba(16, 185, 129, 0.85)', 'rgba(5, 150, 105, 0.4)');
 
             complianceChartInstance = new Chart(ctx, {
@@ -612,8 +615,8 @@
                 data: {
                     labels: names,
                     datasets: [
-                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: plannedGrad, borderColor: '#e5de00', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
-                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: actualGrad, borderColor: '#0b6623', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
+                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: plannedGrad, borderColor: '#0b6623', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
+                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: actualGrad, borderColor: '#34d399', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
                         { label: 'Actual Compliance %', data: compliancePercentages, type: 'line', borderColor: '#38bdf8', backgroundColor: '#0b0f19', borderWidth: 3, pointBackgroundColor: '#38bdf8', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.2, yAxisID: 'yPercentage', order: 1 },
                         { label: 'Target (85%)', data: targetLineData, type: 'line', borderColor: '#f43f5e', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'yPercentage', order: 2 }
                     ]
@@ -622,13 +625,13 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Inter', size: 10, weight: '500' } } },
-                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 10, color: '#22d3ee', font: { family: 'Mono', size: 10 }, callback: function(value) { return value + ' Vol'; } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
-                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#94a3b8', font: { family: 'Mono', size: 10 }, callback: function(value) { return value + '%'; } }, grid: { display: false } }
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: "'Inter', sans-serif", size: 10, weight: '500' } } },
+                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 10, color: '#22d3ee', font: { family: "ui-monospace, monospace", size: 10 }, callback: function(value) { return value + ' Vol'; } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#94a3b8', font: { family: "ui-monospace, monospace", size: 10 }, callback: function(value) { return value + '%'; } }, grid: { display: false } }
                     },
                     plugins: {
-                        legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } } },
-                        datalabels: { formatter: function(value, context) { if (context.dataset.yAxisID === 'yPercentage') { return context.datasetIndex === 2 ? value + '%' : ''; } return value; }, color: '#fff', anchor: 'end', align: 'top', offset: -1, font: { size: 9, weight: 'bold', family: 'Mono' } }
+                        legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: "ui-monospace, monospace", size: 10 } } },
+                        datalabels: { formatter: function(value, context) { if (context.dataset.yAxisID === 'yPercentage') { return context.datasetIndex === 2 ? value + '%' : ''; } return value; }, color: '#fff', anchor: 'end', align: 'top', offset: -1, font: { size: 9, weight: 'bold', family: "ui-monospace, monospace" } }
                     }
                 }
             });
@@ -745,7 +748,7 @@
             
             const bhGrad = createVerticalGradient(doughnutCtx, 'rgba(6, 182, 212, 0.9)', 'rgba(8, 145, 178, 0.5)');
             const bdGrad = createVerticalGradient(doughnutCtx, 'rgba(251, 191, 36, 0.9)', 'rgba(217, 119, 6, 0.5)');
-            const crGrad = createVerticalGradient(doughnutCtx, 'rgba(168, 85, 247, 0.9)', 'rgba(124, 58, 237, 0.5)');
+            const crGrad = createVerticalGradient(doughnutCtx, 'rgba(16, 185, 129, 0.9)', 'rgba(124, 58, 237, 0.5)');
             const drGrad = createVerticalGradient(doughnutCtx, 'rgba(244, 63, 94, 0.9)', 'rgba(190, 24, 74, 0.5)'); 
 
             doughnutChartInstance = new Chart(doughnutCtx, {
@@ -768,20 +771,20 @@
                             applyCapexCombinedFilter();
                         }
                     },
-                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, family: 'Mono' } } }, datalabels: { color: '#fff', font: { weight: 'bold', family: 'Mono', size: 10 }, formatter: (value) => value > 0 ? ((value / totalFinancials) * 100).toFixed(0) + '%' : '' } }, cutout: '65%' 
+                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, family: "ui-monospace, monospace" } } }, datalabels: { color: '#fff', font: { weight: 'bold', family: "ui-monospace, monospace", size: 10 }, formatter: (value) => value > 0 ? ((value / totalFinancials) * 100).toFixed(0) + '%' : '' } }, cutout: '65%' 
                 }
             });
 
             const barCtx = document.getElementById('capex-bar-canvas').getContext('2d');
             if (barChartInstance) barChartInstance.destroy();
 
-            const targetGrad = createVerticalGradient(barCtx, 'rgba(14, 165, 233, 0.85)', 'rgba(14, 165, 233, 0.4)');
+            const targetGrad = createVerticalGradient(barCtx, 'rgba(14, 165, 233, 0.85)', 'rgba(2, 132, 199, 0.4)');
             const baselineGrad = createVerticalGradient(barCtx, 'rgba(16, 185, 129, 0.85)', 'rgba(4, 120, 87, 0.4)');
 
             barChartInstance = new Chart(barCtx, {
                 type: 'bar',
                 data: { labels: labels, datasets: [{ label: 'Target Count', data: labels.map(l => plannedMap[l]), backgroundColor: targetGrad, borderColor: '#38bdf8', borderWidth: 1, borderRadius: 4 }, { label: 'Actual Completed', data: labels.map(l => actualMap[l]), backgroundColor: baselineGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8', font: { family: 'Mono' } }, grid: { display: false } }, y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', font: { family: 'Mono', stepSize: 1 } } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } } }, datalabels: { color: '#fff', anchor: 'end', align: 'top', font: { family: 'Mono', size: 10 } } } }
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8', font: { family: "ui-monospace, monospace" } }, grid: { display: false } }, y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', font: { family: "ui-monospace, monospace", stepSize: 1 } } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { family: "ui-monospace, monospace", size: 10 } } }, datalabels: { color: '#fff', anchor: 'end', align: 'top', font: { family: "ui-monospace, monospace", size: 10 } } } }
             });
         }
 
@@ -873,7 +876,7 @@
             partsChartInstance = new Chart(partsCtx, {
                 type: 'bar',
                 data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: internalGrad, borderColor: '#22d3ee', borderWidth: 1, borderRadius: 4, barThickness: 40 }, { label: 'Procurement', data: srcProcureData, backgroundColor: procureGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4, barThickness: 40 }] },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#94a3b8', font: { family: 'Mono' } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y: { stacked: true, ticks: { color: '#fff', font: { family: 'Mono' } }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Mono', size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold', family: 'Mono' } } } }
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#94a3b8', font: { family: "ui-monospace, monospace" } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y: { stacked: true, ticks: { color: '#fff', font: { family: "ui-monospace, monospace" } }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { family: "ui-monospace, monospace", size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold', family: "ui-monospace, monospace" } } } }
             });
         }
     </script>
