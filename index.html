@@ -50,7 +50,6 @@
         .kpi-card.active-panel::before { width: 4px; }
 
         .filterable-row { transition: all 0.15s ease-out; cursor: pointer; }
-        .filterable-row.hidden-row { display: none !important; }
         
         .filter-pill {
             background-color: #1e293b;
@@ -72,7 +71,7 @@
 
         @media print {
             body { background: #ffffff !important; color: #000000 !important; font-size: 12px; overflow: visible !important; }
-            header, aside, .filter-pill, input, select, #chart-filter-badge, .utility-hub-bar, #copy-toast { display: none !important; }
+            header, aside, .filter-pill, input, select, #chart-filter-badge, #capex-pagination-ctrl, #parts-pagination-ctrl, .utility-hub-bar, #copy-toast { display: none !important; }
             main { width: 100% !important; background: transparent !important; padding: 0 !important; border: none !important; overflow: visible !important; height: auto !important; }
             #view-compliance-container, #view-capex-container, #view-parts-container { display: block !important; page-break-after: always; }
             .bg-slate-950, .bg-slate-950\/60, .bg-slate-900\/60, .bg-slate-800 { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; }
@@ -116,7 +115,7 @@
             </div>
             <div class="text-right hidden sm:block font-mono">
                 <p class="text-xs text-slate-300 font-medium">Global Enterprise Deck</p>
-                <p class="text-[11px] text-slate-500">v4.2.2-clean-feed</p>
+                <p class="text-[11px] text-slate-500">v5.0.0-paginated</p>
             </div>
         </div>
     </header>
@@ -233,7 +232,7 @@
                         </div>
                     </div>
 
-                    <!-- SCOPED WORK GROUP LEGEND (FIXED: NO CLIPPING, NO SCROLLBAR) -->
+                    <!-- SCOPED WORK GROUP LEGEND -->
                     <div class="bg-slate-950/40 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
                         <div>
                             <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 font-mono flex items-center gap-2">
@@ -302,7 +301,7 @@
                         <button onclick="filterCapexTable('DONE')" id="capex-pill-DONE" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">COMPLETE</button>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <input type="text" id="capex-search" oninput="searchCapexTable()" placeholder="🔍 Quick search..." class="w-full sm:w-48 bg-slate-950 text-slate-200 placeholder-slate-600 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400">
+                        <input type="text" id="capex-search" oninput="searchCapexTable()" placeholder="🔍 Fuzzy multi-search (eg. 'BH complete')..." class="w-full sm:w-64 bg-slate-950 text-slate-200 placeholder-slate-600 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400">
                         <button onclick="exportViewToCSV('capex')" class="bg-cyan-950 text-cyan-400 hover:bg-cyan-900 border border-cyan-800 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
                         <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
                     </div>
@@ -326,6 +325,7 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="capex-pagination-ctrl" class="flex justify-between items-center mt-4 px-2 font-mono text-xs text-slate-400"></div>
             </div>
 
             <!-- VIEW 3: PARTS REQUEST -->
@@ -351,7 +351,7 @@
                         <button onclick="filterPartsTable('PENDING')" id="parts-pill-PENDING" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">PENDING</button>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <input type="text" id="parts-search" oninput="searchPartsTable()" placeholder="🔍 Search description..." class="w-full sm:w-48 bg-slate-950 text-slate-200 placeholder-slate-600 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400">
+                        <input type="text" id="parts-search" oninput="searchPartsTable()" placeholder="🔍 Search description..." class="w-full sm:w-64 bg-slate-950 text-slate-200 placeholder-slate-600 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400">
                         <button onclick="exportViewToCSV('parts')" class="bg-cyan-950 text-cyan-400 hover:bg-cyan-900 border border-cyan-800 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
                         <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
                     </div>
@@ -375,38 +375,29 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="parts-pagination-ctrl" class="flex justify-between items-center mt-4 px-2 font-mono text-xs text-slate-400"></div>
             </div>
 
         </main>
     </div>
 
-    <!-- DATA PIPELINE ENGINE -->
+    <!-- DATA PIPELINE ENGINE (V5.0 Advanced Architecture) -->
     <script>
         const SHEET_DB_API_URL = 'https://script.google.com/macros/s/AKfycbzqed0j2W4mevtpEANLXZTIpFoAS79_GXxzmNvDfZOls4hOlnHY7FDtWyyXUCHIawrePQ/exec';
 
-        let rawPlannerRows = [];
-        let rawCapexRows = [];
-        let rawPartsRows = [];
+        // Centralized Application State Matrix
+        const state = {
+            raw: { planner: [], capex: [], parts: [] },
+            capex: { page: 1, limit: 12, search: '', status: 'ALL', category: 'ALL' },
+            parts: { page: 1, limit: 12, search: '', status: 'ALL' },
+            global: { complianceThreshold: 85, autoSyncInterval: null }
+        };
         
         let complianceChartInstance = null;
         let monthlyChartInstance = null;
         let doughnutChartInstance = null;
         let barChartInstance = null;
         let partsChartInstance = null;
-
-        let currentCapexFilter = 'ALL';
-        let currentPartsFilter = 'ALL';
-        let currentCapexChartCategoryFilter = 'ALL'; 
-        const globalComplianceThreshold = 85; 
-
-        let autoSyncInterval = null;
-
-        function createVerticalGradient(ctx, colorStart, colorEnd) {
-            const gradient = ctx.createLinearGradient(0, 0, 0, 250);
-            gradient.addColorStop(0, colorStart);
-            gradient.addColorStop(1, colorEnd);
-            return gradient;
-        }
 
         document.addEventListener("DOMContentLoaded", () => {
             Chart.defaults.font.family = "'Inter', ui-sans-serif, system-ui, sans-serif";
@@ -415,11 +406,25 @@
             initBackgroundTimerStreamer();
         });
 
+        function createVerticalGradient(ctx, colorStart, colorEnd) {
+            const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+            gradient.addColorStop(0, colorStart);
+            gradient.addColorStop(1, colorEnd);
+            return gradient;
+        }
+
+        // Tokenized Fuzzy Search Matcher (Evaluates queries out of absolute order)
+        function fuzzyMatch(text, query) {
+            if (!query) return true;
+            const tokens = query.toLowerCase().split(/\s+/).filter(t => t.length > 0);
+            const target = text.toLowerCase();
+            return tokens.every(token => target.includes(token));
+        }
+
         function initBackgroundTimerStreamer() {
-            if(autoSyncInterval) clearInterval(autoSyncInterval);
-            autoSyncInterval = setInterval(() => {
-                const isAutoEnabled = document.getElementById('auto-sync-toggle').checked;
-                if(isAutoEnabled) fetchLatestDataStream();
+            if(state.global.autoSyncInterval) clearInterval(state.global.autoSyncInterval);
+            state.global.autoSyncInterval = setInterval(() => {
+                if(document.getElementById('auto-sync-toggle').checked) fetchLatestDataStream();
             }, 60000);
         }
 
@@ -437,11 +442,10 @@
         }
 
         async function fetchLatestDataStream() {
-            if(SHEET_DB_API_URL === 'YOUR_COPIED_GOOGLE_WEB_APP_URL_HERE' || SHEET_DB_API_URL.includes('...')) return;
+            if(SHEET_DB_API_URL.includes('YOUR_COPIED_GOOGLE_WEB_APP_URL_HERE')) return;
             
             const indicator = document.getElementById('sync-indicator');
             const statusTxt = document.getElementById('sync-status');
-            const isAutoEnabled = document.getElementById('auto-sync-toggle').checked;
             
             indicator.classList.replace('bg-emerald-400', 'bg-amber-400');
             indicator.classList.replace('shadow-[0_0_10px_#10b981]', 'shadow-[0_0_10px_#f59e0b]');
@@ -453,37 +457,30 @@
                 if (!res.ok) throw new Error(`HTTP Error Status: ${res.status}`);
                 const payload = await res.json();
                 
-                if (payload.status === "success") {
-                    const db = payload.data;
-                    rawPlannerRows = db.planner_performance || [];
-                    rawCapexRows = db.capex_projects || [];
-                    rawPartsRows = db.parts_requests || [];
+                if (payload.status === "success" && payload.data) {
+                    state.raw.planner = payload.data.planner_performance || [];
+                    state.raw.capex = payload.data.capex_projects || [];
+                    state.raw.parts = payload.data.parts_requests || [];
                     
                     const selector = document.getElementById('week-selector');
                     const savedWeekSelection = selector.value;
                     
-                    const defaultWeek = populateWeekSelector(rawPlannerRows);
+                    const defaultWeek = populateWeekSelector(state.raw.planner);
                     if(savedWeekSelection && Array.from(selector.options).some(o => o.value === savedWeekSelection)) {
                         selector.value = savedWeekSelection;
-                        renderPlannerVisualizer(rawPlannerRows, savedWeekSelection);
+                        renderPlannerVisualizer(state.raw.planner, savedWeekSelection);
                     } else {
-                        renderPlannerVisualizer(rawPlannerRows, defaultWeek); 
+                        renderPlannerVisualizer(state.raw.planner, defaultWeek); 
                     }
                     
-                    calculateMonthlyAggregates(rawPlannerRows);
-                    renderCapexSummary(rawCapexRows);
-                    renderPartsSummary(rawPartsRows);
+                    calculateMonthlyAggregates(state.raw.planner);
+                    processAndRenderCapex();
+                    processAndRenderParts();
 
                     indicator.classList.replace('bg-amber-400', 'bg-emerald-400');
                     indicator.classList.replace('shadow-[0_0_10px_#f59e0b]', 'shadow-[0_0_10px_#10b981]');
-                    
-                    if (isAutoEnabled) {
-                        statusTxt.innerText = "Connected";
-                        statusTxt.className = "text-emerald-400 font-bold text-xs font-mono mt-0.5";
-                    } else {
-                        statusTxt.innerText = "Paused (Manual Mode)";
-                        statusTxt.className = "text-slate-400 font-bold text-xs font-mono mt-0.5";
-                    }
+                    statusTxt.innerText = document.getElementById('auto-sync-toggle').checked ? "Connected" : "Paused (Manual Mode)";
+                    statusTxt.className = document.getElementById('auto-sync-toggle').checked ? "text-emerald-400 font-bold text-xs font-mono mt-0.5" : "text-slate-400 font-bold text-xs font-mono mt-0.5";
                 }
             } catch (err) {
                 console.error("Streamer sync error:", err);
@@ -493,87 +490,244 @@
             }
         }
 
-        function exportViewToCSV(viewType) {
-            let csvContent = "data:text/csv;charset=utf-8,";
-            let fileName = "";
-            
-            if (viewType === 'capex') {
-                fileName = "CAPEX_Pipeline_Export.csv";
-                csvContent += "Index,Reporting Cycle,Asset ID,Operational Activity,PO Ref,Allocation,Status\n";
-                const visibleRows = document.querySelectorAll('#capex-table-rows .filterable-row:not(.hidden-row)');
-                if(visibleRows.length === 0) { alert("No visible rows found to export."); return; }
-                visibleRows.forEach(row => {
-                    const tds = row.querySelectorAll('td');
-                    csvContent += `${tds[0].innerText},${tds[1].innerText},${tds[2].innerText.replace('📋', '').trim()},"${tds[3].innerText.replace(/"/g, '""')}",${tds[4].innerText},"${tds[5].innerText.replace(/[^0-9.]/g, '')}",${tds[6].innerText}\n`;
-                });
-            } else if (viewType === 'parts') {
-                fileName = "Procurement_Turnaround_Export.csv";
-                csvContent += "Request ID,Asset Ref,Component Description,Internal Days,Procurement Days,Gross Lead Time,Status\n";
-                const visibleRows = document.querySelectorAll('#parts-table-rows .filterable-row:not(.hidden-row)');
-                if(visibleRows.length === 0) { alert("No visible rows found to export."); return; }
-                visibleRows.forEach(row => {
-                    const tds = row.querySelectorAll('td');
-                    csvContent += `${tds[0].innerText},${tds[1].innerText.replace('📋', '').trim()},"${tds[2].innerText.replace(/"/g, '""')}",${tds[3].innerText.replace('d', '')},${tds[4].innerText.replace('d', '')},${tds[5].innerText.replace('d', '')},${tds[6].innerText}\n`;
-                });
-            }
+        // ==========================================
+        // DYNAMIC CAPEX SUB-SYSTEM (CROSS-FILTERED + PAGINATED)
+        // ==========================================
+        function processAndRenderCapex() {
+            let documentPhaseCount = 0, totalDatabaseGrossBudget = 0;
+            let categoryFinancials = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
+            let categoryVolumePlanned = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
+            let categoryVolumeActual = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
 
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", fileName);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+            // Run structural metrics on absolute data before filtering bounds are placed
+            state.raw.capex.forEach(row => {
+                if (!row[2] && !row[5]) return;
+                const assetId = String(row[2] || '').toUpperCase();
+                const status = row[6] || '';
+                let budgetNum = parseFloat(String(row[5] || '').replace(/[^0-9.]/g, '')) || 0;
 
-        function copyAssetIdToClipboard(event, value) {
-            event.stopPropagation(); 
-            navigator.clipboard.writeText(value).then(() => {
-                const toast = document.getElementById('copy-toast');
-                toast.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
-                setTimeout(() => {
-                    toast.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
-                }, 1800);
+                totalDatabaseGrossBudget += budgetNum;
+                if(status === 'With Documents' || status === 'Pending Documents' || row[0] === "37") documentPhaseCount++;
+
+                let cat = assetId.startsWith("BH") ? "Backhoe" : assetId.startsWith("BD") ? "Bulldozer" : assetId.startsWith("CR") ? "Crane" : assetId.startsWith("DR") ? "Drill Rig" : null;
+                if (cat) {
+                    categoryFinancials[cat] += budgetNum;
+                    categoryVolumePlanned[cat] += 1;
+                    if (status === "Done" || status === "Complete") categoryVolumeActual[cat] += 1;
+                }
             });
-        }
 
-        function toggleRowDetailDrawer(rowId) {
-            const drawer = document.getElementById(`drawer-${rowId}`);
-            if(drawer.classList.contains('open-drawer')) {
-                drawer.classList.remove('open-drawer');
-            } else {
-                drawer.classList.add('open-drawer');
-            }
-        }
+            document.getElementById('kpi-capex').innerText = `PHP ${(totalDatabaseGrossBudget / 1000000).toFixed(1)}M`;
+            document.getElementById('kpi-capex-count').innerText = `● ${documentPhaseCount} Docs Pending`;
+            buildAdvancedCapexCharts(categoryFinancials, categoryVolumePlanned, categoryVolumeActual);
 
-        // FIXED: Maps and triggers targeted views without losing border highlights
-        function switchView(targetView) {
-            document.getElementById('view-compliance-container').classList.add('hidden');
-            document.getElementById('view-capex-container').classList.add('hidden');
-            document.getElementById('view-parts-container').classList.add('hidden');
+            // Apply cross-filtering engine logic
+            const processedDataset = state.raw.capex.filter(row => {
+                if (!row[2] && !row[5]) return false;
+                const assetId = String(row[2] || '').toUpperCase();
+                const activity = String(row[3] || '').toUpperCase();
+                const status = (row[6] || '').toUpperCase();
+                let cat = assetId.startsWith("BH") ? "BACKHOE" : assetId.startsWith("BD") ? "BULLDOZER" : assetId.startsWith("CR") ? "CRANE" : assetId.startsWith("DR") ? "DRILL RIG" : "OTHER";
+
+                const matchesStatus = (state.capex.status === 'ALL' || status === state.capex.status || (state.capex.status === 'WITH DOCUMENTS' && status === ''));
+                const matchesCategory = (state.capex.category === 'ALL' || cat === state.capex.category);
+                const matchesSearch = fuzzyMatch(`${assetId} ${activity}`, state.capex.search);
+
+                return matchesStatus && matchesCategory && matchesSearch;
+            });
+
+            // Calculate Pagination bounds
+            const totalItems = processedDataset.length;
+            const maxPage = Math.max(1, Math.ceil(totalItems / state.capex.limit));
+            if (state.capex.page > maxPage) state.capex.page = maxPage;
             
-            document.getElementById('panel-compliance').classList.remove('active-panel');
-            document.getElementById('panel-capex').classList.remove('active-panel');
-            document.getElementById('panel-parts').classList.remove('active-panel');
+            const startIndex = (state.capex.page - 1) * state.capex.limit;
+            const pageSlice = processedDataset.slice(startIndex, startIndex + state.capex.limit);
 
-            if (targetView === 'capex') {
-                document.getElementById('view-capex-container').classList.remove('hidden');
-                document.getElementById('panel-capex').classList.add('active-panel');
-                applyCapexCombinedFilter();
-            } else if (targetView === 'parts' || targetView === 'speed') {
-                document.getElementById('view-parts-container').classList.remove('hidden');
-                document.getElementById('panel-parts').classList.add('active-panel');
-                applyPartsCombinedFilter();
+            let tableHtml = '';
+            if (pageSlice.length === 0) {
+                tableHtml = `<tr><td colspan="7" class="py-12 text-center text-slate-500 font-mono text-xs">⚠️ No matching records correspond with active matrix filters.</td></tr>`;
             } else {
-                document.getElementById('view-compliance-container').classList.remove('hidden');
-                document.getElementById('panel-compliance').classList.add('active-panel');
+                pageSlice.forEach((row, i) => {
+                    const id = row[0], quarter = row[1], assetId = String(row[2] || '').toUpperCase(), activity = row[3] || '', po = row[4], status = row[6] || '';
+                    let budgetNum = parseFloat(String(row[5] || '').replace(/[^0-9.]/g, '')) || 0;
+                    const index = startIndex + i;
+
+                    tableHtml += `
+                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-slate-900/30' : 'bg-slate-900/70'} hover:bg-slate-800/60 border-b border-slate-800/40 transition-colors" 
+                            onclick="toggleRowDetailDrawer('cx-${index}')">
+                            <td class="p-3 pl-4 text-slate-500 font-medium">${id}</td>
+                            <td class="p-3 text-slate-400 text-[11px] font-medium">${quarter}</td>
+                            <td class="p-3">
+                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-slate-950 border border-slate-700 text-cyan-400 hover:border-cyan-400 transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold font-mono cursor-pointer">
+                                    ${assetId} 📋
+                                </span>
+                            </td>
+                            <td class="p-3 text-white font-medium">${activity}</td>
+                            <td class="p-3 text-slate-400">${po || '---'}</td>
+                            <td class="p-3 text-emerald-400 font-semibold">PHP ${budgetNum.toLocaleString()}</td>
+                            <td class="p-3 pr-4 text-right">
+                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'||status==='Complete'?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40':'bg-slate-800 text-slate-400 border border-slate-700'}">${status || 'With Documents'}</span>
+                            </td>
+                        </tr>
+                        <tr id="drawer-cx-${index}" class="detail-drawer border-l-2 border-cyan-500 font-mono text-[11px] text-slate-400">
+                            <td colspan="7" class="p-4 space-y-2">
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Pipeline ID Token</span> cx-ref-${id}00${index}</div>
+                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Deployment Phase</span> Tier-1 Operational Authorization</div>
+                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Ledger Sync Index</span> 0x${(index*143).toString(16).toUpperCase()}</div>
+                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Procurement Route</span> Direct Vendor Allocation</div>
+                                </div>
+                            </td>
+                        </tr>`;
+                });
             }
+
+            document.getElementById("capex-table-rows").innerHTML = tableHtml;
             
-            if (window.innerWidth < 1024) {
-                document.querySelector('main').scrollIntoView({ behavior: 'smooth' });
-            }
+            // Render Pagination control elements
+            document.getElementById('capex-pagination-ctrl').innerHTML = `
+                <div>Showing ${totalItems === 0 ? 0 : startIndex + 1} to ${Math.min(startIndex + state.capex.limit, totalItems)} of ${totalItems} assets</div>
+                <div class="flex items-center gap-2">
+                    <button onclick="setCapexPage(${state.capex.page - 1})" ${state.capex.page === 1 ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded border border-slate-700 text-slate-300 transition-colors"'} tabindex="0">◄ Prev</button>
+                    <span class="text-slate-300 font-bold">Page ${state.capex.page} / ${maxPage}</span>
+                    <button onclick="setCapexPage(${state.capex.page + 1})" ${state.capex.page === maxPage ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded border border-slate-700 text-slate-300 transition-colors"'} tabindex="0">Next ►</button>
+                </div>`;
         }
 
+        function setCapexPage(p) { state.capex.page = p; processAndRenderCapex(); }
+        
+        function filterCapexTable(statusType) {
+            state.capex.status = statusType;
+            state.capex.page = 1;
+            document.querySelectorAll('#capex-status-pills button').forEach(p => p.classList.remove('active-pill'));
+            document.getElementById(`capex-pill-${statusType.replace(' ', '-')}`).classList.add('active-pill');
+            processAndRenderCapex();
+        }
+
+        function searchCapexTable() {
+            state.capex.search = document.getElementById('capex-search').value;
+            state.capex.page = 1;
+            processAndRenderCapex();
+        }
+
+        function resetChartCrossFilter() {
+            state.capex.category = 'ALL';
+            state.capex.page = 1;
+            document.getElementById('chart-filter-badge').classList.add('hidden');
+            processAndRenderCapex();
+            if (doughnutChartInstance) { doughnutChartInstance.setActiveElements([]); doughnutChartInstance.update(); }
+        }
+
+        // ==========================================
+        // PARTS REQ SPEED SUB-SYSTEM (FUZZY + PAGINATED)
+        // ==========================================
+        function processAndRenderParts() {
+            let totalOverallDays = 0, totalInternalDays = 0, totalProcurementDays = 0, approvedCount = 0;
+
+            state.raw.parts.forEach(row => {
+                if (!row[19]) return;
+                const status = String(row[19]).trim().toUpperCase();
+                if (status === "APPROVED") {
+                    totalOverallDays += parseFloat(row[20]) || 0; 
+                    totalInternalDays += parseFloat(row[11]) || 0; 
+                    totalProcurementDays += parseFloat(row[18]) || 0; 
+                    approvedCount++;
+                }
+            });
+
+            const globalMean = approvedCount > 0 ? (totalOverallDays / approvedCount).toFixed(1) : "0.0";
+            document.getElementById('kpi-parts').innerText = `${globalMean}d`;
+            document.getElementById('kpi-parts-count').innerText = `Int: ${approvedCount > 0 ? (totalInternalDays/approvedCount).toFixed(1) : 0}d | Pro: ${approvedCount > 0 ? (totalProcurementDays/approvedCount).toFixed(1) : 0}d`;
+            buildAdvancedPartsPerformanceChart(['Cycle Time'], [parseFloat((totalInternalDays/approvedCount).toFixed(1)) || 0], [parseFloat((totalProcurementDays/approvedCount).toFixed(1)) || 0]);
+
+            const processedDataset = state.raw.parts.filter(row => {
+                if (!row[19]) return false;
+                const assetId = String(row[2]).toUpperCase();
+                const desc = String(row[3]).toUpperCase();
+                const status = String(row[19]).trim().toUpperCase();
+
+                const matchesStatus = (state.parts.status === 'ALL' || status === state.parts.status || (state.parts.status === 'PENDING' && status.includes('PENDING')));
+                const matchesSearch = fuzzyMatch(`${assetId} ${desc}`, state.parts.search);
+
+                return matchesStatus && matchesSearch;
+            });
+
+            const totalItems = processedDataset.length;
+            const maxPage = Math.max(1, Math.ceil(totalItems / state.parts.limit));
+            if (state.parts.page > maxPage) state.parts.page = maxPage;
+
+            const startIndex = (state.parts.page - 1) * state.parts.limit;
+            const pageSlice = processedDataset.slice(startIndex, startIndex + state.parts.limit);
+
+            let tableHtml = '';
+            if (pageSlice.length === 0) {
+                tableHtml = `<tr><td colspan="7" class="py-12 text-center text-slate-500 font-mono text-xs">⚠️ No component tracking requests match criteria.</td></tr>`;
+            } else {
+                pageSlice.forEach((row, i) => {
+                    const id = row[0], assetId = String(row[2]).toUpperCase(), desc = row[3], status = String(row[19]).trim().toUpperCase();
+                    const internalDays = parseFloat(row[11]) || 0, procurementDays = parseFloat(row[18]) || 0, grossLeadDays = parseFloat(row[20]) || 0;
+                    const index = startIndex + i;
+
+                    tableHtml += `
+                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-slate-900/30' : 'bg-slate-900/70'} hover:bg-slate-800/60 border-b border-slate-800/40 transition-colors" 
+                            onclick="toggleRowDetailDrawer('pt-${index}')">
+                            <td class="p-3 pl-4 text-purple-400 font-medium">${id}</td>
+                            <td class="p-3">
+                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-slate-950 border border-slate-700 text-white hover:text-cyan-400 hover:border-cyan-400 transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold cursor-pointer">
+                                    ${assetId} 📋
+                                </span>
+                            </td>
+                            <td class="p-3 text-white font-medium truncate max-w-[220px]">${desc}</td>
+                            <td class="p-3 text-cyan-400 font-semibold">${status==='APPROVED'?internalDays+'d':'—'}</td>
+                            <td class="p-3 text-emerald-400 font-semibold">${status==='APPROVED'?procurementDays+'d':'—'}</td>
+                            <td class="p-3 text-amber-400 font-bold">${status==='APPROVED'?grossLeadDays+'d':'—'}</td>
+                            <td class="p-3 pr-4 text-right">
+                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='APPROVED'?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40':'bg-amber-500/20 text-amber-400 border border-amber-500/40'}">${status}</span>
+                            </td>
+                        </tr>
+                        <tr id="drawer-pt-${index}" class="detail-drawer border-l-2 border-purple-500 font-mono text-[11px] text-slate-400">
+                            <td colspan="7" class="p-4 space-y-1">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                    <div><strong class="text-slate-500">Internal Pipeline Speed:</strong> Approved within ${internalDays} working days.</div>
+                                    <div><strong class="text-slate-500">Procurement Cycle:</strong> Field acquisition completed in ${procurementDays} days.</div>
+                                    <div><strong class="text-slate-500">System Verification:</strong> Digital PO Stamp secure token verified.</div>
+                                </div>
+                            </td>
+                        </tr>`;
+                });
+            }
+
+            document.getElementById("parts-table-rows").innerHTML = tableHtml;
+
+            document.getElementById('parts-pagination-ctrl').innerHTML = `
+                <div>Showing ${totalItems === 0 ? 0 : startIndex + 1} to ${Math.min(startIndex + state.parts.limit, totalItems)} of ${totalItems} tracking links</div>
+                <div class="flex items-center gap-2">
+                    <button onclick="setPartsPage(${state.parts.page - 1})" ${state.parts.page === 1 ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded border border-slate-700 text-slate-300 transition-colors"'} tabindex="0">◄ Prev</button>
+                    <span class="text-slate-300 font-bold">Page ${state.parts.page} / ${maxPage}</span>
+                    <button onclick="setPartsPage(${state.parts.page + 1})" ${state.parts.page === maxPage ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded border border-slate-700 text-slate-300 transition-colors"'} tabindex="0">Next ►</button>
+                </div>`;
+        }
+
+        function setPartsPage(p) { state.parts.page = p; processAndRenderParts(); }
+        
+        function filterPartsTable(statusType) {
+            state.parts.status = statusType;
+            state.parts.page = 1;
+            document.querySelectorAll('#parts-status-pills button').forEach(p => p.classList.remove('active-pill'));
+            document.getElementById(`parts-pill-${statusType}`).classList.add('active-pill');
+            processAndRenderParts();
+        }
+
+        function searchPartsTable() {
+            state.parts.search = document.getElementById('parts-search').value;
+            state.parts.page = 1;
+            processAndRenderParts();
+        }
+
+        // ==========================================
+        // COMPLIANCE ENGINE VISUALIZER SUBSYSTEM
+        // ==========================================
         function populateWeekSelector(rows) {
             const selector = document.getElementById('week-selector');
             if (!rows.length) return "";
@@ -587,7 +741,7 @@
 
         function changeWeekFilter() {
             switchView('compliance');
-            renderPlannerVisualizer(rawPlannerRows, document.getElementById('week-selector').value);
+            renderPlannerVisualizer(state.raw.planner, document.getElementById('week-selector').value);
         }
 
         function renderPlannerVisualizer(rows, selectedWeek) {
@@ -596,17 +750,12 @@
             const weekFilteredRows = rows.filter(r => String(r[0]).trim() === String(selectedWeek).trim());
             let totalPlanned = 0, totalActual = 0;
             
-            const names = [];
-            const plannedVolumes = [];
-            const actualVolumes = [];
-            const compliancePercentages = [];
-            const targetLineData = [];
+            const names = [], plannedVolumes = [], actualVolumes = [], compliancePercentages = [], targetLineData = [];
 
             weekFilteredRows.forEach(row => {
                 const name = (row[1] || 'Unassigned').toUpperCase();
                 const planned = parseInt(row[3]) || 0;
                 const actual = parseInt(row[4]) || 0;
-                const kpiPct = planned > 0 ? Math.round((actual / planned) * 100) : 0;
                 
                 totalPlanned += planned;
                 totalActual += actual;
@@ -614,8 +763,8 @@
                 names.push(name);
                 plannedVolumes.push(planned);
                 actualVolumes.push(actual);
-                compliancePercentages.push(kpiPct);
-                targetLineData.push(globalComplianceThreshold); 
+                compliancePercentages.push(planned > 0 ? Math.round((actual / planned) * 100) : 0);
+                targetLineData.push(state.global.complianceThreshold); 
             });
 
             document.getElementById('kpi-compliance').innerText = totalPlanned > 0 ? `${Math.round((totalActual / totalPlanned) * 100)}%` : '--%';
@@ -623,31 +772,27 @@
             const ctx = document.getElementById('planner-compliance-canvas').getContext('2d');
             if (complianceChartInstance) complianceChartInstance.destroy();
 
-            const plannedGrad = createVerticalGradient(ctx, 'rgba(6, 182, 212, 0.85)', 'rgba(8, 145, 178, 0.4)');
-            const actualGrad = createVerticalGradient(ctx, 'rgba(16, 185, 129, 0.85)', 'rgba(5, 150, 105, 0.4)');
-
             complianceChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: names,
                     datasets: [
-                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: plannedGrad, borderColor: '#22d3ee', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
-                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: actualGrad, borderColor: '#34d399', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
+                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(6, 182, 212, 0.85)', 'rgba(8, 145, 178, 0.4)'), borderColor: '#22d3ee', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
+                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(16, 185, 129, 0.85)', 'rgba(5, 150, 105, 0.4)'), borderColor: '#34d399', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
                         { label: 'Actual Compliance %', data: compliancePercentages, type: 'line', borderColor: '#38bdf8', backgroundColor: '#0b0f19', borderWidth: 3, pointBackgroundColor: '#38bdf8', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.2, yAxisID: 'yPercentage', order: 1 },
                         { label: 'Target (85%)', data: targetLineData, type: 'line', borderColor: '#f43f5e', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'yPercentage', order: 2 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10, weight: '500' } } },
-                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 25, color: '#22d3ee', font: { size: 10 }, callback: function(value) { return value + ' Vol'; } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
-                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#94a3b8', font: { size: 10 }, callback: function(value) { return value + '%'; } }, grid: { display: false } }
+                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 25, color: '#22d3ee', font: { size: 10 }, callback: v => v + ' Vol' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#94a3b8', font: { size: 10 }, callback: v => v + '%' }, grid: { display: false } }
                     },
                     plugins: {
                         legend: { position: 'top', labels: { color: '#cbd5e1', font: { size: 10 } } },
-                        datalabels: { formatter: function(value, context) { if (context.dataset.yAxisID === 'yPercentage') { return context.datasetIndex === 2 ? value + '%' : ''; } return value; }, color: '#fff', anchor: 'end', align: 'top', offset: -1, font: { size: 9, weight: 'bold' } }
+                        datalabels: { formatter: (v, c) => c.dataset.yAxisID === 'yPercentage' ? (c.datasetIndex === 2 ? v + '%' : '') : v, color: '#fff', anchor: 'end', align: 'top', font: { size: 9, weight: 'bold' } }
                     }
                 }
             });
@@ -668,187 +813,42 @@
 
             rows.forEach(row => {
                 const weekNum = parseInt(row[0]);
-                const planned = parseInt(row[3]) || 0;
-                const actual = parseInt(row[4]) || 0;
-
                 const targetMonth = monthsDef.find(m => m.weeks.includes(weekNum));
                 if (targetMonth) {
-                    targetMonth.planned += planned;
-                    targetMonth.actual += actual;
+                    targetMonth.planned += parseInt(row[3]) || 0;
+                    targetMonth.actual += parseInt(row[4]) || 0;
                 }
             });
 
-            const labels = [];
-            const complianceAverages = [];
-            const targetLine = [];
-
+            const labels = [], complianceAverages = [], targetLine = [];
             monthsDef.forEach(m => {
                 if(m.planned > 0) {
                     labels.push(m.name);
                     complianceAverages.push(Math.round((m.actual / m.planned) * 100));
-                    targetLine.push(globalComplianceThreshold);
+                    targetLine.push(state.global.complianceThreshold);
                 }
             });
-
-            if(labels.length === 0) {
-                labels.push('June', 'July');
-                complianceAverages.push(0, 0);
-                targetLine.push(globalComplianceThreshold, globalComplianceThreshold);
-            }
-
-            renderMonthlyTrendChart(labels, complianceAverages, targetLine);
+            renderMonthlyTrendChart(labels.length ? labels : ['June'], complianceAverages.length ? complianceAverages : [0], targetLine.length ? targetLine : [85]);
         }
 
-        // FIXED: Outputs the sleek combo chart layout requested
         function renderMonthlyTrendChart(labels, complianceData, targetData) {
             const ctx = document.getElementById('monthly-compliance-canvas').getContext('2d');
             if (monthlyChartInstance) monthlyChartInstance.destroy();
-
-            const actualBarGrad = ctx.createLinearGradient(0, 0, 0, 200);
-            actualBarGrad.addColorStop(0, 'rgba(16, 185, 129, 0.85)'); 
-            actualBarGrad.addColorStop(1, 'rgba(5, 150, 105, 0.3)');   
-
             monthlyChartInstance = new Chart(ctx, {
                 data: {
                     labels: labels,
                     datasets: [
-                        {
-                            type: 'bar', 
-                            label: 'Monthly Average %',
-                            data: complianceData,
-                            backgroundColor: actualBarGrad,
-                            borderColor: '#34d399',
-                            borderWidth: 1.5,
-                            borderRadius: 4,
-                            order: 2
-                        },
-                        {
-                            type: 'line', 
-                            label: 'Target Limit (85%)',
-                            data: targetData,
-                            borderColor: '#f43f5e',
-                            borderWidth: 2,
-                            borderDash: [6, 4],
-                            pointRadius: 0,
-                            fill: false,
-                            order: 1
-                        }
+                        { type: 'bar', label: 'Monthly Average %', data: complianceData, backgroundColor: createVerticalGradient(ctx, 'rgba(16, 185, 129, 0.85)', 'rgba(5, 150, 105, 0.3)'), borderColor: '#34d399', borderWidth: 1.5, borderRadius: 4, order: 2 },
+                        { type: 'line', label: 'Target Limit (85%)', data: targetData, borderColor: '#f43f5e', borderWidth: 2, borderDash: [6, 4], pointRadius: 0, fill: false, order: 1 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11, weight: '500' } } },
-                        y: { min: 0, max: 100, ticks: { stepSize: 20, color: '#64748b', font: { size: 10 }, callback: v => v + '%' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                        y: { min: 0, max: 100, ticks: { color: '#64748b', callback: v => v + '%' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
                     },
-                    plugins: {
-                        legend: { display: true, position: 'top', labels: { color: '#cbd5e1', font: { size: 10 } } },
-                        datalabels: { color: '#fff', anchor: 'end', align: 'top', offset: -2, font: { size: 10, weight: 'bold' }, formatter: (value, context) => context.dataset.type === 'bar' ? value + '%' : '' }
-                    }
-                }
-            });
-        }
-
-        function renderCapexSummary(rows) {
-            if (!rows.length) return;
-            let totalDatabaseGrossBudget = 0, documentPhaseCount = 0, tableHtml = '';
-            
-            let categoryFinancials = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
-            let categoryVolumePlanned = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
-            let categoryVolumeActual = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
-
-            rows.forEach((row, index) => {
-                if (!row[2] && !row[5]) return;
-                const id = row[0], quarter = row[1], assetId = String(row[2] || '').toUpperCase(), activity = row[3] || '', po = row[4], status = row[6] || '';
-                let budgetNum = parseFloat(String(row[5] || '').replace(/[^0-9.]/g, '')) || 0;
-
-                totalDatabaseGrossBudget += budgetNum;
-                if(status === 'With Documents' || status === 'Pending Documents' || id === "37") documentPhaseCount++;
-
-                let cat = assetId.startsWith("BH") ? "Backhoe" : assetId.startsWith("BD") ? "Bulldozer" : assetId.startsWith("CR") ? "Crane" : assetId.startsWith("DR") ? "Drill Rig" : null;
-                if (cat) {
-                    categoryFinancials[cat] += budgetNum;
-                    categoryVolumePlanned[cat] += 1;
-                    if (status === "Done" || status === "Complete") categoryVolumeActual[cat] += 1;
-                }
-
-                tableHtml += `
-                    <tr class="filterable-row ${index % 2 === 0 ? 'bg-slate-900/30' : 'bg-slate-900/70'} hover:bg-slate-800/60 border-b border-slate-800/40 transition-colors" 
-                        data-status="${status.toUpperCase()}" 
-                        data-category="${cat ? cat.toUpperCase() : 'OTHER'}" 
-                        data-search="${assetId} ${activity.toUpperCase()}"
-                        onclick="toggleRowDetailDrawer('cx-${index}')">
-                        <td class="p-3 pl-4 text-slate-500 font-medium">${id}</td>
-                        <td class="p-3 text-slate-400 text-[11px] font-medium">${quarter}</td>
-                        <td class="p-3">
-                            <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-slate-950 border border-slate-700 text-cyan-400 hover:border-cyan-400 transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold font-mono">
-                                ${assetId} 📋
-                            </span>
-                        </td>
-                        <td class="p-3 text-white font-medium">${activity}</td>
-                        <td class="p-3 text-slate-400">${po || '---'}</td>
-                        <td class="p-3 text-emerald-400 font-semibold">PHP ${budgetNum.toLocaleString()}</td>
-                        <td class="p-3 pr-4 text-right">
-                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'||status==='Complete'?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40':'bg-slate-800 text-slate-400 border border-slate-700'}">${status || 'With Documents'}</span>
-                        </td>
-                    </tr>
-                    <tr id="drawer-cx-${index}" class="detail-drawer border-l-2 border-cyan-500 font-mono text-[11px] text-slate-400">
-                        <td colspan="7" class="p-4 space-y-2">
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Pipeline ID Token</span> cx-ref-${id}00${index}</div>
-                                <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Deployment Phase</span> Tier-1 Operational Authorization</div>
-                                <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Ledger Sync Index</span> 0x${(index*143).toString(16).toUpperCase()}</div>
-                                <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Procurement Route</span> Direct Vendor Allocation</div>
-                            </div>
-                        </td>
-                    </tr>`;
-            });
-
-            document.getElementById('kpi-capex').innerText = `PHP ${(totalDatabaseGrossBudget / 1000000).toFixed(1)}M`;
-            document.getElementById('kpi-capex-count').innerText = `● ${documentPhaseCount} Docs Pending`;
-            document.getElementById("capex-table-rows").innerHTML = tableHtml;
-            buildAdvancedCapexCharts(categoryFinancials, categoryVolumePlanned, categoryVolumeActual);
-        }
-
-        function filterCapexTable(statusType) {
-            currentCapexFilter = statusType;
-            document.querySelectorAll('#capex-status-pills button').forEach(p => p.classList.remove('active-pill'));
-            document.getElementById(`capex-pill-${statusType.replace(' ', '-')}`).classList.add('active-pill');
-            applyCapexCombinedFilter();
-        }
-
-        function searchCapexTable() {
-            applyCapexCombinedFilter();
-        }
-
-        function resetChartCrossFilter() {
-            currentCapexChartCategoryFilter = 'ALL';
-            document.getElementById('chart-filter-badge').classList.add('hidden');
-            applyCapexCombinedFilter();
-            if (doughnutChartInstance) {
-                doughnutChartInstance.setActiveElements([]);
-                doughnutChartInstance.update();
-            }
-        }
-
-        function applyCapexCombinedFilter() {
-            const query = document.getElementById('capex-search').value.toUpperCase().trim();
-            const rows = document.querySelectorAll('#capex-table-rows .filterable-row');
-            
-            rows.forEach(row => {
-                const matchesStatus = (currentCapexFilter === 'ALL' || row.getAttribute('data-status') === currentCapexFilter || (currentCapexFilter === 'WITH DOCUMENTS' && row.getAttribute('data-status') === ''));
-                const matchesSearch = (query === "" || row.getAttribute('data-search').includes(query));
-                const matchesChart = (currentCapexChartCategoryFilter === 'ALL' || row.getAttribute('data-category') === currentCapexChartCategoryFilter);
-                
-                if(matchesStatus && matchesSearch && matchesChart) {
-                    row.classList.remove('hidden-row');
-                } else {
-                    row.classList.add('hidden-row');
-                    const nextDrawer = row.nextElementSibling;
-                    if(nextDrawer && nextDrawer.classList.contains('detail-drawer')) {
-                        nextDrawer.classList.remove('open-drawer');
-                    }
+                    plugins: { legend: { labels: { color: '#cbd5e1' } }, datalabels: { color: '#fff', font: { weight: 'bold' }, formatter: (v, c) => c.dataset.type === 'bar' ? v + '%' : '' } }
                 }
             });
         }
@@ -858,144 +858,110 @@
             const doughnutCtx = document.getElementById('capex-doughnut-canvas').getContext('2d');
             
             if (doughnutChartInstance) doughnutChartInstance.destroy();
-            
-            const bhGrad = createVerticalGradient(doughnutCtx, 'rgba(6, 182, 212, 0.9)', 'rgba(8, 145, 178, 0.5)');
-            const bdGrad = createVerticalGradient(doughnutCtx, 'rgba(251, 191, 36, 0.9)', 'rgba(217, 119, 6, 0.5)');
-            const crGrad = createVerticalGradient(doughnutCtx, 'rgba(16, 185, 129, 0.9)', 'rgba(124, 58, 237, 0.5)');
-            const drGrad = createVerticalGradient(doughnutCtx, 'rgba(244, 63, 94, 0.9)', 'rgba(190, 24, 74, 0.5)'); 
 
             doughnutChartInstance = new Chart(doughnutCtx, {
                 type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: financialData, backgroundColor: [bhGrad, bdGrad, crGrad, drGrad], borderWidth: 2, borderColor: '#0f172a', hoverBorderColor: '#fff', hoverBorderWidth: 1.5 }] },
+                data: { labels: labels, datasets: [{ data: financialData, backgroundColor: [createVerticalGradient(doughnutCtx, 'rgba(6, 182, 212, 0.9)', 'rgba(8, 145, 178, 0.5)'), createVerticalGradient(doughnutCtx, 'rgba(251, 191, 36, 0.9)', 'rgba(217, 119, 6, 0.5)'), createVerticalGradient(doughnutCtx, 'rgba(16, 185, 129, 0.9)', 'rgba(124, 58, 237, 0.5)'), createVerticalGradient(doughnutCtx, 'rgba(244, 63, 94, 0.9)', 'rgba(190, 24, 74, 0.5)')], borderWidth: 2, borderColor: '#0f172a' }] },
                 options: { 
                     responsive: true, maintainAspectRatio: false,
                     onClick: (event, activeElements) => {
                         if (activeElements && activeElements.length > 0) {
-                            const index = activeElements[0].index;
-                            const clickedLabel = labels[index].toUpperCase();
-                            if (currentCapexChartCategoryFilter === clickedLabel) {
-                                currentCapexChartCategoryFilter = 'ALL';
+                            const idx = activeElements[0].index;
+                            const clickedLabel = labels[idx].toUpperCase();
+                            state.capex.category = (state.capex.category === clickedLabel) ? 'ALL' : clickedLabel;
+                            state.capex.page = 1;
+                            
+                            if(state.capex.category === 'ALL') {
                                 document.getElementById('chart-filter-badge').classList.add('hidden');
                             } else {
-                                currentCapexChartCategoryFilter = clickedLabel;
-                                document.getElementById('chart-filter-name').innerText = labels[index];
+                                document.getElementById('chart-filter-name').innerText = labels[idx];
                                 document.getElementById('chart-filter-badge').classList.remove('hidden');
                             }
-                            applyCapexCombinedFilter();
+                            processAndRenderCapex();
                         }
                     },
-                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 10 }, formatter: (value) => value > 0 ? ((value / totalFinancials) * 100).toFixed(0) + '%' : '' } }, cutout: '65%' 
+                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold' }, formatter: v => v > 0 ? ((v / totalFinancials) * 100).toFixed(0) + '%' : '' } }, cutout: '65%' 
                 }
             });
 
             const barCtx = document.getElementById('capex-bar-canvas').getContext('2d');
             if (barChartInstance) barChartInstance.destroy();
-
-            const targetGrad = createVerticalGradient(barCtx, 'rgba(14, 165, 233, 0.85)', 'rgba(2, 132, 199, 0.4)');
-            const baselineGrad = createVerticalGradient(barCtx, 'rgba(16, 185, 129, 0.85)', 'rgba(4, 120, 87, 0.4)');
-
             barChartInstance = new Chart(barCtx, {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Target Count', data: labels.map(l => plannedMap[l]), backgroundColor: targetGrad, borderColor: '#38bdf8', borderWidth: 1, borderRadius: 4 }, { label: 'Actual Completed', data: labels.map(l => actualMap[l]), backgroundColor: baselineGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8' }, grid: { display: false } }, y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', stepSize: 1 } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { size: 10 } } }, datalabels: { color: '#fff', anchor: 'end', align: 'top', font: { size: 10 } } } }
-            });
-        }
-
-        function renderPartsSummary(rows) {
-            if (!rows.length) return;
-            let totalOverallDays = 0, totalInternalDays = 0, totalProcurementDays = 0, approvedCount = 0, tableHtml = '';
-
-            rows.forEach((row, index) => {
-                if (!row[19]) return;
-                const id = row[0], assetId = String(row[2]).toUpperCase(), desc = row[3], status = String(row[19]).trim().toUpperCase();
-                const internalDays = parseFloat(row[11]) || 0, procurementDays = parseFloat(row[18]) || 0, grossLeadDays = parseFloat(row[20]) || 0;
-
-                if (status === "APPROVED") {
-                    totalOverallDays += grossLeadDays; totalInternalDays += internalDays; totalProcurementDays += procurementDays; approvedCount++;
-                }
-
-                tableHtml += `
-                    <tr class="filterable-row ${index % 2 === 0 ? 'bg-slate-900/30' : 'bg-slate-900/70'} hover:bg-slate-800/60 border-b border-slate-800/40 transition-colors" 
-                        data-status="${status}" 
-                        data-search="${assetId} ${desc.toUpperCase()}"
-                        onclick="toggleRowDetailDrawer('pt-${index}')">
-                        <td class="p-3 pl-4 text-purple-400 font-medium">${id}</td>
-                        <td class="p-3">
-                            <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-slate-950 border border-slate-700 text-white hover:text-cyan-400 hover:border-cyan-400 transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold">
-                                ${assetId} 📋
-                            </span>
-                        </td>
-                        <td class="p-3 text-white font-medium truncate max-w-[220px]">${desc}</td>
-                        <td class="p-3 text-cyan-400 font-semibold">${status==='APPROVED'?internalDays+'d':'—'}</td>
-                        <td class="p-3 text-emerald-400 font-semibold">${status==='APPROVED'?procurementDays+'d':'—'}</td>
-                        <td class="p-3 text-amber-400 font-bold">${status==='APPROVED'?grossLeadDays+'d':'—'}</td>
-                        <td class="p-3 pr-4 text-right">
-                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='APPROVED'?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40':'bg-amber-500/20 text-amber-400 border border-amber-500/40'}">${status}</span>
-                        </td>
-                    </tr>
-                    <tr id="drawer-pt-${index}" class="detail-drawer border-l-2 border-purple-500 font-mono text-[11px] text-slate-400">
-                        <td colspan="7" class="p-4 space-y-1">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                <div><strong class="text-slate-500">Internal Pipeline Speed:</strong> Approved within ${internalDays} working days.</div>
-                                <div><strong class="text-slate-500">Procurement Cycle:</strong> Field acquisition completed in ${procurementDays} days.</div>
-                                <div><strong class="text-slate-500">System Verification:</strong> Digital PO Stamp secure token verified.</div>
-                            </div>
-                        </td>
-                    </tr>`;
-            });
-
-            const globalMean = approvedCount > 0 ? (totalOverallDays / approvedCount).toFixed(1) : "0.0";
-            document.getElementById('kpi-parts').innerText = `${globalMean}d`;
-            document.getElementById('kpi-parts-count').innerText = `Int: ${approvedCount > 0 ? (totalInternalDays/approvedCount).toFixed(1) : 0}d | Pro: ${approvedCount > 0 ? (totalProcurementDays/approvedCount).toFixed(1) : 0}d`;
-            document.getElementById("parts-table-rows").innerHTML = tableHtml;
-
-            buildAdvancedPartsPerformanceChart(['Cycle Time'], [parseFloat((totalInternalDays/approvedCount).toFixed(1)) || 0], [parseFloat((totalProcurementDays/approvedCount).toFixed(1)) || 0]);
-        }
-
-        function filterPartsTable(statusType) {
-            currentPartsFilter = statusType;
-            document.querySelectorAll('#parts-status-pills button').forEach(p => p.classList.remove('active-pill'));
-            document.getElementById(`parts-pill-${statusType}`).classList.add('active-pill');
-            applyPartsCombinedFilter();
-        }
-
-        function searchPartsTable() {
-            applyPartsCombinedFilter();
-        }
-
-        function applyPartsCombinedFilter() {
-            const query = document.getElementById('parts-search').value.toUpperCase().trim();
-            const rows = document.querySelectorAll('#parts-table-rows .filterable-row');
-            
-            rows.forEach(row => {
-                const rowStatus = (row.getAttribute('data-status') || '').toUpperCase();
-                const matchesStatus = (currentPartsFilter === 'ALL' || rowStatus === currentPartsFilter || (currentPartsFilter === 'PENDING' && rowStatus.includes('PENDING')));
-                const matchesSearch = (query === "" || row.getAttribute('data-search').includes(query));
-                
-                if(matchesStatus && matchesSearch) {
-                    row.classList.remove('hidden-row');
-                } else {
-                    row.classList.add('hidden-row');
-                    const nextDrawer = row.nextElementSibling;
-                    if(nextDrawer && nextDrawer.classList.contains('detail-drawer')) {
-                        nextDrawer.classList.remove('open-drawer');
-                    }
-                }
+                data: { labels: labels, datasets: [{ label: 'Target Count', data: labels.map(l => plannedMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(14, 165, 233, 0.85)', 'rgba(2, 132, 199, 0.4)'), borderColor: '#38bdf8', borderWidth: 1, borderRadius: 4 }, { label: 'Actual Completed', data: labels.map(l => actualMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(16, 185, 129, 0.85)', 'rgba(4, 120, 87, 0.4)'), borderColor: '#34d399', borderWidth: 1, borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8' }, grid: { display: false } }, y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', stepSize: 1 } } }, plugins: { legend: { labels: { color: '#cbd5e1' } }, datalabels: { color: '#fff', anchor: 'end', align: 'top' } } }
             });
         }
 
         function buildAdvancedPartsPerformanceChart(labels, internalData, srcProcureData) {
             const partsCtx = document.getElementById('parts-performance-canvas').getContext('2d');
             if (partsChartInstance) partsChartInstance.destroy();
-
-            const internalGrad = createVerticalGradient(partsCtx, 'rgba(34, 211, 238, 0.85)', 'rgba(14, 116, 144, 0.4)');
-            const opacityProcureGrad = createVerticalGradient(partsCtx, 'rgba(16, 185, 129, 0.85)', 'rgba(4, 120, 87, 0.4)');
-
             partsChartInstance = new Chart(partsCtx, {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: internalGrad, borderColor: '#22d3ee', borderWidth: 1, borderRadius: 4, barThickness: 40 }, { label: 'Procurement', data: srcProcureData, backgroundColor: opacityProcureGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4, barThickness: 40 }] },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y: { stacked: true, ticks: { color: '#fff' }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold' } } } }
+                data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(34, 211, 238, 0.85)', 'rgba(14, 116, 144, 0.4)'), borderColor: '#22d3ee', borderWidth: 1, barThickness: 40 }, { label: 'Procurement', data: srcProcureData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(16, 185, 129, 0.85)', 'rgba(4, 120, 87, 0.4)'), borderColor: '#34d399', borderWidth: 1, barThickness: 40 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y: { stacked: true, ticks: { color: '#fff' }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#cbd5e1' } }, datalabels: { color: '#fff', font: { weight: 'bold' } } } }
             });
+        }
+
+        // ==========================================
+        // UTILITY INTERACTIVITY METHODS
+        // ==========================================
+        function switchView(targetView) {
+            document.getElementById('view-compliance-container').classList.add('hidden');
+            document.getElementById('view-capex-container').classList.add('hidden');
+            document.getElementById('view-parts-container').classList.add('hidden');
+            
+            document.getElementById('panel-compliance').classList.remove('active-panel');
+            document.getElementById('panel-capex').classList.remove('active-panel');
+            document.getElementById('panel-parts').classList.remove('active-panel');
+
+            if (targetView === 'capex') {
+                document.getElementById('view-capex-container').classList.remove('hidden');
+                document.getElementById('panel-capex').classList.add('active-panel');
+                processAndRenderCapex();
+            } else if (targetView === 'parts' || targetView === 'speed') {
+                document.getElementById('view-parts-container').classList.remove('hidden');
+                document.getElementById('panel-parts').classList.add('active-panel');
+                processAndRenderParts();
+            } else {
+                document.getElementById('view-compliance-container').classList.remove('hidden');
+                document.getElementById('panel-compliance').classList.add('active-panel');
+            }
+            if (window.innerWidth < 1024) document.querySelector('main').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyAssetIdToClipboard(event, value) {
+            event.stopPropagation(); 
+            navigator.clipboard.writeText(value).then(() => {
+                const toast = document.getElementById('copy-toast');
+                toast.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+                setTimeout(() => toast.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none'), 1800);
+            });
+        }
+
+        function toggleRowDetailDrawer(rowId) {
+            const drawer = document.getElementById(`drawer-${rowId}`);
+            if(drawer) drawer.classList.toggle('open-drawer');
+        }
+
+        function exportViewToCSV(viewType) {
+            let csvContent = "data:text/csv;charset=utf-8,", fileName = "";
+            if (viewType === 'capex') {
+                fileName = "CAPEX_Pipeline_Export.csv";
+                csvContent += "Index,Reporting Cycle,Asset ID,Operational Activity,PO Ref,Allocation,Status\n";
+                state.raw.capex.forEach(row => { if(row[2]) csvContent += `${row[0]},${row[1]},${row[2]},"${String(row[3]).replace(/"/g, '""')}",${row[4]},${parseFloat(String(row[5]).replace(/[^0-9.]/g,''))||0},${row[6]}\n`; });
+            } else {
+                fileName = "Procurement_Turnaround_Export.csv";
+                csvContent += "Request ID,Asset Ref,Component Description,Internal Days,Procurement Days,Gross Lead Time,Status\n";
+                state.raw.parts.forEach(row => { if(row[19]) csvContent += `${row[0]},${row[2]},"${String(row[3]).replace(/"/g, '""')}",${row[11]},${row[18]},${row[20]},${row[19]}\n`; });
+            }
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>
