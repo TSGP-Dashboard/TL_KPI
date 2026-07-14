@@ -1,442 +1,981 @@
-<!://DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Analytics Command Interface</title>
-    <!-- Tailwind CSS -->
+    <title>TL Operational Command Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js for accurate dashboard visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #252462;
+        /* Exact color palette inspired by the target UI */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: radial-gradient(circle at top right, #1d1b3c 0%, #0d0c1d 100%); 
         }
+        .workspace-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .workspace-scrollbar::-webkit-scrollbar-track { background: #0c0a18; border-radius: 4px; }
+        .workspace-scrollbar::-webkit-scrollbar-thumb { background: #2a2552; border-radius: 4px; }
+        .workspace-scrollbar::-webkit-scrollbar-thumb:hover { background: #3e3778; }
+        .chart-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .chart-scrollbar::-webkit-scrollbar-track { background: #0c0a18; }
+        .chart-scrollbar::-webkit-scrollbar-thumb { background: #2a2552; border-radius: 3px; }
         
-        /* Image Palette Reproduction */
-        .bg-dashboard-dark { background-color: #11112e; }
-        .bg-sidebar-dark { background-color: #232252; }
-        .bg-card-dark { background-color: #17163b; }
-        .border-neon-cyan { border-color: rgba(6, 237, 253, 0.3); }
-        .text-neon-cyan { color: #06edf5; }
-        .text-neon-blue { color: #2d79ff; }
-        
-        /* Smooth Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #11112e; }
-        ::-webkit-scrollbar-thumb { background: #232252; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #333275; }
+        /* Left Sidebar Styling matching the glowing slate-indigo */
+        aside {
+            background-color: #1a1736;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-        /* Glowing Neon Effects matching the image */
-        .neon-glow-line {
-            filter: drop-shadow(0px 0px 8px rgba(6, 237, 253, 0.6));
+        /* Glassmorphic Glossy Cards with Neon Violet & Cyan Shadows */
+        .kpi-card {
+            background: linear-gradient(135deg, rgba(29, 26, 60, 0.8) 0%, rgba(20, 18, 43, 0.95) 100%);
+            border: 1px solid rgba(138, 92, 246, 0.15);
+            position: relative;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .neon-glow-card {
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.04);
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0; width: 0px;
+            background: linear-gradient(to bottom, #00ebd4, #00b4d8);
+            transition: width 0.25s ease;
+            border-top-left-radius: 0.75rem;
+            border-bottom-left-radius: 0.75rem;
         }
+        .kpi-card:hover { 
+            border-color: rgba(0, 235, 212, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 235, 212, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+        }
+        .kpi-card.active-panel { 
+            background: linear-gradient(135deg, rgba(31, 41, 95, 0.4) 0%, rgba(13, 12, 29, 0.95) 100%);
+            border-color: #00ebd4; 
+            box-shadow: 0 0 25px rgba(0, 235, 212, 0.25), inset 0 1px 2px rgba(0, 235, 212, 0.2); 
+        }
+        .kpi-card.active-panel::before { width: 4px; }
+
+        .filterable-row { transition: all 0.15s ease-out; cursor: pointer; }
         
-        /* Custom Circular Progress Styling */
-        .circle-progress {
-            transform: rotate(-90deg);
+        /* Filter Pills matching neon highlight theme */
+        .filter-pill {
+            background-color: #14122b;
+            border: 1px solid rgba(138, 92, 246, 0.2);
+            color: #8f8ba8;
+            transition: all 0.2s ease;
+        }
+        .filter-pill:hover {
+            border-color: #00ebd4;
+            color: #fff;
+        }
+        .filter-pill.active-pill {
+            background: linear-gradient(135deg, #00ebd4 0%, #00b4d8 100%);
+            border-color: #00ebd4;
+            color: #0d0c1d;
+            font-weight: 700;
+            box-shadow: 0 0 15px rgba(0, 235, 212, 0.4);
+        }
+
+        .detail-drawer { display: none; background-color: #0d0b1a; }
+        .detail-drawer.open-drawer { display: table-row; }
+
+        @media print {
+            body { background: #ffffff !important; color: #000000 !important; font-size: 12px; overflow: visible !important; }
+            header, aside, .filter-pill, input, select, #chart-filter-badge, #capex-pagination-ctrl, #parts-pagination-ctrl, .utility-hub-bar, #copy-toast { display: none !important; }
+            main { width: 100% !important; background: transparent !important; padding: 0 !important; border: none !important; overflow: visible !important; height: auto !important; }
+            #view-compliance-container, #view-capex-container, #view-parts-container { display: block !important; page-break-after: always; }
+            .bg-slate-950, .bg-slate-950\/60, .bg-slate-900\/60, .bg-slate-800 { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; }
+            tr { page-break-inside: avoid; }
+            th { background: #e2e8f0 !important; color: #0f172a !important; border-bottom: 2px solid #94a3b8 !important; }
+            td { color: #334155 !important; border-bottom: 1px solid #e2e8f0 !important; }
+            .text-cyan-400, .text-emerald-400, .text-amber-400, .text-purple-400 { color: #0f172a !important; font-weight: bold; }
+            canvas { max-height: 250px !important; }
+            .detail-drawer { display: none !important; }
         }
     </style>
 </head>
-<body class="text-slate-200 min-h-screen flex items-center justify-center p-0 md:p-4">
+<body class="text-[#b1add0] antialiased min-h-screen flex flex-col lg:h-screen lg:overflow-hidden">
 
-    <!-- MAIN INTERFACE WRAPPER (Reproducing the exact UI layout from the reference image) -->
-    <div class="w-full max-w-[1366px] h-auto lg:h-[768px] bg-dashboard-dark rounded-none md:rounded-2xl shadow-2xl overflow-hidden flex flex-col lg:flex-row neon-glow-card">
-        
-        <!-- LEFT SIDEBAR -->
-        <aside class="w-full lg:w-[240px] bg-sidebar-dark flex flex-col justify-between shrink-0 border-r border-indigo-950/40">
+    <!-- CLIPBOARD TOAST NOTIFICATION HUD -->
+    <div id="copy-toast" class="fixed top-6 right-6 z-50 transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300 bg-[#00ebd4] text-[#0d0c1d] font-mono text-xs font-bold px-4 py-3 rounded-lg shadow-[0_0_20px_rgba(0,235,212,0.4)] flex items-center gap-2">
+        <span>📋</span> ASSET COPIED TO SYSTEM CLIPBOARD
+    </div>
+
+    <!-- HEADER -->
+    <header class="bg-[#121027]/90 backdrop-blur-md border-b border-[#2a2552] px-4 sm:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl z-20 shrink-0">
+        <div class="flex items-center gap-4">
+            <div id="sync-indicator" class="h-3 w-3 rounded-full bg-[#00ebd4] shadow-[0_0_12px_#00ebd4] transition-all duration-300"></div>
             <div>
-                <!-- Logo Block -->
-                <div class="p-6 flex items-center gap-3 border-b border-indigo-900/30">
-                    <div class="h-7 w-7 bg-gradient-to-tr from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-cyan-500/20">
-                        L
-                    </div>
-                    <div>
-                        <h1 class="text-sm font-bold uppercase tracking-widest text-white leading-none">LOGO</h1>
-                        <span class="text-[9px] text-indigo-300 font-medium tracking-tight">LOREM IPSUM DOLOR</span>
-                    </div>
-                </div>
+                <h1 class="text-base sm:text-lg font-bold tracking-wider text-white uppercase font-mono">TL Operational Command Center</h1>
+                <p class="text-xs text-[#8f8ba8] font-mono mt-0.5">
+                    Database Feed: <span id="sync-status" class="text-[#00ebd4] font-bold">Connected</span>
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center bg-[#0d0c1d]/90 border border-[#2a2552] rounded-lg p-1.5 gap-3 font-mono text-xs">
+                <label class="flex items-center gap-2 cursor-pointer select-none text-[#8f8ba8] pl-1.5">
+                    <input type="checkbox" id="auto-sync-toggle" checked onchange="toggleAutoSyncMode()" class="rounded bg-[#0d0c1d] border-[#2a2552] text-[#00ebd4] focus:ring-0 focus:ring-offset-0 cursor-pointer">
+                    <span>Auto-Refresh (60s)</span>
+                </label>
+                <div class="h-4 w-[1px] bg-[#2a2552]"></div>
+                <button onclick="fetchLatestDataStream()" class="text-[11px] bg-[#1a1736] hover:bg-[#2a2552] text-white font-bold px-2.5 py-1 rounded transition-colors border border-[#3e3778] flex items-center gap-1">
+                    🔄 Sync Now
+                </button>
+            </div>
+            <div class="text-right hidden sm:block font-mono">
+                <p class="text-xs text-slate-200 font-medium">Global Enterprise Deck</p>
+                <p class="text-[11px] text-[#635f80]">v5.0.0-paginated</p>
+            </div>
+        </div>
+    </header>
 
-                <!-- Navigation Links -->
-                <nav class="p-4 space-y-1 text-xs font-medium text-indigo-200">
-                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-indigo-950/40 hover:text-white transition-all">
-                        <span class="text-sm opacity-70">🏢</span> LOREM IPSUM
-                    </a>
-                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-indigo-950/40 hover:text-white transition-all">
-                        <span class="text-sm opacity-70">💳</span> DOLOR BIT AMET
-                    </a>
-                    <!-- Active State mimicking the highlighted sidebar button -->
-                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-950/60 text-white border-l-4 border-cyan-400 shadow-inner">
-                        <span class="text-sm text-neon-cyan">🔔</span> CONSECTETUER
-                    </a>
-                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-indigo-950/40 hover:text-white transition-all">
-                        <span class="text-sm opacity-70">💲</span> LOREM IPSUM
-                    </a>
-                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-indigo-950/40 hover:text-white transition-all">
-                        <span class="text-sm opacity-70">📊</span> DOLOR BIT AMET
-                    </a>
-                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-indigo-950/40 hover:text-white transition-all">
-                        <span class="text-sm opacity-70">🔍</span> CONSECTETUER
-                    </a>
-                    <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-indigo-950/40 hover:text-white transition-all">
-                        <span class="text-sm opacity-70">⚙️</span> LOREM IPSUM
-                    </a>
-                </nav>
+    <!-- CORE WORKSPACE -->
+    <div class="flex-1 flex flex-col lg:flex-row w-full max-w-[1850px] mx-auto p-4 sm:p-6 gap-6 overflow-y-auto lg:h-[calc(100vh-73px)] lg:overflow-hidden">
+        
+        <!-- SIDEBAR DECK -->
+        <aside class="w-full lg:w-1/5 flex flex-col gap-4 shrink-0 p-4 rounded-xl">
+            <div class="text-[10px] font-mono tracking-widest text-[#8f8ba8] uppercase px-1 font-bold">
+                Operational Framework
             </div>
 
-            <!-- Bottom Promotion/Context Box -->
-            <div class="p-4">
-                <div class="bg-indigo-950/50 rounded-xl p-4 border border-indigo-900/40 text-center space-y-3">
-                    <p class="text-[10px] text-indigo-300 font-medium uppercase tracking-wider">Lorem Ipsum Dolor Sit Amet</p>
-                    <div class="relative w-20 h-20 mx-auto flex items-center justify-center">
-                        <svg class="circle-progress w-full h-full" viewBox="0 0 36 36">
-                            <path class="text-indigo-900" stroke-width="2.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <path class="text-cyan-400 drop-shadow-[0_0_4px_#06edf5]" stroke-dasharray="75, 100" stroke-width="2.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        </svg>
-                        <div class="absolute text-center">
-                            <span class="text-xs font-bold text-white block">$2 314</span>
+            <!-- Panel 1: Planner Compliance -->
+            <div id="panel-compliance" class="kpi-card active-panel p-4 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('compliance')">
+                <div class="flex justify-between items-start w-full gap-2">
+                    <div class="space-y-1 min-w-0">
+                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Planner Compliance</h2>
+                        <div class="text-[10px] font-mono text-[#8f8ba8] flex items-center gap-1.5 mt-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#00ebd4]"></span> Target: &gt;85%
                         </div>
                     </div>
+                    <div class="text-3xl font-mono font-bold tracking-tight text-[#00ebd4]" id="kpi-compliance">--%</div>
+                </div>
+                <div class="mt-3 flex items-center justify-between border-t border-[#2a2552] pt-2 text-[10px] font-mono text-[#8f8ba8]">
+                    <span>Chart Matrix</span>
+                    <span class="text-[#00ebd4] font-bold">Select</span>
                 </div>
             </div>
+
+            <!-- Panel 2: CAPEX Projects -->
+            <div id="panel-capex" class="kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('capex')">
+                <div class="flex justify-between items-start w-full gap-2">
+                    <div class="space-y-1 min-w-0">
+                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">CAPEX Pipeline</h2>
+                        <div class="text-[10px] font-mono text-[#f59e0b] truncate" id="kpi-capex-count">Loading...</div>
+                    </div>
+                    <div class="text-xl font-mono font-bold tracking-tight text-white whitespace-nowrap" id="kpi-capex">PHP 0M</div>
+                </div>
+                <div class="mt-3 flex items-center justify-between border-t border-[#2a2552] pt-2 text-[10px] font-mono text-[#8f8ba8]">
+                    <span>Gross Ledger</span>
+                    <span class="text-[#00ebd4] font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+                </div>
+            </div>
+
+            <!-- Panel 3: Parts Request Speed -->
+            <div id="panel-parts" class="kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('parts')">
+                <div class="flex justify-between items-start w-full gap-2">
+                    <div class="space-y-1 min-w-0">
+                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Request Speed</h2>
+                        <div class="text-[10px] font-mono text-[#a855f7] truncate" id="kpi-parts-count">Calculating...</div>
+                    </div>
+                    <div class="text-2xl font-mono font-bold tracking-tight text-[#a855f7] whitespace-nowrap" id="kpi-parts">0.0d</div>
+                </div>
+                <div class="mt-3 flex items-center justify-between border-t border-[#2a2552] pt-2 text-[10px] font-mono text-[#8f8ba8]">
+                    <span>Turnaround</span>
+                    <span class="text-[#00ebd4] font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+                </div>
+            </div>
+
+            <!-- Panel 4: Telematics Alert -->
+            <a href="https://tsgp-dashboard.github.io/OAEC_TELEMATICS_ALERT/" target="_blank" rel="noopener noreferrer" class="kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer group block">
+                <div class="flex justify-between items-start w-full gap-2">
+                    <div class="space-y-1 min-w-0">
+                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Telematics Alert</h2>
+                        <div class="text-[10px] font-mono text-[#f59e0b] flex items-center gap-1.5 mt-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#f59e0b] animate-pulse"></span> Diagnostic Hub
+                        </div>
+                    </div>
+                    <div class="text-2xl font-mono font-bold tracking-tight text-[#f59e0b] flex items-center gap-1">
+                        <span>🔗</span>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center justify-between border-t border-[#2a2552] pt-2 text-[10px] font-mono text-[#8f8ba8]">
+                    <span>External Matrix</span>
+                    <span class="text-[#f59e0b] font-bold group-hover:underline transition-all">Launch ↗</span>
+                </div>
+            </a>
         </aside>
 
-        <!-- RIGHT MAIN CONTENT WORKSPACE -->
-        <main class="flex-1 flex flex-col overflow-y-auto lg:overflow-hidden">
+        <!-- DYNAMIC CONTENT HUD -->
+        <main class="w-full lg:w-4/5 bg-[#14122d]/70 backdrop-blur-md rounded-xl border border-[#2a2552] p-4 sm:p-6 shadow-2xl lg:overflow-y-auto workspace-scrollbar lg:h-full">
             
-            <!-- HEADER BAR -->
-            <header class="h-16 border-b border-indigo-950/40 px-6 flex items-center justify-between shrink-0">
-                <div class="flex items-center gap-6">
-                    <button class="text-slate-400 hover:text-white lg:hidden">☰</button>
-                    <div class="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-400">
-                        <span>Lorem ipsum dolor amet:</span>
-                        <span class="text-white font-bold">WbtbL $157</span>
+            <!-- VIEW 1: COMPLIANCE -->
+            <div id="view-compliance-container" class="space-y-6">
+                <div class="border-b border-[#2a2552] pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                    <div>
+                        <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Schedule Compliance Variance Matrix</h3>
+                        <p class="text-xs text-[#8f8ba8] font-mono mt-0.5">Dual Axis Setup: Volume Bars vs Efficiency Curves</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button class="bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-900/60 rounded px-3 py-1 text-[11px] font-semibold text-slate-300 transition-colors">Button</button>
-                        <button class="bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-900/60 rounded px-3 py-1 text-[11px] font-semibold text-slate-300 transition-colors flex items-center gap-1">Week ▾</button>
-                    </div>
-                </div>
-                <!-- Profile Block -->
-                <div class="flex items-center gap-4">
-                    <button class="text-slate-400 hover:text-white relative">
-                        <span>🔔</span>
-                        <span class="absolute top-0 right-0 w-1.5 h-1.5 bg-cyan-400 rounded-full"></span>
-                    </button>
-                    <div class="flex items-center gap-2 border-l border-indigo-950/60 pl-4">
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-7 h-7 rounded-full border border-cyan-400 object-cover shadow-sm shadow-cyan-400/30">
-                        <span class="text-xs font-bold text-white hidden md:inline-block">Name Lorem ▾</span>
+                    <div class="flex flex-wrap items-center gap-4 text-[10px] font-mono">
+                        <select id="week-selector" onchange="changeWeekFilter()" class="bg-[#0d0c1d] text-white border border-[#2a2552] rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-[#00ebd4] cursor-pointer transition-colors shadow-md w-full sm:w-auto">
+                            <option value="">Loading cycles...</option>
+                        </select>
                     </div>
                 </div>
-            </header>
 
-            <!-- CORE GRID HUB -->
-            <div class="p-6 flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 overflow-y-auto max-h-full">
-                
-                <!-- COL 1: Performance Rings, Linear & Bar Matrices -->
-                <div class="space-y-6">
-                    <!-- Four Mini Radial Rings Segment -->
-                    <div class="grid grid-cols-4 gap-2">
-                        <div class="bg-card-dark p-2.5 rounded-xl border border-indigo-950/30 text-center relative">
-                            <svg class="circle-progress w-full h-auto" viewBox="0 0 36 36">
-                                <path class="text-indigo-950" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <path class="text-cyan-400 drop-shadow-[0_0_3px_#06edf5]" stroke-dasharray="43, 100" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            </svg>
-                            <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white mt-1">43%</span>
-                            <span class="text-[8px] text-slate-500 uppercase tracking-tight block mt-1.5 truncate">Lorem</span>
+                <!-- WEEKLY CHART CANVAS -->
+                <div class="w-full bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-4 sm:p-6 shadow-inner">
+                    <div class="h-[320px] w-full relative">
+                        <canvas id="planner-compliance-canvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- HISTORICAL MONTHLY COMPLIANCE TRENDS -->
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div class="xl:col-span-2 bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-4 sm:p-5 shadow-inner">
+                        <div class="mb-3">
+                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">Macro Historical Review</h4>
+                            <p class="text-[11px] text-[#635f80] font-mono">Monthly Average Rolled-Up Aggregations</p>
                         </div>
-                        <div class="bg-card-dark p-2.5 rounded-xl border border-indigo-950/30 text-center relative">
-                            <svg class="circle-progress w-full h-auto" viewBox="0 0 36 36">
-                                <path class="text-indigo-950" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <path class="text-teal-400 drop-shadow-[0_0_3px_#2dd8c4]" stroke-dasharray="54, 100" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            </svg>
-                            <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white mt-1">54%</span>
-                            <span class="text-[8px] text-slate-500 uppercase tracking-tight block mt-1.5 truncate">Dolor</span>
-                        </div>
-                        <div class="bg-card-dark p-2.5 rounded-xl border border-indigo-950/30 text-center relative">
-                            <svg class="circle-progress w-full h-auto" viewBox="0 0 36 36">
-                                <path class="text-indigo-950" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <path class="text-blue-500 drop-shadow-[0_0_3px_#2d79ff]" stroke-dasharray="71, 100" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            </svg>
-                            <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white mt-1">71%</span>
-                            <span class="text-[8px] text-slate-500 uppercase tracking-tight block mt-1.5 truncate">Sit</span>
-                        </div>
-                        <div class="bg-card-dark p-2.5 rounded-xl border border-indigo-950/30 text-center relative">
-                            <svg class="circle-progress w-full h-auto" viewBox="0 0 36 36">
-                                <path class="text-indigo-950" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <path class="text-cyan-400 drop-shadow-[0_0_3px_#06edf5]" stroke-dasharray="68, 100" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            </svg>
-                            <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white mt-1">68%</span>
-                            <span class="text-[8px] text-slate-500 uppercase tracking-tight block mt-1.5 truncate">Amet</span>
+                        <div class="h-[220px] w-full relative">
+                            <canvas id="monthly-compliance-canvas"></canvas>
                         </div>
                     </div>
 
-                    <!-- Mixed Trend Graph Component -->
-                    <div class="bg-card-dark p-4 rounded-xl border border-indigo-950/30">
-                        <div class="h-28 w-full">
-                            <canvas id="mixedTrendChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Horizontal Progress Bars Group -->
-                    <div class="bg-card-dark p-4 rounded-xl border border-indigo-950/30 space-y-4">
-                        <div class="space-y-1.5">
-                            <div class="flex justify-between items-center text-[10px] text-slate-400 font-medium">
-                                <span class="truncate max-w-[150px]">Lorem ipsum dolor amet</span>
-                                <span class="text-white font-bold">73%</span>
-                            </div>
-                            <div class="w-full bg-indigo-950 h-2.5 rounded-full overflow-hidden">
-                                <div class="bg-gradient-to-r from-teal-400 to-cyan-400 h-full rounded-full shadow-[0_0_6px_#06edf5]" style="width: 73%"></div>
-                            </div>
-                        </div>
-                        <div class="space-y-1.5">
-                            <div class="flex justify-between items-center text-[10px] text-slate-400 font-medium">
-                                <span class="truncate max-w-[150px]">Lorem ipsum dolor amet</span>
-                                <span class="text-white font-bold">56%</span>
-                            </div>
-                            <div class="w-full bg-indigo-950 h-2.5 rounded-full overflow-hidden">
-                                <div class="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full shadow-[0_0_6px_#2d79ff]" style="width: 56%"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Structured Columns Distribution Visualizer -->
-                    <div class="bg-card-dark p-4 rounded-xl border border-indigo-950/30">
-                        <div class="grid grid-cols-3 gap-3 h-28 items-end text-center">
-                            <div class="space-y-2">
-                                <div class="w-full bg-indigo-900/30 rounded-t-lg h-20 flex flex-col justify-end overflow-hidden p-1">
-                                    <div class="bg-cyan-500/80 rounded-t w-full h-[65%]"></div>
-                                </div>
-                                <span class="text-[9px] text-slate-400 block truncate">Lorem</span>
-                            </div>
-                            <div class="space-y-2">
-                                <div class="w-full bg-indigo-900/30 rounded-t-lg h-20 flex flex-col justify-end overflow-hidden p-1">
-                                    <div class="bg-teal-400/80 rounded-t w-full h-[80%]"></div>
-                                </div>
-                                <span class="text-[9px] text-slate-400 block truncate">Dolor</span>
-                            </div>
-                            <div class="space-y-2">
-                                <div class="w-full bg-indigo-900/30 rounded-t-lg h-20 flex flex-col justify-end overflow-hidden p-1">
-                                    <div class="bg-cyan-400 rounded-t w-full h-[50%]"></div>
-                                </div>
-                                <span class="text-[9px] text-slate-400 block truncate">Amet</span>
+                    <!-- SCOPED WORK GROUP LEGEND -->
+                    <div class="bg-[#0d0c1d]/40 border border-[#2a2552] rounded-xl p-4 flex flex-col justify-between">
+                        <div>
+                            <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 font-mono flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#00ebd4]"></span> Planner Jurisdiction Scope
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left font-mono text-[11px]">
+                                    <thead class="bg-[#14122d]/80 text-[#8f8ba8] text-[9px] uppercase font-bold border-b border-[#2a2552]">
+                                        <tr>
+                                            <th class="py-2 px-3">Planner</th>
+                                            <th class="py-2 px-3">Maintenance Assignment</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-[#2a2552]/40 text-slate-300">
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00ebd4]">PHILIP</td><td class="py-2 px-3 text-slate-300">PMS Engine Area</td></tr>
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00ebd4]">LEO</td><td class="py-2 px-3 text-slate-300">CM (GEM, LOS AMIGOS)</td></tr>
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00ebd4]">VINCENT</td><td class="py-2 px-3 text-slate-300">CM (REGION XIII, SINUDA)</td></tr>
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00ebd4]">GLENBERTH</td><td class="py-2 px-3 text-slate-300">CM (REGION XI-A, XI-B)</td></tr>
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00ebd4]">ROICE</td><td class="py-2 px-3 text-slate-300">CM (SAMAL, CRANEAGE)</td></tr>
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00ebd4]">JANE</td><td class="py-2 px-3 text-slate-300">PM & CM (REGION X)</td></tr>
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00ebd4]">DIONAH</td><td class="py-2 px-3 text-slate-300">SV, TM, TYRES Fleet</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- COL 2: Segmented Badges & Distribution Blocks -->
-                <div class="space-y-6">
-                    <!-- Top House Shape KPI badges -->
-                    <div class="grid grid-cols-3 gap-2">
-                        <div class="bg-card-dark p-3 rounded-xl border border-indigo-950/30 text-center relative overflow-hidden group">
-                            <div class="absolute inset-x-0 top-0 h-1 bg-cyan-400 shadow-[0_0_8px_#06edf5]"></div>
-                            <span class="text-lg block">📊</span>
-                            <span class="text-xs font-bold text-white block mt-1">73%</span>
-                            <span class="text-[8px] text-slate-500 uppercase tracking-tight block truncate">Lorem</span>
-                        </div>
-                        <div class="bg-card-dark p-3 rounded-xl border border-indigo-950/30 text-center relative overflow-hidden group">
-                            <div class="absolute inset-x-0 top-0 h-1 bg-teal-400 shadow-[0_0_8px_#2dd8c4]"></div>
-                            <span class="text-lg block">📈</span>
-                            <span class="text-xs font-bold text-white block mt-1">57%</span>
-                            <span class="text-[8px] text-slate-500 uppercase tracking-tight block truncate">Dolor</span>
-                        </div>
-                        <div class="bg-card-dark p-3 rounded-xl border border-indigo-950/30 text-center relative overflow-hidden group">
-                            <div class="absolute inset-x-0 top-0 h-1 bg-blue-500 shadow-[0_0_8px_#2d79ff]"></div>
-                            <span class="text-lg block">🛡️</span>
-                            <span class="text-xs font-bold text-white block mt-1">21%</span>
-                            <span class="text-[8px] text-slate-500 uppercase tracking-tight block truncate">Amet</span>
-                        </div>
-                    </div>
-
-                    <!-- Medium Horizontal Progress Strip Stack -->
-                    <div class="bg-card-dark p-4 rounded-xl border border-indigo-950/30 space-y-2.5">
-                        <div class="h-1.5 w-full bg-indigo-950 rounded-full overflow-hidden"><div class="h-full bg-teal-400 w-[80%]"></div></div>
-                        <div class="h-1.5 w-full bg-indigo-950 rounded-full overflow-hidden"><div class="h-full bg-cyan-400 w-[55%]"></div></div>
-                        <div class="h-1.5 w-full bg-indigo-950 rounded-full overflow-hidden"><div class="h-full bg-blue-500 w-[35%]"></div></div>
-                        <div class="h-1.5 w-full bg-indigo-950 rounded-full overflow-hidden"><div class="h-full bg-cyan-300 w-[65%]"></div></div>
-                    </div>
-
-                    <!-- Triple Vertical Block Matrix Grid -->
-                    <div class="bg-card-dark p-4 rounded-xl border border-indigo-950/30">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-[10px] text-white uppercase tracking-wider font-bold">Lorem Ipsum</span>
-                            <span class="text-slate-500 text-xs">⚙️</span>
-                        </div>
-                        <div class="grid grid-cols-3 gap-2">
-                            <div class="bg-indigo-950/50 rounded-lg p-2 text-center space-y-1 border border-indigo-900/20">
-                                <div class="h-12 w-full bg-blue-600/20 rounded flex items-end"><div class="w-full bg-blue-500 h-[40%] rounded-b"></div></div>
-                                <span class="text-[9px] font-bold text-white">20k</span>
-                            </div>
-                            <div class="bg-indigo-950/50 rounded-lg p-2 text-center space-y-1 border border-indigo-900/20">
-                                <div class="h-12 w-full bg-teal-500/20 rounded flex items-end"><div class="w-full bg-teal-400 h-[75%] rounded-b"></div></div>
-                                <span class="text-[9px] font-bold text-white">67k</span>
-                            </div>
-                            <div class="bg-indigo-950/50 rounded-lg p-2 text-center space-y-1 border border-indigo-900/20">
-                                <div class="h-12 w-full bg-cyan-500/20 rounded flex items-end"><div class="w-full bg-cyan-400 h-[50%] rounded-b"></div></div>
-                                <span class="text-[9px] font-bold text-white">45k</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Double Ring Compact Layout Module -->
-                    <div class="bg-card-dark p-4 rounded-xl border border-indigo-950/30 grid grid-cols-2 gap-4">
-                        <div class="flex items-center gap-3 bg-indigo-950/30 p-2 rounded-lg border border-indigo-900/20">
-                            <div class="w-10 h-10 shrink-0 relative">
-                                <svg class="circle-progress w-full h-full" viewBox="0 0 36 36">
-                                    <path class="text-indigo-950" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                    <path class="text-cyan-400" stroke-dasharray="88, 100" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                </svg>
-                                <span class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white">88%</span>
-                            </div>
-                            <span class="text-[9px] text-slate-400 font-medium truncate">Lorem sit</span>
-                        </div>
-                        <div class="flex items-center gap-3 bg-indigo-950/30 p-2 rounded-lg border border-indigo-900/20">
-                            <div class="w-10 h-10 shrink-0 relative">
-                                <svg class="circle-progress w-full h-full" viewBox="0 0 36 36">
-                                    <path class="text-indigo-950" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                    <path class="text-teal-400" stroke-dasharray="21, 100" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                </svg>
-                                <span class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white">21%</span>
-                            </div>
-                            <span class="text-[9px] text-slate-400 font-medium truncate">Dolor amet</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- COL 3: Premium Highlighting Fluid Wave Component & Dual Statistics Block -->
-                <div class="space-y-6">
-                    <!-- Glowing Sine-Wave Core Display Card -->
-                    <div class="bg-gradient-to-b from-[#191942] to-[#131333] p-4 rounded-xl border border-indigo-950/60 shadow-xl relative overflow-hidden">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <h4 class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">LOREM IPSUM</h4>
-                                <span class="text-[9px] text-slate-500 block">Dolor sit amet, consectetuer</span>
-                            </div>
-                            <span class="text-sm font-bold text-white">$5 678</span>
-                        </div>
-                        <div class="h-28 w-full mt-2">
-                            <canvas id="neonWaveChart" class="neon-glow-line"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Custom Four Stack Row Metrics Block -->
-                    <div class="bg-card-dark p-4 rounded-xl border border-indigo-950/30 space-y-3">
-                        <div class="flex items-center gap-3">
-                            <span class="text-[11px] font-bold text-white w-7">20%</span>
-                            <div class="flex-1 bg-indigo-950 h-2 rounded-full overflow-hidden"><div class="bg-blue-600 h-full w-[20%]"></div></div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-[11px] font-bold text-white w-7">67%</span>
-                            <div class="flex-1 bg-indigo-950 h-2 rounded-full overflow-hidden"><div class="bg-teal-400 h-full w-[67%]"></div></div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-[11px] font-bold text-white w-7">45%</span>
-                            <div class="flex-1 bg-indigo-950 h-2 rounded-full overflow-hidden"><div class="bg-cyan-400 h-full w-[45%]"></div></div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-[11px] font-bold text-white w-7">67%</span>
-                            <div class="flex-1 bg-indigo-950 h-2 rounded-full overflow-hidden"><div class="bg-cyan-300 h-full w-[67%]"></div></div>
-                        </div>
-                    </div>
-
-                    <!-- Bottom Twin Bordered Showcase Cards -->
-                    <div class="space-y-3">
-                        <div class="bg-indigo-950/30 border border-cyan-500/30 rounded-xl p-3 flex items-center justify-between hover:border-cyan-400/50 transition-colors">
-                            <span class="text-sm font-bold text-white">54%</span>
-                            <span class="text-[10px] text-slate-400 font-medium truncate max-w-[180px]">Lorem ipsum dolor sit amet</span>
-                        </div>
-                        <div class="bg-indigo-950/30 border border-teal-500/30 rounded-xl p-3 flex items-center justify-between hover:border-teal-400/50 transition-colors">
-                            <span class="text-sm font-bold text-white">37%</span>
-                            <span class="text-[10px] text-slate-400 font-medium truncate max-w-[180px]">Consectetuer adipiscing elit</span>
-                        </div>
-                    </div>
-                </div>
-
             </div>
+
+            <!-- VIEW 2: CAPEX -->
+            <div id="view-capex-container" class="hidden space-y-6">
+                <div class="border-b border-[#2a2552] pb-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                        <div>
+                            <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">CAPEX Advanced Metrics Engine</h3>
+                            <p class="text-xs text-[#8f8ba8] font-mono mt-0.5">Allocation streams and asset deployment breakdown (Click segment to cross-filter)</p>
+                        </div>
+                        <div id="chart-filter-badge" class="hidden font-mono text-[10px] bg-[#0d0c1d] border border-[#00ebd4] text-[#00ebd4] px-2 py-1 rounded animate-pulse shadow-md">
+                            Chart Filter Active: <span id="chart-filter-name" class="font-bold">None</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+                    <div class="xl:col-span-2 bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-5 flex flex-col items-center">
+                        <div class="w-full flex justify-between items-center mb-4">
+                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">Asset Allocation</h4>
+                            <span class="text-[9px] font-mono text-[#8f8ba8] cursor-pointer hover:text-[#00ebd4] select-none" onclick="resetChartCrossFilter()">[Clear Filter]</span>
+                        </div>
+                        <div class="w-full max-w-[280px] h-[280px] flex items-center justify-center relative">
+                            <canvas id="capex-doughnut-canvas"></canvas>
+                        </div>
+                    </div>
+                    <div class="xl:col-span-3 bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-5">
+                        <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-4 font-mono">Equipment Categories</h4>
+                        <div class="w-full h-[280px]">
+                            <canvas id="capex-bar-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UTILITY HUB BAR -->
+                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-[#0d0c1d]/40 p-3 rounded-xl border border-[#2a2552]">
+                    <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="capex-status-pills">
+                        <button onclick="filterCapexTable('ALL')" id="capex-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL STATUSES</button>
+                        <button onclick="filterCapexTable('WITH DOCUMENTS')" id="capex-pill-WITH-DOCUMENTS" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">PENDING DOCS</button>
+                        <button onclick="filterCapexTable('DONE')" id="capex-pill-DONE" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">COMPLETE</button>
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <input type="text" id="capex-search" oninput="searchCapexTable()" placeholder="🔍 Fuzzy multi-search (eg. 'BH complete')..." class="w-full sm:w-64 bg-[#0d0c1d] text-slate-200 placeholder-[#635f80] border border-[#2a2552] rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-[#00ebd4]">
+                        <button onclick="exportViewToCSV('capex')" class="bg-[#121027] text-[#00ebd4] hover:bg-[#1a1736] border border-[#00ebd4]/30 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
+                        <button onclick="window.print()" class="bg-[#1a1736] hover:bg-[#2a2552] text-slate-300 border border-[#3e3778] rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto chart-scrollbar bg-[#0d0c1d]/60 rounded-xl border border-[#2a2552] p-4">
+                    <table id="capex-data-table" class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
+                        <thead>
+                            <tr class="bg-[#1a1736] text-[#b1add0] uppercase tracking-wider text-[11px] font-bold rounded-lg border-b border-[#2a2552]">
+                                <th class="p-3 pl-4 rounded-l-lg">Index</th>
+                                <th class="p-3">Reporting Cycle</th>
+                                <th class="p-3">Asset ID</th>
+                                <th class="p-3">Operational Activity</th>
+                                <th class="p-3">PO Ref</th>
+                                <th class="p-3" width="15%">Allocation</th>
+                                <th class="p-3 pr-4 text-right rounded-r-lg">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#2a2552] text-slate-300" id="capex-table-rows">
+                            <tr><td colspan="7" class="py-6 text-center text-slate-500">Querying database allocations...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="capex-pagination-ctrl" class="flex justify-between items-center mt-4 px-2 font-mono text-xs text-[#8f8ba8]"></div>
+            </div>
+
+            <!-- VIEW 3: PARTS REQUEST -->
+            <div id="view-parts-container" class="hidden space-y-6">
+                <div class="border-b border-[#2a2552] pb-4">
+                    <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Procurement Turnaround Analytics Matrix</h3>
+                    <p class="text-xs text-[#8f8ba8] font-mono mt-1">
+                        💡 <strong class="text-[#00ebd4]">Internal:</strong> Admin Processing Speed. | <strong class="text-emerald-400">Procurement:</strong> Logistics Pipeline.
+                    </p>
+                </div>
+                <div class="bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-4 sm:p-6">
+                    <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-5 font-mono">Average Total Lead Days Breakdown</h4>
+                    <div class="w-full h-[150px]">
+                        <canvas id="parts-performance-canvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- UTILITY HUB BAR -->
+                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-[#0d0c1d]/40 p-3 rounded-xl border border-[#2a2552]">
+                    <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="parts-status-pills">
+                        <button onclick="filterPartsTable('ALL')" id="parts-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL</button>
+                        <button onclick="filterPartsTable('APPROVED')" id="parts-pill-APPROVED" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">APPROVED</button>
+                        <button onclick="filterPartsTable('PENDING')" id="parts-pill-PENDING" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">PENDING</button>
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <input type="text" id="parts-search" oninput="searchPartsTable()" placeholder="🔍 Search description..." class="w-full sm:w-64 bg-[#0d0c1d] text-slate-200 placeholder-[#635f80] border border-[#2a2552] rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-[#00ebd4]">
+                        <button onclick="exportViewToCSV('parts')" class="bg-[#121027] text-[#00ebd4] hover:bg-[#1a1736] border border-[#00ebd4]/30 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
+                        <button onclick="window.print()" class="bg-[#1a1736] hover:bg-[#2a2552] text-slate-300 border border-[#3e3778] rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto chart-scrollbar bg-[#0d0c1d]/60 rounded-xl border border-[#2a2552] p-4">
+                    <table id="parts-data-table" class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
+                        <thead>
+                            <tr class="bg-[#1a1736] text-[#b1add0] uppercase tracking-wider text-[11px] font-bold rounded-lg border-b border-[#2a2552]">
+                                <th class="p-3 pl-4 rounded-l-lg">Request ID</th>
+                                <th class="p-3">Asset Ref</th>
+                                <th class="p-3">Component Description</th>
+                                <th class="p-3">Our End</th>
+                                <th class="p-3">Procurement</th>
+                                <th class="p-3">Gross Lead Time</th>
+                                <th class="p-3 pr-4 text-right rounded-r-lg">Workflow Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#2a2552] text-slate-300" id="parts-table-rows">
+                            <tr><td colspan="7" class="py-6 text-center text-slate-500">Retrieving logistical metrics...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="parts-pagination-ctrl" class="flex justify-between items-center mt-4 px-2 font-mono text-xs text-[#8f8ba8]"></div>
+            </div>
+
         </main>
     </div>
 
-    <!-- SCRIPT INITIALIZATION BLOCK FOR CHART DATA REPRODUCTION -->
+    <!-- DATA PIPELINE ENGINE (V5.0 Advanced Architecture) -->
     <script>
-        // Mixed Trend Chart Initialization
-        const mixedTrendCtx = document.getElementById('mixedTrendChart').getContext('2d');
-        new Chart(mixedTrendCtx, {
-            type: 'bar',
-            data: {
-                labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
-                datasets: [
-                    {
-                        type: 'line',
-                        data: [50, 48, 55, 45, 40, 35, 30, 28, 22],
-                        borderColor: '#06edf5',
-                        borderWidth: 2,
-                        pointRadius: 3,
-                        pointBackgroundColor: '#06edf5',
-                        fill: false,
-                        tension: 0.1
-                    },
-                    {
-                        type: 'bar',
-                        data: [70, 65, 80, 75, 60, 55, 45, 40, 35],
-                        backgroundColor: 'rgba(45, 121, 255, 0.35)',
-                        borderRadius: 3,
-                        barThickness: 8
+        const SHEET_DB_API_URL = 'https://script.google.com/macros/s/AKfycbzqed0j2W4mevtpEANLXZTIpFoAS79_GXxzmNvDfZOls4hOlnHY7FDtWyyXUCHIawrePQ/exec';
+
+        // Centralized Application State Matrix
+        const state = {
+            raw: { planner: [], capex: [], parts: [] },
+            capex: { page: 1, limit: 12, search: '', status: 'ALL', category: 'ALL' },
+            parts: { page: 1, limit: 12, search: '', status: 'ALL' },
+            global: { complianceThreshold: 85, autoSyncInterval: null }
+        };
+        
+        let complianceChartInstance = null;
+        let monthlyChartInstance = null;
+        let doughnutChartInstance = null;
+        let barChartInstance = null;
+        let partsChartInstance = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            Chart.defaults.font.family = "'Inter', ui-sans-serif, system-ui, sans-serif";
+            Chart.register(ChartDataLabels);
+            fetchLatestDataStream();
+            initBackgroundTimerStreamer();
+        });
+
+        function createVerticalGradient(ctx, colorStart, colorEnd) {
+            const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+            gradient.addColorStop(0, colorStart);
+            gradient.addColorStop(1, colorEnd);
+            return gradient;
+        }
+
+        // Tokenized Fuzzy Search Matcher (Evaluates queries out of absolute order)
+        function fuzzyMatch(text, query) {
+            if (!query) return true;
+            const tokens = query.toLowerCase().split(/\s+/).filter(t => t.length > 0);
+            const target = text.toLowerCase();
+            return tokens.every(token => target.includes(token));
+        }
+
+        function initBackgroundTimerStreamer() {
+            if(state.global.autoSyncInterval) clearInterval(state.global.autoSyncInterval);
+            state.global.autoSyncInterval = setInterval(() => {
+                if(document.getElementById('auto-sync-toggle').checked) fetchLatestDataStream();
+            }, 60000);
+        }
+
+        function toggleAutoSyncMode() {
+            const isAutoEnabled = document.getElementById('auto-sync-toggle').checked;
+            const statusTxt = document.getElementById('sync-status');
+            if(!isAutoEnabled) {
+                statusTxt.innerText = "Paused (Manual Mode)";
+                statusTxt.className = "text-slate-400 font-bold text-xs font-mono mt-0.5";
+            } else {
+                statusTxt.innerText = "Connected";
+                statusTxt.className = "text-[#00ebd4] font-bold text-xs font-mono mt-0.5";
+                fetchLatestDataStream(); 
+            }
+        }
+
+        async function fetchLatestDataStream() {
+            if(SHEET_DB_API_URL.includes('YOUR_COPIED_GOOGLE_WEB_APP_URL_HERE')) return;
+            
+            const indicator = document.getElementById('sync-indicator');
+            const statusTxt = document.getElementById('sync-status');
+            
+            indicator.classList.replace('bg-[#00ebd4]', 'bg-amber-400');
+            indicator.classList.replace('shadow-[0_0_12px_#00ebd4]', 'shadow-[0_0_10px_#f59e0b]');
+            statusTxt.innerText = "Syncing with cloud...";
+            statusTxt.className = "text-amber-400 font-bold text-xs font-mono mt-0.5";
+
+            try {
+                const res = await fetch(SHEET_DB_API_URL, { method: 'GET', mode: 'cors', credentials: 'omit' });
+                if (!res.ok) throw new Error(`HTTP Error Status: ${res.status}`);
+                const payload = await res.json();
+                
+                if (payload.status === "success" && payload.data) {
+                    state.raw.planner = payload.data.planner_performance || [];
+                    state.raw.capex = payload.data.capex_projects || [];
+                    state.raw.parts = payload.data.parts_requests || [];
+                    
+                    const selector = document.getElementById('week-selector');
+                    const savedWeekSelection = selector.value;
+                    
+                    const defaultWeek = populateWeekSelector(state.raw.planner);
+                    if(savedWeekSelection && Array.from(selector.options).some(o => o.value === savedWeekSelection)) {
+                        selector.value = savedWeekSelection;
+                        renderPlannerVisualizer(state.raw.planner, savedWeekSelection);
+                    } else {
+                        renderPlannerVisualizer(state.raw.planner, defaultWeek); 
                     }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false }, ticks: { color: '#52527a', font: { size: 9 } } },
-                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { display: false } }
-                }
-            }
-        });
+                    
+                    calculateMonthlyAggregates(state.raw.planner);
+                    processAndRenderCapex();
+                    processAndRenderParts();
 
-        // Glowing Neon Wave Line Chart
-        const neonWaveCtx = document.getElementById('neonWaveChart').getContext('2d');
-        const neonGradient = neonWaveCtx.createLinearGradient(0, 0, 0, 100);
-        neonGradient.addColorStop(0, 'rgba(6, 237, 255, 0.25)');
-        neonGradient.addColorStop(1, 'rgba(6, 237, 255, 0)');
-
-        new Chart(neonWaveCtx, {
-            type: 'line',
-            data: {
-                labels: ['A', 'B', 'C', 'D', 'E', 'F'],
-                datasets: [{
-                    data: [35, 20, 55, 45, 40, 15],
-                    borderColor: '#06edf5',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#fff',
-                    pointBorderColor: '#06edf5',
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    fill: true,
-                    backgroundColor: neonGradient,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { display: false },
-                    y: { display: false }
+                    indicator.classList.replace('bg-amber-400', 'bg-[#00ebd4]');
+                    indicator.classList.replace('shadow-[0_0_10px_#f59e0b]', 'shadow-[0_0_12px_#00ebd4]');
+                    statusTxt.innerText = document.getElementById('auto-sync-toggle').checked ? "Connected" : "Paused (Manual Mode)";
+                    statusTxt.className = document.getElementById('auto-sync-toggle').checked ? "text-[#00ebd4] font-bold text-xs font-mono mt-0.5" : "text-slate-400 font-bold text-xs font-mono mt-0.5";
                 }
+            } catch (err) {
+                console.error("Streamer sync error:", err);
+                statusTxt.innerText = "Sync Timeout - Reconnecting";
+                statusTxt.className = "text-rose-500 font-bold text-xs font-mono mt-0.5";
+                indicator.classList.replace('bg-[#00ebd4]', 'bg-rose-500');
             }
-        });
+        }
+
+        // ==========================================
+        // DYNAMIC CAPEX SUB-SYSTEM (CROSS-FILTERED + PAGINATED)
+        // ==========================================
+        function processAndRenderCapex() {
+            let documentPhaseCount = 0, totalDatabaseGrossBudget = 0;
+            let categoryFinancials = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
+            let categoryVolumePlanned = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
+            let categoryVolumeActual = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
+
+            // Run structural metrics on absolute data before filtering bounds are placed
+            state.raw.capex.forEach(row => {
+                if (!row[2] && !row[5]) return;
+                const assetId = String(row[2] || '').toUpperCase();
+                const status = row[6] || '';
+                let budgetNum = parseFloat(String(row[5] || '').replace(/[^0-9.]/g, '')) || 0;
+
+                totalDatabaseGrossBudget += budgetNum;
+                if(status === 'With Documents' || status === 'Pending Documents' || row[0] === "37") documentPhaseCount++;
+
+                let cat = assetId.startsWith("BH") ? "Backhoe" : assetId.startsWith("BD") ? "Bulldozer" : assetId.startsWith("CR") ? "Crane" : assetId.startsWith("DR") ? "Drill Rig" : null;
+                if (cat) {
+                    categoryFinancials[cat] += budgetNum;
+                    categoryVolumePlanned[cat] += 1;
+                    if (status === "Done" || status === "Complete") categoryVolumeActual[cat] += 1;
+                }
+            });
+
+            document.getElementById('kpi-capex').innerText = `PHP ${(totalDatabaseGrossBudget / 1000000).toFixed(1)}M`;
+            document.getElementById('kpi-capex-count').innerText = `● ${documentPhaseCount} Docs Pending`;
+            buildAdvancedCapexCharts(categoryFinancials, categoryVolumePlanned, categoryVolumeActual);
+
+            // Apply cross-filtering engine logic
+            const processedDataset = state.raw.capex.filter(row => {
+                if (!row[2] && !row[5]) return false;
+                const assetId = String(row[2] || '').toUpperCase();
+                const activity = String(row[3] || '').toUpperCase();
+                const status = (row[6] || '').toUpperCase();
+                let cat = assetId.startsWith("BH") ? "BACKHOE" : assetId.startsWith("BD") ? "BULLDOZER" : assetId.startsWith("CR") ? "CRANE" : assetId.startsWith("DR") ? "DRILL RIG" : "OTHER";
+
+                const matchesStatus = (state.capex.status === 'ALL' || status === state.capex.status || (state.capex.status === 'WITH DOCUMENTS' && status === ''));
+                const matchesCategory = (state.capex.category === 'ALL' || cat === state.capex.category);
+                const matchesSearch = fuzzyMatch(`${assetId} ${activity}`, state.capex.search);
+
+                return matchesStatus && matchesCategory && matchesSearch;
+            });
+
+            // Calculate Pagination bounds
+            const totalItems = processedDataset.length;
+            const maxPage = Math.max(1, Math.ceil(totalItems / state.capex.limit));
+            if (state.capex.page > maxPage) state.capex.page = maxPage;
+            
+            const startIndex = (state.capex.page - 1) * state.capex.limit;
+            const pageSlice = processedDataset.slice(startIndex, startIndex + state.capex.limit);
+
+            let tableHtml = '';
+            if (pageSlice.length === 0) {
+                tableHtml = `<tr><td colspan="7" class="py-12 text-center text-slate-500 font-mono text-xs">⚠️ No matching records correspond with active matrix filters.</td></tr>`;
+            } else {
+                pageSlice.forEach((row, i) => {
+                    const id = row[0], quarter = row[1], assetId = String(row[2] || '').toUpperCase(), activity = row[3] || '', po = row[4], status = row[6] || '';
+                    let budgetNum = parseFloat(String(row[5] || '').replace(/[^0-9.]/g, '')) || 0;
+                    const index = startIndex + i;
+
+                    tableHtml += `
+                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-[#14122d]/40' : 'bg-[#14122d]/80'} hover:bg-[#1a1736]/90 border-b border-[#2a2552]/40 transition-colors" 
+                            onclick="toggleRowDetailDrawer('cx-${index}')">
+                            <td class="p-3 pl-4 text-slate-500 font-medium">${id}</td>
+                            <td class="p-3 text-[#8f8ba8] text-[11px] font-medium">${quarter}</td>
+                            <td class="p-3">
+                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-[#0d0c1d] border border-[#2a2552] text-[#00ebd4] hover:border-[#00ebd4] transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold font-mono cursor-pointer">
+                                    ${assetId} 📋
+                                </span>
+                            </td>
+                            <td class="p-3 text-white font-medium">${activity}</td>
+                            <td class="p-3 text-slate-400">${po || '---'}</td>
+                            <td class="p-3 text-[#00ebd4] font-semibold">PHP ${budgetNum.toLocaleString()}</td>
+                            <td class="p-3 pr-4 text-right">
+                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'||status==='Complete'?'bg-[#00ebd4]/10 text-[#00ebd4] border border-[#00ebd4]/30':'bg-[#14122d] text-slate-400 border border-[#2a2552]'}">${status || 'With Documents'}</span>
+                            </td>
+                        </tr>
+                        <tr id="drawer-cx-${index}" class="detail-drawer border-l-2 border-[#00ebd4] font-mono text-[11px] text-slate-400">
+                            <td colspan="7" class="p-4 space-y-2">
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Pipeline ID Token</span> cx-ref-${id}00${index}</div>
+                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Deployment Phase</span> Tier-1 Operational Authorization</div>
+                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Ledger Sync Index</span> 0x${(index*143).toString(16).toUpperCase()}</div>
+                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Procurement Route</span> Direct Vendor Allocation</div>
+                                </div>
+                            </td>
+                        </tr>`;
+                });
+            }
+
+            document.getElementById("capex-table-rows").innerHTML = tableHtml;
+            
+            // Render Pagination control elements
+            document.getElementById('capex-pagination-ctrl').innerHTML = `
+                <div>Showing ${totalItems === 0 ? 0 : startIndex + 1} to ${Math.min(startIndex + state.capex.limit, totalItems)} of ${totalItems} assets</div>
+                <div class="flex items-center gap-2">
+                    <button onclick="setCapexPage(${state.capex.page - 1})" ${state.capex.page === 1 ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-[#1a1736] hover:bg-[#2a2552] px-3 py-1 rounded border border-[#3e3778] text-slate-300 transition-colors"'} tabindex="0">◄ Prev</button>
+                    <span class="text-slate-300 font-bold">Page ${state.capex.page} / ${maxPage}</span>
+                    <button onclick="setCapexPage(${state.capex.page + 1})" ${state.capex.page === maxPage ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-[#1a1736] hover:bg-[#2a2552] px-3 py-1 rounded border border-[#3e3778] text-slate-300 transition-colors"'} tabindex="0">Next ►</button>
+                </div>`;
+        }
+
+        function setCapexPage(p) { state.capex.page = p; processAndRenderCapex(); }
+        
+        function filterCapexTable(statusType) {
+            state.capex.status = statusType;
+            state.capex.page = 1;
+            document.querySelectorAll('#capex-status-pills button').forEach(p => p.classList.remove('active-pill'));
+            document.getElementById(`capex-pill-${statusType.replace(' ', '-')}`).classList.add('active-pill');
+            processAndRenderCapex();
+        }
+
+        // ==========================================
+        // PARTS REQ SPEED SUB-SYSTEM (FUZZY + PAGINATED)
+        // ==========================================
+        function processAndRenderParts() {
+            let totalOverallDays = 0, totalInternalDays = 0, totalProcurementDays = 0, approvedCount = 0;
+
+            state.raw.parts.forEach(row => {
+                if (!row[19]) return;
+                const status = String(row[19]).trim().toUpperCase();
+                if (status === "APPROVED") {
+                    totalOverallDays += parseFloat(row[20]) || 0; 
+                    totalInternalDays += parseFloat(row[11]) || 0; 
+                    totalProcurementDays += parseFloat(row[18]) || 0; 
+                    approvedCount++;
+                }
+            });
+
+            const globalMean = approvedCount > 0 ? (totalOverallDays / approvedCount).toFixed(1) : "0.0";
+            document.getElementById('kpi-parts').innerText = `${globalMean}d`;
+            document.getElementById('kpi-parts-count').innerText = `Int: ${approvedCount > 0 ? (totalInternalDays/approvedCount).toFixed(1) : 0}d | Pro: ${approvedCount > 0 ? (totalProcurementDays/approvedCount).toFixed(1) : 0}d`;
+            buildAdvancedPartsPerformanceChart(['Cycle Time'], [parseFloat((totalInternalDays/approvedCount).toFixed(1)) || 0], [parseFloat((totalProcurementDays/approvedCount).toFixed(1)) || 0]);
+
+            const processedDataset = state.raw.parts.filter(row => {
+                if (!row[19]) return false;
+                const assetId = String(row[2]).toUpperCase();
+                const desc = String(row[3]).toUpperCase();
+                const status = String(row[19]).trim().toUpperCase();
+
+                const matchesStatus = (state.parts.status === 'ALL' || status === state.parts.status || (state.parts.status === 'PENDING' && status.includes('PENDING')));
+                const matchesSearch = fuzzyMatch(`${assetId} ${desc}`, state.parts.search);
+
+                return matchesStatus && matchesSearch;
+            });
+
+            const totalItems = processedDataset.length;
+            const maxPage = Math.max(1, Math.ceil(totalItems / state.parts.limit));
+            if (state.parts.page > maxPage) state.parts.page = maxPage;
+
+            const startIndex = (state.parts.page - 1) * state.parts.limit;
+            const pageSlice = processedDataset.slice(startIndex, startIndex + state.parts.limit);
+
+            let tableHtml = '';
+            if (pageSlice.length === 0) {
+                tableHtml = `<tr><td colspan="7" class="py-12 text-center text-slate-500 font-mono text-xs">⚠️ No component tracking requests match criteria.</td></tr>`;
+            } else {
+                pageSlice.forEach((row, i) => {
+                    const id = row[0], assetId = String(row[2]).toUpperCase(), desc = row[3], status = String(row[19]).trim().toUpperCase();
+                    const internalDays = parseFloat(row[11]) || 0, procurementDays = parseFloat(row[18]) || 0, grossLeadDays = parseFloat(row[20]) || 0;
+                    const index = startIndex + i;
+
+                    tableHtml += `
+                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-[#14122d]/40' : 'bg-[#14122d]/80'} hover:bg-[#1a1736]/90 border-b border-[#2a2552]/40 transition-colors" 
+                            onclick="toggleRowDetailDrawer('pt-${index}')">
+                            <td class="p-3 pl-4 text-purple-400 font-medium">${id}</td>
+                            <td class="p-3">
+                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-[#0d0c1d] border border-[#2a2552] text-white hover:text-[#00ebd4] hover:border-[#00ebd4] transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold cursor-pointer">
+                                    ${assetId} 📋
+                                </span>
+                            </td>
+                            <td class="p-3 text-white font-medium truncate max-w-[220px]">${desc}</td>
+                            <td class="p-3 text-[#00ebd4] font-semibold">${status==='APPROVED'?internalDays+'d':'—'}</td>
+                            <td class="p-3 text-emerald-400 font-semibold">${status==='APPROVED'?procurementDays+'d':'—'}</td>
+                            <td class="p-3 text-amber-400 font-bold">${status==='APPROVED'?grossLeadDays+'d':'—'}</td>
+                            <td class="p-3 pr-4 text-right">
+                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='APPROVED'?'bg-emerald-500/20 text-[#00ebd4] border border-emerald-500/40':'bg-amber-500/20 text-amber-400 border border-amber-500/40'}">${status}</span>
+                            </td>
+                        </tr>
+                        <tr id="drawer-pt-${index}" class="detail-drawer border-l-2 border-purple-500 font-mono text-[11px] text-slate-400">
+                            <td colspan="7" class="p-4 space-y-1">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                    <div><strong class="text-slate-500">Internal Pipeline Speed:</strong> Approved within ${internalDays} working days.</div>
+                                    <div><strong class="text-slate-500">Procurement Cycle:</strong> Field acquisition completed in ${procurementDays} days.</div>
+                                    <div><strong class="text-slate-500">System Verification:</strong> Digital PO Stamp secure token verified.</div>
+                                </div>
+                            </td>
+                        </tr>`;
+                });
+            }
+
+            document.getElementById("parts-table-rows").innerHTML = tableHtml;
+
+            document.getElementById('parts-pagination-ctrl').innerHTML = `
+                <div>Showing ${totalItems === 0 ? 0 : startIndex + 1} to ${Math.min(startIndex + state.parts.limit, totalItems)} of ${totalItems} tracking links</div>
+                <div class="flex items-center gap-2">
+                    <button onclick="setPartsPage(${state.parts.page - 1})" ${state.parts.page === 1 ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-[#1a1736] hover:bg-[#2a2552] px-3 py-1 rounded border border-[#3e3778] text-slate-300 transition-colors"'} tabindex="0">◄ Prev</button>
+                    <span class="text-slate-300 font-bold">Page ${state.parts.page} / ${maxPage}</span>
+                    <button onclick="setPartsPage(${state.parts.page + 1})" ${state.parts.page === maxPage ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-[#1a1736] hover:bg-[#2a2552] px-3 py-1 rounded border border-[#3e3778] text-slate-300 transition-colors"'} tabindex="0">Next ►</button>
+                </div>`;
+        }
+
+        function setPartsPage(p) { state.parts.page = p; processAndRenderParts(); }
+        
+        function filterPartsTable(statusType) {
+            state.parts.status = statusType;
+            state.parts.page = 1;
+            document.querySelectorAll('#parts-status-pills button').forEach(p => p.classList.remove('active-pill'));
+            document.getElementById(`parts-pill-${statusType}`).classList.add('active-pill');
+            processAndRenderParts();
+        }
+
+        function searchPartsTable() {
+            state.parts.search = document.getElementById('parts-search').value;
+            state.parts.page = 1;
+            processAndRenderParts();
+        }
+
+        function searchCapexTable() {
+            state.capex.search = document.getElementById('capex-search').value;
+            state.capex.page = 1;
+            processAndRenderCapex();
+        }
+
+        function resetChartCrossFilter() {
+            state.capex.category = 'ALL';
+            state.capex.page = 1;
+            document.getElementById('chart-filter-badge').classList.add('hidden');
+            processAndRenderCapex();
+            if (doughnutChartInstance) { doughnutChartInstance.setActiveElements([]); doughnutChartInstance.update(); }
+        }
+
+        // ==========================================
+        // COMPLIANCE ENGINE VISUALIZER SUBSYSTEM
+        // ==========================================
+        function populateWeekSelector(rows) {
+            const selector = document.getElementById('week-selector');
+            if (!rows.length) return "";
+            const uniqueWeeks = new Set();
+            rows.forEach(row => { const w = String(row[0]).trim(); if (w && !isNaN(w)) uniqueWeeks.add(Number(w)); });
+            const sortedWeeks = Array.from(uniqueWeeks).sort((a, b) => a - b);
+            if (sortedWeeks.length === 0) return "";
+            selector.innerHTML = sortedWeeks.map(wk => `<option value="${wk}">Week ${wk}</option>`).join('');
+            return sortedWeeks[sortedWeeks.length - 1];
+        }
+
+        function changeWeekFilter() {
+            switchView('compliance');
+            renderPlannerVisualizer(state.raw.planner, document.getElementById('week-selector').value);
+        }
+
+        function renderPlannerVisualizer(rows, selectedWeek) {
+            if (!rows.length || !selectedWeek) return;
+            
+            const weekFilteredRows = rows.filter(r => String(r[0]).trim() === String(selectedWeek).trim());
+            let totalPlanned = 0, totalActual = 0;
+            
+            const names = [], plannedVolumes = [], actualVolumes = [], compliancePercentages = [], targetLineData = [];
+
+            weekFilteredRows.forEach(row => {
+                const name = (row[1] || 'Unassigned').toUpperCase();
+                const planned = parseInt(row[3]) || 0;
+                const actual = parseInt(row[4]) || 0;
+                
+                totalPlanned += planned;
+                totalActual += actual;
+
+                names.push(name);
+                plannedVolumes.push(planned);
+                actualVolumes.push(actual);
+                compliancePercentages.push(planned > 0 ? Math.round((actual / planned) * 100) : 0);
+                targetLineData.push(state.global.complianceThreshold); 
+            });
+
+            document.getElementById('kpi-compliance').innerText = totalPlanned > 0 ? `${Math.round((totalActual / totalPlanned) * 100)}%` : '--%';
+
+            const ctx = document.getElementById('planner-compliance-canvas').getContext('2d');
+            if (complianceChartInstance) complianceChartInstance.destroy();
+
+            complianceChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: names,
+                    datasets: [
+                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(0, 235, 212, 0.8)', 'rgba(0, 235, 212, 0.1)'), borderColor: '#00ebd4', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
+                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(168, 85, 247, 0.8)', 'rgba(168, 85, 247, 0.1)'), borderColor: '#a855f7', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
+                        { label: 'Actual Compliance %', data: compliancePercentages, type: 'line', borderColor: '#00ebd4', backgroundColor: '#0d0c1d', borderWidth: 3, pointBackgroundColor: '#00ebd4', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.3, yAxisID: 'yPercentage', order: 1 },
+                        { label: 'Target (85%)', data: targetLineData, type: 'line', borderColor: '#f43f5e', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'yPercentage', order: 2 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#8f8ba8', font: { size: 10, weight: '500' } } },
+                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 25, color: '#00ebd4', font: { size: 10 }, callback: v => v + ' Vol' }, grid: { color: 'rgba(255, 255, 255, 0.03)' } },
+                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#8f8ba8', font: { size: 10 }, callback: v => v + '%' }, grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { color: '#b1add0', font: { size: 10 } } },
+                        datalabels: { formatter: (v, c) => c.dataset.yAxisID === 'yPercentage' ? (c.datasetIndex === 2 ? v + '%' : '') : v, color: '#fff', anchor: 'end', align: 'top', font: { size: 9, weight: 'bold' } }
+                    }
+                }
+            });
+        }
+
+        function calculateMonthlyAggregates(rows) {
+            if (!rows.length) return;
+
+            const monthsDef = [
+                { name: 'June', weeks: [23, 24, 25, 26, 27], planned: 0, actual: 0 },
+                { name: 'July', weeks: [28, 29, 30, 31], planned: 0, actual: 0 },
+                { name: 'August', weeks: [32, 33, 34, 35], planned: 0, actual: 0 },
+                { name: 'September', weeks: [36, 37, 38, 39], planned: 0, actual: 0 },
+                { name: 'October', weeks: [40, 41, 42, 43], planned: 0, actual: 0 },
+                { name: 'November', weeks: [44, 45, 46, 47], planned: 0, actual: 0 },
+                { name: 'December', weeks: [48, 49, 50, 51, 52], planned: 0, actual: 0 }
+            ];
+
+            rows.forEach(row => {
+                const weekNum = parseInt(row[0]);
+                const targetMonth = monthsDef.find(m => m.weeks.includes(weekNum));
+                if (targetMonth) {
+                    targetMonth.planned += parseInt(row[3]) || 0;
+                    targetMonth.actual += parseInt(row[4]) || 0;
+                }
+            });
+
+            const labels = [], complianceAverages = [], targetLine = [];
+            monthsDef.forEach(m => {
+                if(m.planned > 0) {
+                    labels.push(m.name);
+                    complianceAverages.push(Math.round((m.actual / m.planned) * 100));
+                    targetLine.push(state.global.complianceThreshold);
+                }
+            });
+            renderMonthlyTrendChart(labels.length ? labels : ['June'], complianceAverages.length ? complianceAverages : [0], targetLine.length ? targetLine : [85]);
+        }
+
+        function renderMonthlyTrendChart(labels, complianceData, targetData) {
+            const ctx = document.getElementById('monthly-compliance-canvas').getContext('2d');
+            if (monthlyChartInstance) monthlyChartInstance.destroy();
+            monthlyChartInstance = new Chart(ctx, {
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { type: 'bar', label: 'Monthly Average %', data: complianceData, backgroundColor: createVerticalGradient(ctx, 'rgba(0, 235, 212, 0.8)', 'rgba(0, 235, 212, 0.15)'), borderColor: '#00ebd4', borderWidth: 1.5, borderRadius: 4, order: 2 },
+                        { type: 'line', label: 'Target Limit (85%)', data: targetData, borderColor: '#f43f5e', borderWidth: 2, borderDash: [6, 4], pointRadius: 0, fill: false, order: 1 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#8f8ba8' } },
+                        y: { min: 0, max: 100, ticks: { color: '#635f80', callback: v => v + '%' }, grid: { color: 'rgba(255, 255, 255, 0.03)' } }
+                    },
+                    plugins: { legend: { labels: { color: '#b1add0' } }, datalabels: { color: '#fff', font: { weight: 'bold' }, formatter: (v, c) => c.dataset.type === 'bar' ? v + '%' : '' } }
+                }
+            });
+        }
+
+        function buildAdvancedCapexCharts(financialsMap, plannedMap, actualMap) {
+            const labels = Object.keys(financialsMap), financialData = Object.values(financialsMap), totalFinancials = financialData.reduce((a, b) => a + b, 0);
+            const doughnutCtx = document.getElementById('capex-doughnut-canvas').getContext('2d');
+            
+            if (doughnutChartInstance) doughnutChartInstance.destroy();
+
+            doughnutChartInstance = new Chart(doughnutCtx, {
+                type: 'doughnut',
+                data: { labels: labels, datasets: [{ data: financialData, backgroundColor: [createVerticalGradient(doughnutCtx, 'rgba(0, 235, 212, 0.95)', 'rgba(0, 180, 216, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(251, 191, 36, 0.95)', 'rgba(217, 119, 6, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(168, 85, 247, 0.95)', 'rgba(124, 58, 237, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(244, 63, 94, 0.95)', 'rgba(190, 24, 74, 0.4)')], borderWidth: 2, borderColor: '#0d0c1d' }] },
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    onClick: (event, activeElements) => {
+                        if (activeElements && activeElements.length > 0) {
+                            const idx = activeElements[0].index;
+                            const clickedLabel = labels[idx].toUpperCase();
+                            state.capex.category = (state.capex.category === clickedLabel) ? 'ALL' : clickedLabel;
+                            state.capex.page = 1;
+                            
+                            if(state.capex.category === 'ALL') {
+                                document.getElementById('chart-filter-badge').classList.add('hidden');
+                            } else {
+                                document.getElementById('chart-filter-name').innerText = labels[idx];
+                                document.getElementById('chart-filter-badge').classList.remove('hidden');
+                            }
+                            processAndRenderCapex();
+                        }
+                    },
+                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#8f8ba8', font: { size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold' }, formatter: v => v > 0 ? ((v / totalFinancials) * 100).toFixed(0) + '%' : '' } }, cutout: '65%' 
+                }
+            });
+
+            const barCtx = document.getElementById('capex-bar-canvas').getContext('2d');
+            if (barChartInstance) barChartInstance.destroy();
+            barChartInstance = new Chart(barCtx, {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Target Count', data: labels.map(l => plannedMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(138, 92, 246, 0.85)', 'rgba(138, 92, 246, 0.15)'), borderColor: '#a855f7', borderWidth: 1, borderRadius: 4 }, { label: 'Actual Completed', data: labels.map(l => actualMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(0, 235, 212, 0.85)', 'rgba(0, 235, 212, 0.15)'), borderColor: '#00ebd4', borderWidth: 1, borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#8f8ba8' }, grid: { display: false } }, y: { grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: '#635f80', stepSize: 1 } } }, plugins: { legend: { labels: { color: '#b1add0' } }, datalabels: { color: '#fff', anchor: 'end', align: 'top' } } }
+            });
+        }
+
+        function buildAdvancedPartsPerformanceChart(labels, internalData, srcProcureData) {
+            const partsCtx = document.getElementById('parts-performance-canvas').getContext('2d');
+            if (partsChartInstance) partsChartInstance.destroy();
+            partsChartInstance = new Chart(partsCtx, {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(138, 92, 246, 0.85)', 'rgba(138, 92, 246, 0.15)'), borderColor: '#a855f7', borderWidth: 1, barThickness: 40 }, { label: 'Procurement', data: srcProcureData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(0, 235, 212, 0.85)', 'rgba(0, 235, 212, 0.15)'), borderColor: '#00ebd4', borderWidth: 1, barThickness: 40 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#8f8ba8' }, grid: { color: 'rgba(255, 255, 255, 0.03)' } }, y: { stacked: true, ticks: { color: '#fff' }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#b1add0' } }, datalabels: { color: '#fff', font: { weight: 'bold' } } } }
+            });
+        }
+
+        // ==========================================
+        // UTILITY INTERACTIVITY METHODS
+        // ==========================================
+        function switchView(targetView) {
+            document.getElementById('view-compliance-container').classList.add('hidden');
+            document.getElementById('view-capex-container').classList.add('hidden');
+            document.getElementById('view-parts-container').classList.add('hidden');
+            
+            document.getElementById('panel-compliance').classList.remove('active-panel');
+            document.getElementById('panel-capex').classList.remove('active-panel');
+            document.getElementById('panel-parts').classList.remove('active-panel');
+
+            if (targetView === 'capex') {
+                document.getElementById('view-capex-container').classList.remove('hidden');
+                document.getElementById('panel-capex').classList.add('active-panel');
+                processAndRenderCapex();
+            } else if (targetView === 'parts' || targetView === 'speed') {
+                document.getElementById('view-parts-container').classList.remove('hidden');
+                document.getElementById('panel-parts').classList.add('active-panel');
+                processAndRenderParts();
+            } else {
+                document.getElementById('view-compliance-container').classList.remove('hidden');
+                document.getElementById('panel-compliance').classList.add('active-panel');
+            }
+            if (window.innerWidth < 1024) document.querySelector('main').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyAssetIdToClipboard(event, value) {
+            event.stopPropagation(); 
+            navigator.clipboard.writeText(value).then(() => {
+                const toast = document.getElementById('copy-toast');
+                toast.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+                setTimeout(() => toast.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none'), 1800);
+            });
+        }
+
+        function toggleRowDetailDrawer(rowId) {
+            const drawer = document.getElementById(`drawer-${rowId}`);
+            if(drawer) drawer.classList.toggle('open-drawer');
+        }
+
+        function exportViewToCSV(viewType) {
+            let csvContent = "data:text/csv;charset=utf-8,", fileName = "";
+            if (viewType === 'capex') {
+                fileName = "CAPEX_Pipeline_Export.csv";
+                csvContent += "Index,Reporting Cycle,Asset ID,Operational Activity,PO Ref,Allocation,Status\n";
+                state.raw.capex.forEach(row => { if(row[2]) csvContent += `${row[0]},${row[1]},${row[2]},"${String(row[3]).replace(/"/g, '""')}",${row[4]},${parseFloat(String(row[5]).replace(/[^0-9.]/g,''))||0},${row[6]}\n`; });
+            } else {
+                fileName = "Procurement_Turnaround_Export.csv";
+                csvContent += "Request ID,Asset Ref,Component Description,Internal Days,Procurement Days,Gross Lead Time,Status\n";
+                state.raw.parts.forEach(row => { if(row[19]) csvContent += `${row[0]},${row[2]},"${String(row[3]).replace(/"/g, '""')}",${row[11]},${row[18]},${row[20]},${row[19]}\n`; });
+            }
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     </script>
 </body>
 </html>
