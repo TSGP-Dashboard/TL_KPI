@@ -222,7 +222,7 @@
                     </div>
                 </div>
 
-                <!-- DYNAMICALLY SCOPED WORK GROUP LEGEND (Auto-hides with container scope switch) -->
+                <!-- DYNAMICALLY SCOPED WORK GROUP LEGEND -->
                 <div class="bg-slate-950/40 border border-slate-800/80 rounded-xl p-4">
                     <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 font-mono flex items-center gap-2">
                         <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Planner Scope Assignment Reference
@@ -394,9 +394,7 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Fix Chart.js global typography default fallback engine bug
             Chart.defaults.font.family = "'Inter', ui-sans-serif, system-ui, sans-serif";
-            
             Chart.register(ChartDataLabels);
             fetchLatestDataStream();
             initBackgroundTimerStreamer();
@@ -404,19 +402,15 @@
 
         function initBackgroundTimerStreamer() {
             if(autoSyncInterval) clearInterval(autoSyncInterval);
-            
             autoSyncInterval = setInterval(() => {
                 const isAutoEnabled = document.getElementById('auto-sync-toggle').checked;
-                if(isAutoEnabled) {
-                    fetchLatestDataStream();
-                }
+                if(isAutoEnabled) fetchLatestDataStream();
             }, 60000);
         }
 
         function toggleAutoSyncMode() {
             const isAutoEnabled = document.getElementById('auto-sync-toggle').checked;
             const statusTxt = document.getElementById('sync-status');
-            
             if(!isAutoEnabled) {
                 statusTxt.innerText = "Paused (Manual Mode)";
                 statusTxt.className = "text-slate-400 font-bold text-xs font-mono mt-0.5";
@@ -491,33 +485,19 @@
                 fileName = "CAPEX_Pipeline_Export.csv";
                 csvContent += "Index,Reporting Cycle,Asset ID,Operational Activity,PO Ref,Allocation,Status\n";
                 const visibleRows = document.querySelectorAll('#capex-table-rows .filterable-row:not(.hidden-row)');
-                if(visibleRows.length === 0) { alert("No visible data data rows found to export."); return; }
+                if(visibleRows.length === 0) { alert("No visible rows found to export."); return; }
                 visibleRows.forEach(row => {
                     const tds = row.querySelectorAll('td');
-                    const idx = tds[0].innerText;
-                    const cycle = tds[1].innerText;
-                    const asset = tds[2].innerText.replace('📋', '').trim();
-                    const activity = `"${tds[3].innerText.replace(/"/g, '""')}"`;
-                    const po = tds[4].innerText;
-                    const allocation = `"${tds[5].innerText.replace(/[^0-9.]/g, '')}"`;
-                    const status = tds[6].innerText;
-                    csvContent += `${idx},${cycle},${asset},${activity},${po},${allocation},${status}\n`;
+                    csvContent += `${tds[0].innerText},${tds[1].innerText},${tds[2].innerText.replace('📋', '').trim()},"${tds[3].innerText.replace(/"/g, '""')}",${tds[4].innerText},"${tds[5].innerText.replace(/[^0-9.]/g, '')}",${tds[6].innerText}\n`;
                 });
             } else if (viewType === 'parts') {
                 fileName = "Procurement_Turnaround_Export.csv";
                 csvContent += "Request ID,Asset Ref,Component Description,Internal Days,Procurement Days,Gross Lead Time,Status\n";
                 const visibleRows = document.querySelectorAll('#parts-table-rows .filterable-row:not(.hidden-row)');
-                if(visibleRows.length === 0) { alert("No visible data data rows found to export."); return; }
+                if(visibleRows.length === 0) { alert("No visible rows found to export."); return; }
                 visibleRows.forEach(row => {
                     const tds = row.querySelectorAll('td');
-                    const reqId = tds[0].innerText;
-                    const assetRef = tds[1].innerText.replace('📋', '').trim();
-                    const desc = `"${tds[2].innerText.replace(/"/g, '""')}"`;
-                    const internal = tds[3].innerText.replace('d', '');
-                    const procurement = tds[4].innerText.replace('d', '');
-                    const gross = tds[5].innerText.replace('d', '');
-                    const status = tds[6].innerText;
-                    csvContent += `${reqId},${assetRef},${desc},${internal},${procurement},${gross},${status}\n`;
+                    csvContent += `${tds[0].innerText},${tds[1].innerText.replace('📋', '').trim()},"${tds[2].innerText.replace(/"/g, '""')}",${tds[3].innerText.replace('d', '')},${tds[4].innerText.replace('d', '')},${tds[5].innerText.replace('d', '')},${tds[6].innerText}\n`;
                 });
             }
 
@@ -584,8 +564,7 @@
             const sortedWeeks = Array.from(uniqueWeeks).sort((a, b) => a - b);
             if (sortedWeeks.length === 0) return "";
             selector.innerHTML = sortedWeeks.map(wk => `<option value="${wk}">Week ${wk}</option>`).join('');
-            const latestWeek = sortedWeeks[sortedWeeks.length - 1];
-            return latestWeek;
+            return sortedWeeks[sortedWeeks.length - 1];
         }
 
         function changeWeekFilter() {
@@ -644,13 +623,13 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: "'Inter', sans-serif", size: 10, weight: '500' } } },
-                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 10, color: '#22d3ee', font: { family: "ui-monospace, monospace", size: 10 }, callback: function(value) { return value + ' Vol'; } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
-                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#94a3b8', font: { family: "ui-monospace, monospace", size: 10 }, callback: function(value) { return value + '%'; } }, grid: { display: false } }
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10, weight: '500' } } },
+                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 10, color: '#22d3ee', font: { size: 10 }, callback: function(value) { return value + ' Vol'; } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#94a3b8', font: { size: 10 }, callback: function(value) { return value + '%'; } }, grid: { display: false } }
                     },
                     plugins: {
-                        legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: "ui-monospace, monospace", size: 10 } } },
-                        datalabels: { formatter: function(value, context) { if (context.dataset.yAxisID === 'yPercentage') { return context.datasetIndex === 2 ? value + '%' : ''; } return value; }, color: '#fff', anchor: 'end', align: 'top', offset: -1, font: { size: 9, weight: 'bold', family: "ui-monospace, monospace" } }
+                        legend: { position: 'top', labels: { color: '#cbd5e1', font: { size: 10 } } },
+                        datalabels: { formatter: function(value, context) { if (context.dataset.yAxisID === 'yPercentage') { return context.datasetIndex === 2 ? value + '%' : ''; } return value; }, color: '#fff', anchor: 'end', align: 'top', offset: -1, font: { size: 9, weight: 'bold' } }
                     }
                 }
             });
@@ -688,7 +667,7 @@
                         <td class="p-3 pl-4 text-slate-500 font-medium">${id}</td>
                         <td class="p-3 text-slate-400 text-[11px] font-medium">${quarter}</td>
                         <td class="p-3">
-                            <span onclick="copyAssetIdToClipboard(event, '${assetId}')" title="Click to copy asset code" class="bg-slate-950 border border-slate-700 text-cyan-400 hover:border-cyan-400 transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold font-mono">
+                            <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-slate-950 border border-slate-700 text-cyan-400 hover:border-cyan-400 transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold font-mono">
                                 ${assetId} 📋
                             </span>
                         </td>
@@ -790,7 +769,7 @@
                             applyCapexCombinedFilter();
                         }
                     },
-                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, family: "ui-monospace, monospace" } } }, datalabels: { color: '#fff', font: { weight: 'bold', family: "ui-monospace, monospace", size: 10 }, formatter: (value) => value > 0 ? ((value / totalFinancials) * 100).toFixed(0) + '%' : '' } }, cutout: '65%' 
+                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 10 }, formatter: (value) => value > 0 ? ((value / totalFinancials) * 100).toFixed(0) + '%' : '' } }, cutout: '65%' 
                 }
             });
 
@@ -803,7 +782,7 @@
             barChartInstance = new Chart(barCtx, {
                 type: 'bar',
                 data: { labels: labels, datasets: [{ label: 'Target Count', data: labels.map(l => plannedMap[l]), backgroundColor: targetGrad, borderColor: '#38bdf8', borderWidth: 1, borderRadius: 4 }, { label: 'Actual Completed', data: labels.map(l => actualMap[l]), backgroundColor: baselineGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8', font: { family: "ui-monospace, monospace" } }, grid: { display: false } }, y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', font: { family: "ui-monospace, monospace", stepSize: 1 } } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { family: "ui-monospace, monospace", size: 10 } } }, datalabels: { color: '#fff', anchor: 'end', align: 'top', font: { family: "ui-monospace, monospace", size: 10 } } } }
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8' }, grid: { display: false } }, y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', stepSize: 1 } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { size: 10 } } }, datalabels: { color: '#fff', anchor: 'end', align: 'top', font: { size: 10 } } } }
             });
         }
 
@@ -827,7 +806,7 @@
                         onclick="toggleRowDetailDrawer('pt-${index}')">
                         <td class="p-3 pl-4 text-purple-400 font-medium">${id}</td>
                         <td class="p-3">
-                            <span onclick="copyAssetIdToClipboard(event, '${assetId}')" title="Click to copy reference" class="bg-slate-950 border border-slate-700 text-white hover:text-cyan-400 hover:border-cyan-400 transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold">
+                            <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-slate-950 border border-slate-700 text-white hover:text-cyan-400 hover:border-cyan-400 transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold">
                                 ${assetId} 📋
                             </span>
                         </td>
@@ -852,10 +831,10 @@
 
             const globalMean = approvedCount > 0 ? (totalOverallDays / approvedCount).toFixed(1) : "0.0";
             document.getElementById('kpi-parts').innerText = `${globalMean}d`;
-            document.getElementById('kpi-parts-count').innerText = `Int: ${(totalInternalDays/approvedCount).toFixed(1)}d | Pro: ${(totalProcurementDays/approvedCount).toFixed(1)}d`;
+            document.getElementById('kpi-parts-count').innerText = `Int: ${approvedCount > 0 ? (totalInternalDays/approvedCount).toFixed(1) : 0}d | Pro: ${approvedCount > 0 ? (totalProcurementDays/approvedCount).toFixed(1) : 0}d`;
             document.getElementById("parts-table-rows").innerHTML = tableHtml;
 
-            buildAdvancedPartsPerformanceChart(['Cycle Time'], [parseFloat((totalInternalDays/approvedCount).toFixed(1))], [parseFloat((totalProcurementDays/approvedCount).toFixed(1))]);
+            buildAdvancedPartsPerformanceChart(['Cycle Time'], [parseFloat((totalInternalDays/approvedCount).toFixed(1)) || 0], [parseFloat((totalProcurementDays/approvedCount).toFixed(1)) || 0]);
         }
 
         function filterPartsTable(statusType) {
@@ -865,12 +844,20 @@
             applyPartsCombinedFilter();
         }
 
+        function searchPartsTable() {
+            applyPartsCombinedFilter();
+        }
+
         function applyPartsCombinedFilter() {
             const query = document.getElementById('parts-search').value.toUpperCase().trim();
             const rows = document.querySelectorAll('#parts-table-rows .filterable-row');
             
             rows.forEach(row => {
-                const matchesStatus = (currentPartsFilter === 'ALL' || row.getAttribute('data-status') === currentPartsFilter);
+                const rowStatus = (row.getAttribute('data-status') || '').toUpperCase();
+                // Fixed: Matches exact string OR catches variations containing the substring 'PENDING'
+                const matchesStatus = (currentPartsFilter === 'ALL' || 
+                                       rowStatus === currentPartsFilter || 
+                                       (currentPartsFilter === 'PENDING' && rowStatus.includes('PENDING')));
                 const matchesSearch = (query === "" || row.getAttribute('data-search').includes(query));
                 
                 if(matchesStatus && matchesSearch) {
@@ -890,12 +877,12 @@
             if (partsChartInstance) partsChartInstance.destroy();
 
             const internalGrad = createVerticalGradient(partsCtx, 'rgba(34, 211, 238, 0.85)', 'rgba(14, 116, 144, 0.4)');
-            const procureGrad = createVerticalGradient(partsCtx, 'rgba(16, 185, 129, 0.85)', 'rgba(4, 120, 87, 0.4)');
+            const opacityProcureGrad = createVerticalGradient(partsCtx, 'rgba(16, 185, 129, 0.85)', 'rgba(4, 120, 87, 0.4)');
 
             partsChartInstance = new Chart(partsCtx, {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: internalGrad, borderColor: '#22d3ee', borderWidth: 1, borderRadius: 4, barThickness: 40 }, { label: 'Procurement', data: srcProcureData, backgroundColor: procureGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4, barThickness: 40 }] },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#94a3b8', font: { family: "ui-monospace, monospace" } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y: { stacked: true, ticks: { color: '#fff', font: { family: "ui-monospace, monospace" } }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { family: "ui-monospace, monospace", size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold', family: "ui-monospace, monospace" } } } }
+                data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: internalGrad, borderColor: '#22d3ee', borderWidth: 1, borderRadius: 4, barThickness: 40 }, { label: 'Procurement', data: srcProcureData, backgroundColor: opacityProcureGrad, borderColor: '#34d399', borderWidth: 1, borderRadius: 4, barThickness: 40 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y: { stacked: true, ticks: { color: '#fff' }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#cbd5e1', font: { size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold' } } } }
             });
         }
     </script>
