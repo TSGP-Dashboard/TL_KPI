@@ -221,12 +221,12 @@
                     </div>
                 </div>
 
-                <!-- NEW COMPONENT: HISTORICAL MONTHLY COMPLIANCE TRENDS -->
+                <!-- HISTORICAL MONTHLY COMPLIANCE TRENDS -->
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     <div class="xl:col-span-2 bg-slate-950/60 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-inner">
                         <div class="mb-3">
                             <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">Macro Historical Review</h4>
-                            <p class="text-[11px] text-slate-500 font-mono">Monthly Average Rolled-Up Aggregations (June W23-27 | July W28-31)</p>
+                            <p class="text-[11px] text-slate-500 font-mono">Monthly Average Rolled-Up Aggregations</p>
                         </div>
                         <div class="h-[220px] w-full relative">
                             <canvas id="monthly-compliance-canvas"></canvas>
@@ -468,7 +468,7 @@
                         renderPlannerVisualizer(rawPlannerRows, defaultWeek); 
                     }
                     
-                    // Trigger monthly average roll-up calculations
+                    // Group raw week ranges into rolled up month segments dynamically
                     calculateMonthlyAggregates(rawPlannerRows);
 
                     renderCapexSummary(rawCapexRows);
@@ -651,16 +651,18 @@
             });
         }
 
-        // NEW METHOD: Groups weeks to generate the monthly average performance chart
+        // Groups raw weekly data to build monthly average calculations
         function calculateMonthlyAggregates(rows) {
             if (!rows.length) return;
 
-            // Monthly definition lookup mapping
             const monthsDef = [
                 { name: 'June', weeks: [23, 24, 25, 26, 27], planned: 0, actual: 0 },
                 { name: 'July', weeks: [28, 29, 30, 31], planned: 0, actual: 0 },
                 { name: 'August', weeks: [32, 33, 34, 35], planned: 0, actual: 0 },
-                { name: 'September', weeks: [36, 37, 38, 39], planned: 0, actual: 0 }
+                { name: 'September', weeks: [36, 37, 38, 39], planned: 0, actual: 0 },
+                { name: 'October', weeks: [40, 41, 42, 43], planned: 0, actual: 0 },
+                { name: 'November', weeks: [44, 45, 46, 47], planned: 0, actual: 0 },
+                { name: 'December', weeks: [48, 49, 50, 51, 52], planned: 0, actual: 0 }
             ];
 
             rows.forEach(row => {
@@ -687,7 +689,6 @@
                 }
             });
 
-            // If no data maps to our defined window, fall back to avoid an empty visualization grid
             if(labels.length === 0) {
                 labels.push('June', 'July');
                 complianceAverages.push(0, 0);
@@ -697,40 +698,39 @@
             renderMonthlyTrendChart(labels, complianceAverages, targetLine);
         }
 
-        // NEW METHOD: Renders the historical line graph below the main window
+        // Renders a combo chart layout (Column/Bar for Actuals, Line for Target)
         function renderMonthlyTrendChart(labels, complianceData, targetData) {
             const ctx = document.getElementById('monthly-compliance-canvas').getContext('2d');
             if (monthlyChartInstance) monthlyChartInstance.destroy();
 
-            const lineGradient = ctx.createLinearGradient(0, 0, 0, 200);
-            lineGradient.addColorStop(0, 'rgba(16, 185, 129, 0.25)');
-            lineGradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+            const actualBarGrad = ctx.createLinearGradient(0, 0, 0, 200);
+            actualBarGrad.addColorStop(0, 'rgba(16, 185, 129, 0.85)'); 
+            actualBarGrad.addColorStop(1, 'rgba(5, 150, 105, 0.3)');   
 
             monthlyChartInstance = new Chart(ctx, {
-                type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
                         {
+                            type: 'bar', 
                             label: 'Monthly Average %',
                             data: complianceData,
-                            borderColor: '#10b981',
-                            backgroundColor: lineGradient,
-                            borderWidth: 3,
-                            fill: true,
-                            pointBackgroundColor: '#10b981',
-                            pointHoverRadius: 6,
-                            pointRadius: 4,
-                            tension: 0.15
+                            backgroundColor: actualBarGrad,
+                            borderColor: '#34d399',
+                            borderWidth: 1.5,
+                            borderRadius: 4,
+                            order: 2
                         },
                         {
+                            type: 'line', 
                             label: 'Target Limit (85%)',
                             data: targetData,
                             borderColor: '#f43f5e',
-                            borderWidth: 1.5,
+                            borderWidth: 2,
                             borderDash: [6, 4],
                             pointRadius: 0,
-                            fill: false
+                            fill: false,
+                            order: 1
                         }
                     ]
                 },
@@ -738,12 +738,27 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
-                        y: { min: 0, max: 100, ticks: { stepSize: 20, color: '#64748b', font: { size: 10 }, callback: v => v + '%' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { color: '#94a3b8', font: { size: 11, weight: '500' } } 
+                        },
+                        y: { 
+                            min: 0, 
+                            max: 100, 
+                            ticks: { stepSize: 20, color: '#64748b', font: { size: 10 }, callback: v => v + '%' }, 
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' } 
+                        }
                     },
                     plugins: {
                         legend: { display: true, position: 'top', labels: { color: '#cbd5e1', font: { size: 10 } } },
-                        datalabels: { color: '#fff', align: 'top', font: { size: 10, weight: 'bold' }, formatter: v => v + '%' }
+                        datalabels: { 
+                            color: '#fff', 
+                            anchor: 'end',
+                            align: 'top', 
+                            offset: -2,
+                            font: { size: 10, weight: 'bold' }, 
+                            formatter: (value, context) => context.dataset.type === 'bar' ? value + '%' : '' 
+                        }
                     }
                 }
             });
