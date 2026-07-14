@@ -9,64 +9,79 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0b0f19; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: radial-gradient(circle at top right, #240c3e 0%, #0d0614 100%); 
+        }
         .workspace-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .workspace-scrollbar::-webkit-scrollbar-track { background: #0f172a; border-radius: 4px; }
-        .workspace-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-        .workspace-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
+        .workspace-scrollbar::-webkit-scrollbar-track { background: #0d0614; border-radius: 4px; }
+        .workspace-scrollbar::-webkit-scrollbar-thumb { background: #3b1d60; border-radius: 4px; }
+        .workspace-scrollbar::-webkit-scrollbar-thumb:hover { background: #5c2b99; }
         .chart-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
-        .chart-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
-        .chart-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        .chart-scrollbar::-webkit-scrollbar-track { background: #0d0614; }
+        .chart-scrollbar::-webkit-scrollbar-thumb { background: #3b1d60; border-radius: 3px; }
         
-        /* Glassmorphic Glossy Cards */
+        /* Modern Synthwave Glassmorphic Glowing Cards */
         .kpi-card {
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, rgba(42, 19, 72, 0.4) 0%, rgba(18, 9, 36, 0.7) 100%);
+            border: 1px solid rgba(244, 63, 94, 0.15);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
-            backdrop-filter: blur(12px);
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 4px 20px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(16px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .kpi-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(244, 63, 94, 0.1));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
         }
         .kpi-card::before {
             content: '';
             position: absolute;
             left: 0; top: 0; bottom: 0; width: 0px;
-            background: linear-gradient(to bottom, #00f2fe, #4facfe);
+            background: linear-gradient(to bottom, #d946ef, #ff007f);
             transition: width 0.2s ease;
             border-top-left-radius: 0.75rem;
             border-bottom-left-radius: 0.75rem;
+            box-shadow: 0 0 15px #ff007f;
         }
         .kpi-card:hover { 
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
-            border-color: rgba(255, 255, 255, 0.15); transform: translateY(-2px);
-            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2), 0 8px 25px rgba(0, 0, 0, 0.35);
+            border-color: rgba(244, 63, 94, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(217, 70, 239, 0.15);
         }
         .kpi-card.active-panel { 
-            background: linear-gradient(135deg, rgba(14, 116, 144, 0.25) 0%, rgba(15, 23, 42, 0.8) 100%);
-            border-color: #00f2fe; 
-            box-shadow: inset 0 1px 2px rgba(0, 242, 254, 0.2), 0 0 30px rgba(0, 242, 254, 0.15); 
+            background: linear-gradient(135deg, rgba(217, 70, 239, 0.15) 0%, rgba(18, 9, 36, 0.8) 100%);
+            border-color: #ff007f; 
+            box-shadow: inset 0 1px 2px rgba(255, 0, 127, 0.2), 0 0 30px rgba(255, 0, 127, 0.2); 
         }
         .kpi-card.active-panel::before { width: 4px; }
 
         .filterable-row { transition: all 0.15s ease-out; cursor: pointer; }
         
         .filter-pill {
-            background-color: #1e293b;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: #94a3b8;
+            background-color: #23123a;
+            border: 1px solid rgba(217, 70, 239, 0.2);
+            color: #c084fc;
             transition: all 0.2s ease;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
         .filter-pill.active-pill {
-            background: linear-gradient(180deg, #10b981 0%, #059669 100%);
-            border-color: #10b981;
-            color: #0f172a;
+            background: linear-gradient(180deg, #ff007f 0%, #d946ef 100%);
+            border-color: #ff007f;
+            color: #ffffff;
             font-weight: 700;
-            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
         }
 
-        .detail-drawer { display: none; background-color: #090d16; }
+        .detail-drawer { display: none; background-color: #0d0614; }
         .detail-drawer.open-drawer { display: table-row; }
 
         @media print {
@@ -84,38 +99,38 @@
         }
     </style>
 </head>
-<body class="text-slate-200 antialiased min-h-screen flex flex-col lg:h-screen lg:overflow-hidden">
+<body class="text-purple-100 antialiased min-h-screen flex flex-col lg:h-screen lg:overflow-hidden">
 
     <!-- CLIPBOARD TOAST NOTIFICATION HUD -->
-    <div id="copy-toast" class="fixed top-6 right-6 z-50 transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300 bg-cyan-400 text-slate-950 font-mono text-xs font-bold px-4 py-3 rounded-lg shadow-2xl flex items-center gap-2">
+    <div id="copy-toast" class="fixed top-6 right-6 z-50 transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300 bg-magenta-500 bg-[#ff007f] text-white font-mono text-xs font-bold px-4 py-3 rounded-lg shadow-[0_0_20px_rgba(255,0,127,0.5)] flex items-center gap-2">
         <span>📋</span> ASSET COPIED TO SYSTEM CLIPBOARD
     </div>
 
     <!-- HEADER -->
-    <header class="bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-800 px-4 sm:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl z-20 shrink-0">
+    <header class="bg-[#120720]/80 backdrop-blur-md border-b border-purple-900/50 px-4 sm:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl z-20 shrink-0">
         <div class="flex items-center gap-4">
-            <div id="sync-indicator" class="h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_10px_#10b981] transition-all duration-300"></div>
+            <div id="sync-indicator" class="h-3 w-3 rounded-full bg-cyan-400 shadow-[0_0_10px_#22d3ee] transition-all duration-300"></div>
             <div>
-                <h1 class="text-base sm:text-lg font-bold tracking-wider text-white uppercase font-mono">TL Operational Command Center</h1>
-                <p class="text-xs text-slate-400 font-mono mt-0.5">
-                    Database Feed: <span id="sync-status" class="text-emerald-400 font-bold">Connected</span>
+                <h1 class="text-base sm:text-lg font-bold tracking-wider text-white uppercase font-mono bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-pink-500 bg-clip-text text-transparent">TL Operational Command Center</h1>
+                <p class="text-xs text-purple-300 font-mono mt-0.5">
+                    Database Feed: <span id="sync-status" class="text-cyan-400 font-bold">Connected</span>
                 </p>
             </div>
         </div>
         <div class="flex items-center gap-4">
-            <div class="flex items-center bg-slate-950/80 border border-slate-800 rounded-lg p-1.5 gap-3 font-mono text-xs">
-                <label class="flex items-center gap-2 cursor-pointer select-none text-slate-400 pl-1.5">
-                    <input type="checkbox" id="auto-sync-toggle" checked onchange="toggleAutoSyncMode()" class="rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-0 focus:ring-offset-0 cursor-pointer">
+            <div class="flex items-center bg-[#09030d]/80 border border-purple-900/60 rounded-lg p-1.5 gap-3 font-mono text-xs">
+                <label class="flex items-center gap-2 cursor-pointer select-none text-purple-300 pl-1.5">
+                    <input type="checkbox" id="auto-sync-toggle" checked onchange="toggleAutoSyncMode()" class="rounded bg-purple-950 border-purple-800 text-pink-500 focus:ring-0 focus:ring-offset-0 cursor-pointer">
                     <span>Auto-Refresh (60s)</span>
                 </label>
-                <div class="h-4 w-[1px] bg-slate-800"></div>
-                <button onclick="fetchLatestDataStream()" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-2.5 py-1 rounded transition-colors border border-slate-700 flex items-center gap-1">
+                <div class="h-4 w-[1px] bg-purple-900/40"></div>
+                <button onclick="fetchLatestDataStream()" class="text-[11px] bg-purple-900/40 hover:bg-purple-800/60 text-purple-200 font-bold px-2.5 py-1 rounded transition-colors border border-purple-700/50 flex items-center gap-1">
                     🔄 Sync Now
                 </button>
             </div>
             <div class="text-right hidden sm:block font-mono">
-                <p class="text-xs text-slate-300 font-medium">Global Enterprise Deck</p>
-                <p class="text-[11px] text-slate-500">v5.0.0-paginated</p>
+                <p class="text-xs text-purple-200 font-medium">Global Enterprise Deck</p>
+                <p class="text-[11px] text-purple-500">v5.0.0-paginated</p>
             </div>
         </div>
     </header>
@@ -125,7 +140,7 @@
         
         <!-- SIDEBAR DECK -->
         <aside class="w-full lg:w-1/5 flex flex-col gap-4 shrink-0">
-            <div class="text-[10px] font-mono tracking-widest text-slate-400 uppercase px-1 font-bold">
+            <div class="text-[10px] font-mono tracking-widest text-purple-400 uppercase px-1 font-bold">
                 Operational Framework
             </div>
 
@@ -133,16 +148,16 @@
             <div id="panel-compliance" class="kpi-card active-panel p-4 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('compliance')">
                 <div class="flex justify-between items-start w-full gap-2">
                     <div class="space-y-1 min-w-0">
-                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Planner Compliance</h2>
-                        <div class="text-[10px] font-mono text-slate-400 flex items-center gap-1.5 mt-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Target: &gt;85%
+                        <h2 class="text-xs font-semibold text-purple-200 uppercase tracking-wider truncate">Planner Compliance</h2>
+                        <div class="text-[10px] font-mono text-purple-300 flex items-center gap-1.5 mt-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee]"></span> Target: &gt;85%
                         </div>
                     </div>
-                    <div class="text-3xl font-mono font-bold tracking-tight text-cyan-400" id="kpi-compliance">--%</div>
+                    <div class="text-3xl font-mono font-bold tracking-tight text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.3)]" id="kpi-compliance">--%</div>
                 </div>
-                <div class="mt-3 flex items-center justify-between border-t border-slate-700/50 pt-2 text-[10px] font-mono text-slate-400">
+                <div class="mt-3 flex items-center justify-between border-t border-purple-900/40 pt-2 text-[10px] font-mono text-purple-400">
                     <span>Chart Matrix</span>
-                    <span class="text-cyan-400 font-bold">Select</span>
+                    <span class="text-pink-400 font-bold">Select</span>
                 </div>
             </div>
 
@@ -150,14 +165,14 @@
             <div id="panel-capex" class="kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('capex')">
                 <div class="flex justify-between items-start w-full gap-2">
                     <div class="space-y-1 min-w-0">
-                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">CAPEX Pipeline</h2>
-                        <div class="text-[10px] font-mono text-amber-400 truncate" id="kpi-capex-count">Loading...</div>
+                        <h2 class="text-xs font-semibold text-purple-200 uppercase tracking-wider truncate">CAPEX Pipeline</h2>
+                        <div class="text-[10px] font-mono text-fuchsia-400 truncate" id="kpi-capex-count">Loading...</div>
                     </div>
                     <div class="text-xl font-mono font-bold tracking-tight text-white whitespace-nowrap" id="kpi-capex">PHP 0M</div>
                 </div>
-                <div class="mt-3 flex items-center justify-between border-t border-slate-700/50 pt-2 text-[10px] font-mono text-slate-400">
+                <div class="mt-3 flex items-center justify-between border-t border-purple-900/40 pt-2 text-[10px] font-mono text-purple-400">
                     <span>Gross Ledger</span>
-                    <span class="text-cyan-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+                    <span class="text-pink-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
                 </div>
             </div>
 
@@ -165,14 +180,14 @@
             <div id="panel-parts" class="kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('parts')">
                 <div class="flex justify-between items-start w-full gap-2">
                     <div class="space-y-1 min-w-0">
-                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Request Speed</h2>
-                        <div class="text-[10px] font-mono text-purple-400 truncate" id="kpi-parts-count">Calculating...</div>
+                        <h2 class="text-xs font-semibold text-purple-200 uppercase tracking-wider truncate">Request Speed</h2>
+                        <div class="text-[10px] font-mono text-pink-400 truncate" id="kpi-parts-count">Calculating...</div>
                     </div>
-                    <div class="text-2xl font-mono font-bold tracking-tight text-purple-400 whitespace-nowrap" id="kpi-parts">0.0d</div>
+                    <div class="text-2xl font-mono font-bold tracking-tight text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]" id="kpi-parts">0.0d</div>
                 </div>
-                <div class="mt-3 flex items-center justify-between border-t border-slate-700/50 pt-2 text-[10px] font-mono text-slate-400">
+                <div class="mt-3 flex items-center justify-between border-t border-purple-900/40 pt-2 text-[10px] font-mono text-purple-400">
                     <span>Turnaround</span>
-                    <span class="text-cyan-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+                    <span class="text-pink-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
                 </div>
             </div>
 
@@ -180,41 +195,41 @@
             <a href="https://tsgp-dashboard.github.io/OAEC_TELEMATICS_ALERT/" target="_blank" rel="noopener noreferrer" class="kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer group block">
                 <div class="flex justify-between items-start w-full gap-2">
                     <div class="space-y-1 min-w-0">
-                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Telematics Alert</h2>
-                        <div class="text-[10px] font-mono text-amber-500 flex items-center gap-1.5 mt-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> Diagnostic Hub
+                        <h2 class="text-xs font-semibold text-purple-200 uppercase tracking-wider truncate">Telematics Alert</h2>
+                        <div class="text-[10px] font-mono text-amber-400 flex items-center gap-1.5 mt-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_6px_#f59e0b]"></span> Diagnostic Hub
                         </div>
                     </div>
-                    <div class="text-2xl font-mono font-bold tracking-tight text-amber-500 flex items-center gap-1">
+                    <div class="text-2xl font-mono font-bold tracking-tight text-amber-400 flex items-center gap-1">
                         <span>🔗</span>
                     </div>
                 </div>
-                <div class="mt-3 flex items-center justify-between border-t border-slate-700/50 pt-2 text-[10px] font-mono text-slate-400">
+                <div class="mt-3 flex items-center justify-between border-t border-purple-900/40 pt-2 text-[10px] font-mono text-purple-400">
                     <span>External Matrix</span>
-                    <span class="text-amber-500 font-bold group-hover:underline transition-all">Launch ↗</span>
+                    <span class="text-amber-400 font-bold group-hover:underline transition-all">Launch ↗</span>
                 </div>
             </a>
         </aside>
 
         <!-- DYNAMIC CONTENT HUD -->
-        <main class="w-full lg:w-4/5 bg-slate-900/60 backdrop-blur-md rounded-xl border border-slate-800 p-4 sm:p-6 shadow-2xl lg:overflow-y-auto workspace-scrollbar lg:h-full">
+        <main class="w-full lg:w-4/5 bg-[#170b28]/50 backdrop-blur-md rounded-xl border border-purple-900/40 p-4 sm:p-6 shadow-2xl lg:overflow-y-auto workspace-scrollbar lg:h-full">
             
             <!-- VIEW 1: COMPLIANCE -->
             <div id="view-compliance-container" class="space-y-6">
-                <div class="border-b border-slate-800 pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                <div class="border-b border-purple-900/40 pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                     <div>
                         <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Schedule Compliance Variance Matrix</h3>
-                        <p class="text-xs text-slate-400 font-mono mt-0.5">Dual Axis Setup: Volume Bars vs Efficiency Curves</p>
+                        <p class="text-xs text-purple-400 font-mono mt-0.5">Dual Axis Setup: Volume Bars vs Efficiency Curves</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-4 text-[10px] font-mono">
-                        <select id="week-selector" onchange="changeWeekFilter()" class="bg-slate-950 text-white border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-cyan-400 cursor-pointer transition-colors shadow-md w-full sm:w-auto">
+                        <select id="week-selector" onchange="changeWeekFilter()" class="bg-[#0d0614] text-purple-200 border border-purple-900 rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-pink-500 cursor-pointer transition-colors shadow-md w-full sm:w-auto">
                             <option value="">Loading cycles...</option>
                         </select>
                     </div>
                 </div>
 
                 <!-- WEEKLY CHART CANVAS -->
-                <div class="w-full bg-slate-950/60 border border-slate-800 rounded-xl p-4 sm:p-6 shadow-inner">
+                <div class="w-full bg-[#0a0310]/80 border border-purple-900/40 rounded-xl p-4 sm:p-6 shadow-inner">
                     <div class="h-[320px] w-full relative">
                         <canvas id="planner-compliance-canvas"></canvas>
                     </div>
@@ -222,10 +237,10 @@
 
                 <!-- HISTORICAL MONTHLY COMPLIANCE TRENDS -->
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                    <div class="xl:col-span-2 bg-slate-950/60 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-inner">
+                    <div class="xl:col-span-2 bg-[#0a0310]/80 border border-purple-900/40 rounded-xl p-4 sm:p-5 shadow-inner">
                         <div class="mb-3">
-                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">Macro Historical Review</h4>
-                            <p class="text-[11px] text-slate-500 font-mono">Monthly Average Rolled-Up Aggregations</p>
+                            <h4 class="text-xs font-semibold text-purple-300 uppercase tracking-wider font-mono">Macro Historical Review</h4>
+                            <p class="text-[11px] text-purple-500 font-mono">Monthly Average Rolled-Up Aggregations</p>
                         </div>
                         <div class="h-[220px] w-full relative">
                             <canvas id="monthly-compliance-canvas"></canvas>
@@ -233,27 +248,27 @@
                     </div>
 
                     <!-- SCOPED WORK GROUP LEGEND -->
-                    <div class="bg-slate-950/40 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                    <div class="bg-[#0a0310]/40 border border-purple-900/40 rounded-xl p-4 flex flex-col justify-between">
                         <div>
-                            <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 font-mono flex items-center gap-2">
-                                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Planner Jurisdiction Scope
+                            <h4 class="text-xs font-semibold text-purple-400 uppercase tracking-widest mb-3 font-mono flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-pink-500 shadow-[0_0_6px_#ec4899]"></span> Planner Jurisdiction Scope
                             </h4>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left font-mono text-[11px]">
-                                    <thead class="bg-slate-900/80 text-slate-400 text-[9px] uppercase font-bold border-b border-slate-800">
+                                    <thead class="bg-[#1c0d30] text-purple-300 text-[9px] uppercase font-bold border-b border-purple-900/50">
                                         <tr>
                                             <th class="py-2 px-3">Planner</th>
                                             <th class="py-2 px-3">Maintenance Assignment</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-slate-800/40 text-slate-300">
-                                        <tr class="hover:bg-slate-900/40"><td class="py-2 px-3 font-bold text-cyan-400">PHILIP</td><td class="py-2 px-3 text-slate-300">PMS Engine Area</td></tr>
-                                        <tr class="hover:bg-slate-900/40"><td class="py-2 px-3 font-bold text-cyan-400">LEO</td><td class="py-2 px-3 text-slate-300">CM (GEM, LOS AMIGOS)</td></tr>
-                                        <tr class="hover:bg-slate-900/40"><td class="py-2 px-3 font-bold text-cyan-400">VINCENT</td><td class="py-2 px-3 text-slate-300">CM (REGION XIII, SINUDA)</td></tr>
-                                        <tr class="hover:bg-slate-900/40"><td class="py-2 px-3 font-bold text-cyan-400">GLENBERTH</td><td class="py-2 px-3 text-slate-300">CM (REGION XI-A, XI-B)</td></tr>
-                                        <tr class="hover:bg-slate-900/40"><td class="py-2 px-3 font-bold text-cyan-400">ROICE</td><td class="py-2 px-3 text-slate-300">CM (SAMAL, CRANEAGE)</td></tr>
-                                        <tr class="hover:bg-slate-900/40"><td class="py-2 px-3 font-bold text-cyan-400">JANE</td><td class="py-2 px-3 text-slate-300">PM & CM (REGION X)</td></tr>
-                                        <tr class="hover:bg-slate-900/40"><td class="py-2 px-3 font-bold text-cyan-400">DIONAH</td><td class="py-2 px-3 text-slate-300">SV, TM, TYRES Fleet</td></tr>
+                                    <tbody class="divide-y divide-purple-950/40 text-purple-200">
+                                        <tr class="hover:bg-purple-950/30"><td class="py-2 px-3 font-bold text-cyan-400">PHILIP</td><td class="py-2 px-3 text-purple-300">PMS Engine Area</td></tr>
+                                        <tr class="hover:bg-purple-950/30"><td class="py-2 px-3 font-bold text-cyan-400">LEO</td><td class="py-2 px-3 text-purple-300">CM (GEM, LOS AMIGOS)</td></tr>
+                                        <tr class="hover:bg-purple-950/30"><td class="py-2 px-3 font-bold text-cyan-400">VINCENT</td><td class="py-2 px-3 text-purple-300">CM (REGION XIII, SINUDA)</td></tr>
+                                        <tr class="hover:bg-purple-950/30"><td class="py-2 px-3 font-bold text-cyan-400">GLENBERTH</td><td class="py-2 px-3 text-purple-300">CM (REGION XI-A, XI-B)</td></tr>
+                                        <tr class="hover:bg-purple-950/30"><td class="py-2 px-3 font-bold text-cyan-400">ROICE</td><td class="py-2 px-3 text-purple-300">CM (SAMAL, CRANEAGE)</td></tr>
+                                        <tr class="hover:bg-purple-950/30"><td class="py-2 px-3 font-bold text-cyan-400">JANE</td><td class="py-2 px-3 text-purple-300">PM & CM (REGION X)</td></tr>
+                                        <tr class="hover:bg-purple-950/30"><td class="py-2 px-3 font-bold text-cyan-400">DIONAH</td><td class="py-2 px-3 text-purple-300">SV, TM, TYRES Fleet</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -264,29 +279,29 @@
 
             <!-- VIEW 2: CAPEX -->
             <div id="view-capex-container" class="hidden space-y-6">
-                <div class="border-b border-slate-800 pb-4">
+                <div class="border-b border-purple-900/40 pb-4">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                         <div>
                             <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">CAPEX Advanced Metrics Engine</h3>
-                            <p class="text-xs text-slate-400 font-mono mt-0.5">Allocation streams and asset deployment breakdown (Click segment to cross-filter)</p>
+                            <p class="text-xs text-purple-400 font-mono mt-0.5">Allocation streams and asset deployment breakdown (Click segment to cross-filter)</p>
                         </div>
-                        <div id="chart-filter-badge" class="hidden font-mono text-[10px] bg-cyan-950 border border-cyan-500 text-cyan-400 px-2 py-1 rounded animate-pulse shadow-md">
+                        <div id="chart-filter-badge" class="hidden font-mono text-[10px] bg-pink-950 border border-pink-500 text-pink-400 px-2 py-1 rounded animate-pulse shadow-md">
                             Chart Filter Active: <span id="chart-filter-name" class="font-bold">None</span>
                         </div>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
-                    <div class="xl:col-span-2 bg-slate-950/60 border border-slate-800 rounded-xl p-5 flex flex-col items-center">
+                    <div class="xl:col-span-2 bg-[#0a0310]/80 border border-purple-900/40 rounded-xl p-5 flex flex-col items-center">
                         <div class="w-full flex justify-between items-center mb-4">
-                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">Asset Allocation</h4>
-                            <span class="text-[9px] font-mono text-slate-500 cursor-pointer hover:text-cyan-400 select-none" onclick="resetChartCrossFilter()">[Clear Filter]</span>
+                            <h4 class="text-xs font-semibold text-purple-300 uppercase tracking-wider font-mono">Asset Allocation</h4>
+                            <span class="text-[9px] font-mono text-purple-500 cursor-pointer hover:text-pink-400 select-none" onclick="resetChartCrossFilter()">[Clear Filter]</span>
                         </div>
                         <div class="w-full max-w-[280px] h-[280px] flex items-center justify-center relative">
                             <canvas id="capex-doughnut-canvas"></canvas>
                         </div>
                     </div>
-                    <div class="xl:col-span-3 bg-slate-950/60 border border-slate-800 rounded-xl p-5">
-                        <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-4 font-mono">Equipment Categories</h4>
+                    <div class="xl:col-span-3 bg-[#0a0310]/80 border border-purple-900/40 rounded-xl p-5">
+                        <h4 class="text-xs font-semibold text-purple-300 uppercase tracking-wider mb-4 font-mono">Equipment Categories</h4>
                         <div class="w-full h-[280px]">
                             <canvas id="capex-bar-canvas"></canvas>
                         </div>
@@ -294,25 +309,25 @@
                 </div>
 
                 <!-- UTILITY HUB BAR -->
-                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-950/40 p-3 rounded-xl border border-slate-800">
+                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-[#0a0310]/40 p-3 rounded-xl border border-purple-900/40">
                     <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="capex-status-pills">
                         <button onclick="filterCapexTable('ALL')" id="capex-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL STATUSES</button>
                         <button onclick="filterCapexTable('WITH DOCUMENTS')" id="capex-pill-WITH-DOCUMENTS" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">PENDING DOCS</button>
                         <button onclick="filterCapexTable('DONE')" id="capex-pill-DONE" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">COMPLETE</button>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <input type="text" id="capex-search" oninput="searchCapexTable()" placeholder="🔍 Fuzzy multi-search (eg. 'BH complete')..." class="w-full sm:w-64 bg-slate-950 text-slate-200 placeholder-slate-600 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400">
-                        <button onclick="exportViewToCSV('capex')" class="bg-cyan-950 text-cyan-400 hover:bg-cyan-900 border border-cyan-800 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
-                        <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
+                        <input type="text" id="capex-search" oninput="searchCapexTable()" placeholder="🔍 Fuzzy multi-search (eg. 'BH complete')..." class="w-full sm:w-64 bg-[#0d0614] text-purple-200 placeholder-purple-800 border border-purple-900/60 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-pink-500">
+                        <button onclick="exportViewToCSV('capex')" class="bg-pink-950 text-pink-400 hover:bg-pink-900 border border-pink-800 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
+                        <button onclick="window.print()" class="bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 border border-purple-800 rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto chart-scrollbar bg-slate-950/60 rounded-xl border border-slate-800 p-4">
+                <div class="overflow-x-auto chart-scrollbar bg-[#0a0310]/80 rounded-xl border border-purple-900/40 p-4">
                     <table id="capex-data-table" class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
                         <thead>
-                            <tr class="bg-slate-800 text-slate-200 uppercase tracking-wider text-[11px] font-bold rounded-lg border-b border-slate-700">
+                            <tr class="bg-[#1c0d30] text-purple-200 uppercase tracking-wider text-[11px] font-bold rounded-lg border-b border-purple-900/60">
                                 <th class="p-3 pl-4 rounded-l-lg">Index</th>
-                                <th class="p-3">Reporting Cycle</th>
+                                <th class="p-3">Ref Cycle</th>
                                 <th class="p-3">Asset ID</th>
                                 <th class="p-3">Operational Activity</th>
                                 <th class="p-3">PO Ref</th>
@@ -320,47 +335,47 @@
                                 <th class="p-3 pr-4 text-right rounded-r-lg">Status</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-800 text-slate-300" id="capex-table-rows">
-                            <tr><td colspan="7" class="py-6 text-center text-slate-500">Querying database allocations...</td></tr>
+                        <tbody class="divide-y divide-purple-950/30 text-purple-300" id="capex-table-rows">
+                            <tr><td colspan="7" class="py-6 text-center text-purple-500">Querying database allocations...</td></tr>
                         </tbody>
                     </table>
                 </div>
-                <div id="capex-pagination-ctrl" class="flex justify-between items-center mt-4 px-2 font-mono text-xs text-slate-400"></div>
+                <div id="capex-pagination-ctrl" class="flex justify-between items-center mt-4 px-2 font-mono text-xs text-purple-400"></div>
             </div>
 
             <!-- VIEW 3: PARTS REQUEST -->
             <div id="view-parts-container" class="hidden space-y-6">
-                <div class="border-b border-slate-800 pb-4">
+                <div class="border-b border-purple-900/40 pb-4">
                     <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Procurement Turnaround Analytics Matrix</h3>
-                    <p class="text-xs text-slate-400 font-mono mt-1">
-                        💡 <strong class="text-cyan-400">Internal:</strong> Admin Processing Speed. | <strong class="text-emerald-400">Procurement:</strong> Logistics Pipeline.
+                    <p class="text-xs text-purple-400 font-mono mt-1">
+                        💡 <strong class="text-cyan-400">Internal:</strong> Admin Processing Speed. | <strong class="text-pink-400">Procurement:</strong> Logistics Pipeline.
                     </p>
                 </div>
-                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 sm:p-6">
-                    <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-5 font-mono">Average Total Lead Days Breakdown</h4>
+                <div class="bg-[#0a0310]/80 border border-purple-900/40 rounded-xl p-4 sm:p-6">
+                    <h4 class="text-xs font-semibold text-purple-300 uppercase tracking-wider mb-5 font-mono">Average Total Lead Days Breakdown</h4>
                     <div class="w-full h-[150px]">
                         <canvas id="parts-performance-canvas"></canvas>
                     </div>
                 </div>
 
                 <!-- UTILITY HUB BAR -->
-                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-950/40 p-3 rounded-xl border border-slate-800">
+                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-[#0a0310]/40 p-3 rounded-xl border border-purple-900/40">
                     <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="parts-status-pills">
                         <button onclick="filterPartsTable('ALL')" id="parts-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL</button>
                         <button onclick="filterPartsTable('APPROVED')" id="parts-pill-APPROVED" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">APPROVED</button>
                         <button onclick="filterPartsTable('PENDING')" id="parts-pill-PENDING" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">PENDING</button>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <input type="text" id="parts-search" oninput="searchPartsTable()" placeholder="🔍 Search description..." class="w-full sm:w-64 bg-slate-950 text-slate-200 placeholder-slate-600 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-cyan-400">
-                        <button onclick="exportViewToCSV('parts')" class="bg-cyan-950 text-cyan-400 hover:bg-cyan-900 border border-cyan-800 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
-                        <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
+                        <input type="text" id="parts-search" oninput="searchPartsTable()" placeholder="🔍 Search description..." class="w-full sm:w-64 bg-[#0d0614] text-purple-200 placeholder-purple-800 border border-purple-900/60 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-pink-500">
+                        <button onclick="exportViewToCSV('parts')" class="bg-pink-950 text-pink-400 hover:bg-pink-900 border border-pink-800 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
+                        <button onclick="window.print()" class="bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 border border-purple-800 rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto chart-scrollbar bg-slate-950/60 rounded-xl border border-slate-800 p-4">
+                <div class="overflow-x-auto chart-scrollbar bg-[#0a0310]/80 rounded-xl border border-purple-900/40 p-4">
                     <table id="parts-data-table" class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
                         <thead>
-                            <tr class="bg-slate-800 text-slate-200 uppercase tracking-wider text-[11px] font-bold rounded-lg border-b border-slate-700">
+                            <tr class="bg-[#1c0d30] text-purple-200 uppercase tracking-wider text-[11px] font-bold rounded-lg border-b border-purple-900/60">
                                 <th class="p-3 pl-4 rounded-l-lg">Request ID</th>
                                 <th class="p-3">Asset Ref</th>
                                 <th class="p-3">Component Description</th>
@@ -370,22 +385,21 @@
                                 <th class="p-3 pr-4 text-right rounded-r-lg">Workflow Status</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-800 text-slate-300" id="parts-table-rows">
-                            <tr><td colspan="7" class="py-6 text-center text-slate-500">Retrieving logistical metrics...</td></tr>
+                        <tbody class="divide-y divide-purple-950/30 text-purple-300" id="parts-table-rows">
+                            <tr><td colspan="7" class="py-6 text-center text-purple-500">Retrieving logistical metrics...</td></tr>
                         </tbody>
                     </table>
                 </div>
-                <div id="parts-pagination-ctrl" class="flex justify-between items-center mt-4 px-2 font-mono text-xs text-slate-400"></div>
+                <div id="parts-pagination-ctrl" class="flex justify-between items-center mt-4 px-2 font-mono text-xs text-purple-400"></div>
             </div>
 
         </main>
     </div>
 
-    <!-- DATA PIPELINE ENGINE (V5.0 Advanced Architecture) -->
+    <!-- DATA PIPELINE ENGINE -->
     <script>
         const SHEET_DB_API_URL = 'https://script.google.com/macros/s/AKfycbzqed0j2W4mevtpEANLXZTIpFoAS79_GXxzmNvDfZOls4hOlnHY7FDtWyyXUCHIawrePQ/exec';
 
-        // Centralized Application State Matrix
         const state = {
             raw: { planner: [], capex: [], parts: [] },
             capex: { page: 1, limit: 12, search: '', status: 'ALL', category: 'ALL' },
@@ -413,7 +427,6 @@
             return gradient;
         }
 
-        // Tokenized Fuzzy Search Matcher (Evaluates queries out of absolute order)
         function fuzzyMatch(text, query) {
             if (!query) return true;
             const tokens = query.toLowerCase().split(/\s+/).filter(t => t.length > 0);
@@ -433,10 +446,10 @@
             const statusTxt = document.getElementById('sync-status');
             if(!isAutoEnabled) {
                 statusTxt.innerText = "Paused (Manual Mode)";
-                statusTxt.className = "text-slate-400 font-bold text-xs font-mono mt-0.5";
+                statusTxt.className = "text-purple-400 font-bold text-xs font-mono mt-0.5";
             } else {
                 statusTxt.innerText = "Connected";
-                statusTxt.className = "text-emerald-400 font-bold text-xs font-mono mt-0.5";
+                statusTxt.className = "text-cyan-400 font-bold text-xs font-mono mt-0.5";
                 fetchLatestDataStream(); 
             }
         }
@@ -447,8 +460,8 @@
             const indicator = document.getElementById('sync-indicator');
             const statusTxt = document.getElementById('sync-status');
             
-            indicator.classList.replace('bg-emerald-400', 'bg-amber-400');
-            indicator.classList.replace('shadow-[0_0_10px_#10b981]', 'shadow-[0_0_10px_#f59e0b]');
+            indicator.classList.replace('bg-cyan-400', 'bg-amber-400');
+            indicator.classList.replace('shadow-[0_0_10px_#22d3ee]', 'shadow-[0_0_10px_#f59e0b]');
             statusTxt.innerText = "Syncing with cloud...";
             statusTxt.className = "text-amber-400 font-bold text-xs font-mono mt-0.5";
 
@@ -477,29 +490,25 @@
                     processAndRenderCapex();
                     processAndRenderParts();
 
-                    indicator.classList.replace('bg-amber-400', 'bg-emerald-400');
-                    indicator.classList.replace('shadow-[0_0_10px_#f59e0b]', 'shadow-[0_0_10px_#10b981]');
+                    indicator.classList.replace('bg-amber-400', 'bg-cyan-400');
+                    indicator.classList.replace('shadow-[0_0_10px_#f59e0b]', 'shadow-[0_0_10px_#22d3ee]');
                     statusTxt.innerText = document.getElementById('auto-sync-toggle').checked ? "Connected" : "Paused (Manual Mode)";
-                    statusTxt.className = document.getElementById('auto-sync-toggle').checked ? "text-emerald-400 font-bold text-xs font-mono mt-0.5" : "text-slate-400 font-bold text-xs font-mono mt-0.5";
+                    statusTxt.className = document.getElementById('auto-sync-toggle').checked ? "text-cyan-400 font-bold text-xs font-mono mt-0.5" : "text-purple-400 font-bold text-xs font-mono mt-0.5";
                 }
             } catch (err) {
                 console.error("Streamer sync error:", err);
                 statusTxt.innerText = "Sync Timeout - Reconnecting";
                 statusTxt.className = "text-rose-500 font-bold text-xs font-mono mt-0.5";
-                indicator.classList.replace('bg-emerald-400', 'bg-rose-500');
+                indicator.classList.replace('bg-cyan-400', 'bg-rose-500');
             }
         }
 
-        // ==========================================
-        // DYNAMIC CAPEX SUB-SYSTEM (CROSS-FILTERED + PAGINATED)
-        // ==========================================
         function processAndRenderCapex() {
             let documentPhaseCount = 0, totalDatabaseGrossBudget = 0;
             let categoryFinancials = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
             let categoryVolumePlanned = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
             let categoryVolumeActual = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
 
-            // Run structural metrics on absolute data before filtering bounds are placed
             state.raw.capex.forEach(row => {
                 if (!row[2] && !row[5]) return;
                 const assetId = String(row[2] || '').toUpperCase();
@@ -521,7 +530,6 @@
             document.getElementById('kpi-capex-count').innerText = `● ${documentPhaseCount} Docs Pending`;
             buildAdvancedCapexCharts(categoryFinancials, categoryVolumePlanned, categoryVolumeActual);
 
-            // Apply cross-filtering engine logic
             const processedDataset = state.raw.capex.filter(row => {
                 if (!row[2] && !row[5]) return false;
                 const assetId = String(row[2] || '').toUpperCase();
@@ -536,7 +544,6 @@
                 return matchesStatus && matchesCategory && matchesSearch;
             });
 
-            // Calculate Pagination bounds
             const totalItems = processedDataset.length;
             const maxPage = Math.max(1, Math.ceil(totalItems / state.capex.limit));
             if (state.capex.page > maxPage) state.capex.page = maxPage;
@@ -546,7 +553,7 @@
 
             let tableHtml = '';
             if (pageSlice.length === 0) {
-                tableHtml = `<tr><td colspan="7" class="py-12 text-center text-slate-500 font-mono text-xs">⚠️ No matching records correspond with active matrix filters.</td></tr>`;
+                tableHtml = `<tr><td colspan="7" class="py-12 text-center text-purple-500 font-mono text-xs">⚠️ No matching records correspond with active matrix filters.</td></tr>`;
             } else {
                 pageSlice.forEach((row, i) => {
                     const id = row[0], quarter = row[1], assetId = String(row[2] || '').toUpperCase(), activity = row[3] || '', po = row[4], status = row[6] || '';
@@ -554,29 +561,29 @@
                     const index = startIndex + i;
 
                     tableHtml += `
-                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-slate-900/30' : 'bg-slate-900/70'} hover:bg-slate-800/60 border-b border-slate-800/40 transition-colors" 
+                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-purple-950/20' : 'bg-purple-950/50'} hover:bg-purple-900/40 border-b border-purple-950/40 transition-colors" 
                             onclick="toggleRowDetailDrawer('cx-${index}')">
-                            <td class="p-3 pl-4 text-slate-500 font-medium">${id}</td>
-                            <td class="p-3 text-slate-400 text-[11px] font-medium">${quarter}</td>
+                            <td class="p-3 pl-4 text-purple-500 font-medium">${id}</td>
+                            <td class="p-3 text-purple-400 text-[11px] font-medium">${quarter}</td>
                             <td class="p-3">
-                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-slate-950 border border-slate-700 text-cyan-400 hover:border-cyan-400 transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold font-mono cursor-pointer">
+                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-[#0a0310] border border-purple-800 text-cyan-400 hover:border-pink-500 transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold font-mono cursor-pointer">
                                     ${assetId} 📋
                                 </span>
                             </td>
                             <td class="p-3 text-white font-medium">${activity}</td>
-                            <td class="p-3 text-slate-400">${po || '---'}</td>
-                            <td class="p-3 text-emerald-400 font-semibold">PHP ${budgetNum.toLocaleString()}</td>
+                            <td class="p-3 text-purple-300">${po || '---'}</td>
+                            <td class="p-3 text-pink-400 font-semibold">PHP ${budgetNum.toLocaleString()}</td>
                             <td class="p-3 pr-4 text-right">
-                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'||status==='Complete'?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40':'bg-slate-800 text-slate-400 border border-slate-700'}">${status || 'With Documents'}</span>
+                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'||status==='Complete'?'bg-pink-500/20 text-pink-400 border border-pink-500/40':'bg-purple-900/40 text-purple-400 border border-purple-800'}">${status || 'With Documents'}</span>
                             </td>
                         </tr>
-                        <tr id="drawer-cx-${index}" class="detail-drawer border-l-2 border-cyan-500 font-mono text-[11px] text-slate-400">
+                        <tr id="drawer-cx-${index}" class="detail-drawer border-l-2 border-pink-500 font-mono text-[11px] text-purple-400">
                             <td colspan="7" class="p-4 space-y-2">
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Pipeline ID Token</span> cx-ref-${id}00${index}</div>
-                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Deployment Phase</span> Tier-1 Operational Authorization</div>
-                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Ledger Sync Index</span> 0x${(index*143).toString(16).toUpperCase()}</div>
-                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Procurement Route</span> Direct Vendor Allocation</div>
+                                    <div><span class="text-purple-600 block font-bold uppercase text-[9px]">Pipeline ID Token</span> cx-ref-${id}00${index}</div>
+                                    <div><span class="text-purple-600 block font-bold uppercase text-[9px]">Deployment Phase</span> Tier-1 Operational Authorization</div>
+                                    <div><span class="text-purple-600 block font-bold uppercase text-[9px]">Ledger Sync Index</span> 0x${(index*143).toString(16).toUpperCase()}</div>
+                                    <div><span class="text-purple-600 block font-bold uppercase text-[9px]">Procurement Route</span> Direct Vendor Allocation</div>
                                 </div>
                             </td>
                         </tr>`;
@@ -585,13 +592,12 @@
 
             document.getElementById("capex-table-rows").innerHTML = tableHtml;
             
-            // Render Pagination control elements
             document.getElementById('capex-pagination-ctrl').innerHTML = `
                 <div>Showing ${totalItems === 0 ? 0 : startIndex + 1} to ${Math.min(startIndex + state.capex.limit, totalItems)} of ${totalItems} assets</div>
                 <div class="flex items-center gap-2">
-                    <button onclick="setCapexPage(${state.capex.page - 1})" ${state.capex.page === 1 ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded border border-slate-700 text-slate-300 transition-colors"'} tabindex="0">◄ Prev</button>
-                    <span class="text-slate-300 font-bold">Page ${state.capex.page} / ${maxPage}</span>
-                    <button onclick="setCapexPage(${state.capex.page + 1})" ${state.capex.page === maxPage ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded border border-slate-700 text-slate-300 transition-colors"'} tabindex="0">Next ►</button>
+                    <button onclick="setCapexPage(${state.capex.page - 1})" ${state.capex.page === 1 ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-purple-900/40 hover:bg-purple-800/60 px-3 py-1 rounded border border-purple-800 text-purple-200 transition-colors"'} tabindex="0">◄ Prev</button>
+                    <span class="text-purple-300 font-bold">Page ${state.capex.page} / ${maxPage}</span>
+                    <button onclick="setCapexPage(${state.capex.page + 1})" ${state.capex.page === maxPage ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-purple-900/40 hover:bg-purple-800/60 px-3 py-1 rounded border border-purple-800 text-purple-200 transition-colors"'} tabindex="0">Next ►</button>
                 </div>`;
         }
 
@@ -619,9 +625,6 @@
             if (doughnutChartInstance) { doughnutChartInstance.setActiveElements([]); doughnutChartInstance.update(); }
         }
 
-        // ==========================================
-        // PARTS REQ SPEED SUB-SYSTEM (FUZZY + PAGINATED)
-        // ==========================================
         function processAndRenderParts() {
             let totalOverallDays = 0, totalInternalDays = 0, totalProcurementDays = 0, approvedCount = 0;
 
@@ -662,7 +665,7 @@
 
             let tableHtml = '';
             if (pageSlice.length === 0) {
-                tableHtml = `<tr><td colspan="7" class="py-12 text-center text-slate-500 font-mono text-xs">⚠️ No component tracking requests match criteria.</td></tr>`;
+                tableHtml = `<tr><td colspan="7" class="py-12 text-center text-purple-500 font-mono text-xs">⚠️ No component tracking requests match criteria.</td></tr>`;
             } else {
                 pageSlice.forEach((row, i) => {
                     const id = row[0], assetId = String(row[2]).toUpperCase(), desc = row[3], status = String(row[19]).trim().toUpperCase();
@@ -670,28 +673,28 @@
                     const index = startIndex + i;
 
                     tableHtml += `
-                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-slate-900/30' : 'bg-slate-900/70'} hover:bg-slate-800/60 border-b border-slate-800/40 transition-colors" 
+                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-purple-950/20' : 'bg-purple-950/50'} hover:bg-purple-900/40 border-b border-purple-950/40 transition-colors" 
                             onclick="toggleRowDetailDrawer('pt-${index}')">
-                            <td class="p-3 pl-4 text-purple-400 font-medium">${id}</td>
+                            <td class="p-3 pl-4 text-pink-400 font-medium">${id}</td>
                             <td class="p-3">
-                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-slate-950 border border-slate-700 text-white hover:text-cyan-400 hover:border-cyan-400 transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold cursor-pointer">
+                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-[#0a0310] border border-purple-800 text-white hover:text-cyan-400 hover:border-cyan-400 transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold cursor-pointer">
                                     ${assetId} 📋
                                 </span>
                             </td>
                             <td class="p-3 text-white font-medium truncate max-w-[220px]">${desc}</td>
                             <td class="p-3 text-cyan-400 font-semibold">${status==='APPROVED'?internalDays+'d':'—'}</td>
-                            <td class="p-3 text-emerald-400 font-semibold">${status==='APPROVED'?procurementDays+'d':'—'}</td>
+                            <td class="p-3 text-pink-400 font-semibold">${status==='APPROVED'?procurementDays+'d':'—'}</td>
                             <td class="p-3 text-amber-400 font-bold">${status==='APPROVED'?grossLeadDays+'d':'—'}</td>
                             <td class="p-3 pr-4 text-right">
-                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='APPROVED'?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40':'bg-amber-500/20 text-amber-400 border border-amber-500/40'}">${status}</span>
+                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='APPROVED'?'bg-pink-500/20 text-pink-400 border border-pink-500/40':'bg-amber-500/20 text-amber-400 border border-amber-500/40'}">${status}</span>
                             </td>
                         </tr>
-                        <tr id="drawer-pt-${index}" class="detail-drawer border-l-2 border-purple-500 font-mono text-[11px] text-slate-400">
+                        <tr id="drawer-pt-${index}" class="detail-drawer border-l-2 border-pink-500 font-mono text-[11px] text-purple-400">
                             <td colspan="7" class="p-4 space-y-1">
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                    <div><strong class="text-slate-500">Internal Pipeline Speed:</strong> Approved within ${internalDays} working days.</div>
-                                    <div><strong class="text-slate-500">Procurement Cycle:</strong> Field acquisition completed in ${procurementDays} days.</div>
-                                    <div><strong class="text-slate-500">System Verification:</strong> Digital PO Stamp secure token verified.</div>
+                                    <div><strong class="text-purple-500">Internal Pipeline Speed:</strong> Approved within ${internalDays} working days.</div>
+                                    <div><strong class="text-purple-500">Procurement Cycle:</strong> Field acquisition completed in ${procurementDays} days.</div>
+                                    <div><strong class="text-purple-500">System Verification:</strong> Digital PO Stamp secure token verified.</div>
                                 </div>
                             </td>
                         </tr>`;
@@ -703,9 +706,9 @@
             document.getElementById('parts-pagination-ctrl').innerHTML = `
                 <div>Showing ${totalItems === 0 ? 0 : startIndex + 1} to ${Math.min(startIndex + state.parts.limit, totalItems)} of ${totalItems} tracking links</div>
                 <div class="flex items-center gap-2">
-                    <button onclick="setPartsPage(${state.parts.page - 1})" ${state.parts.page === 1 ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded border border-slate-700 text-slate-300 transition-colors"'} tabindex="0">◄ Prev</button>
-                    <span class="text-slate-300 font-bold">Page ${state.parts.page} / ${maxPage}</span>
-                    <button onclick="setPartsPage(${state.parts.page + 1})" ${state.parts.page === maxPage ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded border border-slate-700 text-slate-300 transition-colors"'} tabindex="0">Next ►</button>
+                    <button onclick="setPartsPage(${state.parts.page - 1})" ${state.parts.page === 1 ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-purple-900/40 hover:bg-purple-800/60 px-3 py-1 rounded border border-purple-800 text-purple-200 transition-colors"'} tabindex="0">◄ Prev</button>
+                    <span class="text-purple-300 font-bold">Page ${state.parts.page} / ${maxPage}</span>
+                    <button onclick="setPartsPage(${state.parts.page + 1})" ${state.parts.page === maxPage ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-purple-900/40 hover:bg-purple-800/60 px-3 py-1 rounded border border-purple-800 text-purple-200 transition-colors"'} tabindex="0">Next ►</button>
                 </div>`;
         }
 
@@ -725,9 +728,6 @@
             processAndRenderParts();
         }
 
-        // ==========================================
-        // COMPLIANCE ENGINE VISUALIZER SUBSYSTEM
-        // ==========================================
         function populateWeekSelector(rows) {
             const selector = document.getElementById('week-selector');
             if (!rows.length) return "";
@@ -777,21 +777,21 @@
                 data: {
                     labels: names,
                     datasets: [
-                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(6, 182, 212, 0.85)', 'rgba(8, 145, 178, 0.4)'), borderColor: '#22d3ee', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
-                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(16, 185, 129, 0.85)', 'rgba(5, 150, 105, 0.4)'), borderColor: '#34d399', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
-                        { label: 'Actual Compliance %', data: compliancePercentages, type: 'line', borderColor: '#38bdf8', backgroundColor: '#0b0f19', borderWidth: 3, pointBackgroundColor: '#38bdf8', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.2, yAxisID: 'yPercentage', order: 1 },
-                        { label: 'Target (85%)', data: targetLineData, type: 'line', borderColor: '#f43f5e', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'yPercentage', order: 2 }
+                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(6, 182, 212, 0.85)', 'rgba(8, 145, 178, 0.2)'), borderColor: '#22d3ee', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
+                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(236, 72, 153, 0.85)', 'rgba(217, 70, 239, 0.2)'), borderColor: '#ec4899', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
+                        { label: 'Actual Compliance %', data: compliancePercentages, type: 'line', borderColor: '#38bdf8', backgroundColor: '#0d0614', borderWidth: 3, pointBackgroundColor: '#38bdf8', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.2, yAxisID: 'yPercentage', order: 1 },
+                        { label: 'Target (85%)', data: targetLineData, type: 'line', borderColor: '#ff007f', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'yPercentage', order: 2 }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10, weight: '500' } } },
-                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 25, color: '#22d3ee', font: { size: 10 }, callback: v => v + ' Vol' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
-                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#94a3b8', font: { size: 10 }, callback: v => v + '%' }, grid: { display: false } }
+                        x: { grid: { display: false }, ticks: { color: '#c084fc', font: { size: 10, weight: '500' } } },
+                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 25, color: '#22d3ee', font: { size: 10 }, callback: v => v + ' Vol' }, grid: { color: 'rgba(217, 70, 239, 0.05)' } },
+                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#c084fc', font: { size: 10 }, callback: v => v + '%' }, grid: { display: false } }
                     },
                     plugins: {
-                        legend: { position: 'top', labels: { color: '#cbd5e1', font: { size: 10 } } },
+                        legend: { position: 'top', labels: { color: '#e9d5ff', font: { size: 10 } } },
                         datalabels: { formatter: (v, c) => c.dataset.yAxisID === 'yPercentage' ? (c.datasetIndex === 2 ? v + '%' : '') : v, color: '#fff', anchor: 'end', align: 'top', font: { size: 9, weight: 'bold' } }
                     }
                 }
@@ -838,17 +838,17 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        { type: 'bar', label: 'Monthly Average %', data: complianceData, backgroundColor: createVerticalGradient(ctx, 'rgba(16, 185, 129, 0.85)', 'rgba(5, 150, 105, 0.3)'), borderColor: '#34d399', borderWidth: 1.5, borderRadius: 4, order: 2 },
-                        { type: 'line', label: 'Target Limit (85%)', data: targetData, borderColor: '#f43f5e', borderWidth: 2, borderDash: [6, 4], pointRadius: 0, fill: false, order: 1 }
+                        { type: 'bar', label: 'Monthly Average %', data: complianceData, backgroundColor: createVerticalGradient(ctx, 'rgba(236, 72, 153, 0.85)', 'rgba(168, 85, 247, 0.2)'), borderColor: '#ec4899', borderWidth: 1.5, borderRadius: 4, order: 2 },
+                        { type: 'line', label: 'Target Limit (85%)', data: targetData, borderColor: '#ff007f', borderWidth: 2, borderDash: [6, 4], pointRadius: 0, fill: false, order: 1 }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
-                        y: { min: 0, max: 100, ticks: { color: '#64748b', callback: v => v + '%' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+                        x: { grid: { display: false }, ticks: { color: '#c084fc' } },
+                        y: { min: 0, max: 100, ticks: { color: '#a855f7', callback: v => v + '%' }, grid: { color: 'rgba(217, 70, 239, 0.05)' } }
                     },
-                    plugins: { legend: { labels: { color: '#cbd5e1' } }, datalabels: { color: '#fff', font: { weight: 'bold' }, formatter: (v, c) => c.dataset.type === 'bar' ? v + '%' : '' } }
+                    plugins: { legend: { labels: { color: '#e9d5ff' } }, datalabels: { color: '#fff', font: { weight: 'bold' }, formatter: (v, c) => c.dataset.type === 'bar' ? v + '%' : '' } }
                 }
             });
         }
@@ -861,7 +861,7 @@
 
             doughnutChartInstance = new Chart(doughnutCtx, {
                 type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: financialData, backgroundColor: [createVerticalGradient(doughnutCtx, 'rgba(6, 182, 212, 0.9)', 'rgba(8, 145, 178, 0.5)'), createVerticalGradient(doughnutCtx, 'rgba(251, 191, 36, 0.9)', 'rgba(217, 119, 6, 0.5)'), createVerticalGradient(doughnutCtx, 'rgba(16, 185, 129, 0.9)', 'rgba(124, 58, 237, 0.5)'), createVerticalGradient(doughnutCtx, 'rgba(244, 63, 94, 0.9)', 'rgba(190, 24, 74, 0.5)')], borderWidth: 2, borderColor: '#0f172a' }] },
+                data: { labels: labels, datasets: [{ data: financialData, backgroundColor: [createVerticalGradient(doughnutCtx, 'rgba(6, 182, 212, 0.9)', 'rgba(8, 145, 178, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(236, 72, 153, 0.9)', 'rgba(217, 70, 239, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(168, 85, 247, 0.9)', 'rgba(107, 33, 168, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(244, 63, 94, 0.9)', 'rgba(159, 18, 57, 0.4)')], borderWidth: 2, borderColor: '#120720' }] },
                 options: { 
                     responsive: true, maintainAspectRatio: false,
                     onClick: (event, activeElements) => {
@@ -880,7 +880,7 @@
                             processAndRenderCapex();
                         }
                     },
-                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold' }, formatter: v => v > 0 ? ((v / totalFinancials) * 100).toFixed(0) + '%' : '' } }, cutout: '65%' 
+                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#c084fc', font: { size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold' }, formatter: v => v > 0 ? ((v / totalFinancials) * 100).toFixed(0) + '%' : '' } }, cutout: '65%' 
                 }
             });
 
@@ -888,8 +888,8 @@
             if (barChartInstance) barChartInstance.destroy();
             barChartInstance = new Chart(barCtx, {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Target Count', data: labels.map(l => plannedMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(14, 165, 233, 0.85)', 'rgba(2, 132, 199, 0.4)'), borderColor: '#38bdf8', borderWidth: 1, borderRadius: 4 }, { label: 'Actual Completed', data: labels.map(l => actualMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(16, 185, 129, 0.85)', 'rgba(4, 120, 87, 0.4)'), borderColor: '#34d399', borderWidth: 1, borderRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8' }, grid: { display: false } }, y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', stepSize: 1 } } }, plugins: { legend: { labels: { color: '#cbd5e1' } }, datalabels: { color: '#fff', anchor: 'end', align: 'top' } } }
+                data: { labels: labels, datasets: [{ label: 'Target Count', data: labels.map(l => plannedMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(14, 165, 233, 0.85)', 'rgba(2, 132, 199, 0.2)'), borderColor: '#38bdf8', borderWidth: 1, borderRadius: 4 }, { label: 'Actual Completed', data: labels.map(l => actualMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(236, 72, 153, 0.85)', 'rgba(190, 24, 74, 0.2)'), borderColor: '#ec4899', borderWidth: 1, borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#c084fc' }, grid: { display: false } }, y: { grid: { color: 'rgba(217, 70, 239, 0.05)' }, ticks: { color: '#a855f7', stepSize: 1 } } }, plugins: { legend: { labels: { color: '#e9d5ff' } }, datalabels: { color: '#fff', anchor: 'end', align: 'top' } } }
             });
         }
 
@@ -898,14 +898,11 @@
             if (partsChartInstance) partsChartInstance.destroy();
             partsChartInstance = new Chart(partsCtx, {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(34, 211, 238, 0.85)', 'rgba(14, 116, 144, 0.4)'), borderColor: '#22d3ee', borderWidth: 1, barThickness: 40 }, { label: 'Procurement', data: srcProcureData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(16, 185, 129, 0.85)', 'rgba(4, 120, 87, 0.4)'), borderColor: '#34d399', borderWidth: 1, barThickness: 40 }] },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y: { stacked: true, ticks: { color: '#fff' }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#cbd5e1' } }, datalabels: { color: '#fff', font: { weight: 'bold' } } } }
+                data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(34, 211, 238, 0.85)', 'rgba(14, 116, 144, 0.3)'), borderColor: '#22d3ee', borderWidth: 1, barThickness: 40 }, { label: 'Procurement', data: srcProcureData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(236, 72, 153, 0.85)', 'rgba(157, 23, 77, 0.3)'), borderColor: '#ec4899', borderWidth: 1, barThickness: 40 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#c084fc' }, grid: { color: 'rgba(217, 70, 239, 0.05)' } }, y: { stacked: true, ticks: { color: '#fff' }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#e9d5ff' } }, datalabels: { color: '#fff', font: { weight: 'bold' } } } }
             });
         }
 
-        // ==========================================
-        // UTILITY INTERACTIVITY METHODS
-        // ==========================================
         function switchView(targetView) {
             document.getElementById('view-compliance-container').classList.add('hidden');
             document.getElementById('view-capex-container').classList.add('hidden');
