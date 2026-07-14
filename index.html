@@ -39,8 +39,7 @@
         }
         .kpi-card:hover { 
             border-top: 1px solid rgba(255, 255, 255, 0.3);
-            border-color: rgba(255, 255, 255, 0.15); 
-            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.15); transform: translateY(-2px);
             box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2), 0 8px 25px rgba(0, 0, 0, 0.35);
         }
         .kpi-card.active-panel { 
@@ -105,7 +104,6 @@
             </div>
         </div>
         <div class="flex items-center gap-4">
-            <!-- PRESENTATION-SAFE SYNC SWITCHBOARD -->
             <div class="flex items-center bg-slate-950/80 border border-slate-800 rounded-lg p-1.5 gap-3 font-mono text-xs">
                 <label class="flex items-center gap-2 cursor-pointer select-none text-slate-400 pl-1.5">
                     <input type="checkbox" id="auto-sync-toggle" checked onchange="toggleAutoSyncMode()" class="rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-0 focus:ring-offset-0 cursor-pointer">
@@ -118,7 +116,7 @@
             </div>
             <div class="text-right hidden sm:block font-mono">
                 <p class="text-xs text-slate-300 font-medium">Global Enterprise Deck</p>
-                <p class="text-[11px] text-slate-500">v4.2.1-clean-feed</p>
+                <p class="text-[11px] text-slate-500">v4.2.2-clean-feed</p>
             </div>
         </div>
     </header>
@@ -179,7 +177,7 @@
                 </div>
             </div>
 
-            <!-- Panel 4: Telematics Alert (External Target Link Dashboard) -->
+            <!-- Panel 4: Telematics Alert -->
             <a href="https://tsgp-dashboard.github.io/OAEC_TELEMATICS_ALERT/" target="_blank" rel="noopener noreferrer" class="kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer group block">
                 <div class="flex justify-between items-start w-full gap-2">
                     <div class="space-y-1 min-w-0">
@@ -216,35 +214,49 @@
                     </div>
                 </div>
 
+                <!-- WEEKLY CHART CANVAS -->
                 <div class="w-full bg-slate-950/60 border border-slate-800 rounded-xl p-4 sm:p-6 shadow-inner">
-                    <div class="h-[340px] w-full relative">
+                    <div class="h-[320px] w-full relative">
                         <canvas id="planner-compliance-canvas"></canvas>
                     </div>
                 </div>
 
-                <!-- DYNAMICALLY SCOPED WORK GROUP LEGEND -->
-                <div class="bg-slate-950/40 border border-slate-800/80 rounded-xl p-4">
-                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 font-mono flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Planner Scope Assignment Reference
-                    </h4>
-                    <div class="overflow-x-auto chart-scrollbar">
-                        <table class="w-full text-left font-mono text-xs border border-slate-800">
-                            <thead>
-                                <tr class="bg-slate-900 text-slate-400 border-b border-slate-800 text-[10px] uppercase font-bold">
-                                    <th class="p-2.5">Planner Name</th>
-                                    <th class="p-2.5">Maintenance Jurisdiction / Type</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-800/60 text-slate-300">
-                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">PHILIP</td><td class="p-2">PMS</td></tr>
-                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">LEO</td><td class="p-2">CM (GEM, LOS AMIGOS)</td></tr>
-                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">VINCENT</td><td class="p-2">CM (REGION XIII, SINUDA)</td></tr>
-                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">GLENBERTH</td><td class="p-2">CM (REGION XI-A, XI-B)</td></tr>
-                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">ROICE</td><td class="p-2">CM (SAMAL, CRANEAGE)</td></tr>
-                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">JANE</td><td class="p-2">PM (REGION X) / CM (REGION X)</td></tr>
-                                <tr class="hover:bg-slate-900/40"><td class="p-2 font-bold text-cyan-400">DIONAH</td><td class="p-2">SV, TM, TYRES</td></tr>
-                            </tbody>
-                        </table>
+                <!-- NEW COMPONENT: HISTORICAL MONTHLY COMPLIANCE TRENDS -->
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div class="xl:col-span-2 bg-slate-950/60 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-inner">
+                        <div class="mb-3">
+                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">Macro Historical Review</h4>
+                            <p class="text-[11px] text-slate-500 font-mono">Monthly Average Rolled-Up Aggregations (June W23-27 | July W28-31)</p>
+                        </div>
+                        <div class="h-[220px] w-full relative">
+                            <canvas id="monthly-compliance-canvas"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- SCOPED WORK GROUP LEGEND -->
+                    <div class="bg-slate-950/40 border border-slate-800 rounded-xl p-4">
+                        <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 font-mono flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Planner Jurisdiction Scope
+                        </h4>
+                        <div class="overflow-x-auto chart-scrollbar max-h-[190px]">
+                            <table class="w-full text-left font-mono text-[11px] border border-slate-800/80">
+                                <thead class="sticky top-0 bg-slate-900 text-slate-400 text-[9px] uppercase font-bold border-b border-slate-800">
+                                    <tr>
+                                        <th class="p-2">Planner</th>
+                                        <th class="p-2">Maintenance Assignment</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                                    <tr class="hover:bg-slate-900/40"><td class="p-1.5 font-bold text-cyan-400">PHILIP</td><td class="p-1.5">PMS Engine Area</td></tr>
+                                    <tr class="hover:bg-slate-900/40"><td class="p-1.5 font-bold text-cyan-400">LEO</td><td class="p-1.5">CM (GEM, LOS AMIGOS)</td></tr>
+                                    <tr class="hover:bg-slate-900/40"><td class="p-1.5 font-bold text-cyan-400">VINCENT</td><td class="p-1.5">CM (REGION XIII, SINUDA)</td></tr>
+                                    <tr class="hover:bg-slate-900/40"><td class="p-1.5 font-bold text-cyan-400">GLENBERTH</td><td class="p-1.5">CM (REGION XI-A, XI-B)</td></tr>
+                                    <tr class="hover:bg-slate-900/40"><td class="p-1.5 font-bold text-cyan-400">ROICE</td><td class="p-1.5">CM (SAMAL, CRANEAGE)</td></tr>
+                                    <tr class="hover:bg-slate-900/40"><td class="p-1.5 font-bold text-cyan-400">JANE</td><td class="p-1.5">PM & CM (REGION X)</td></tr>
+                                    <tr class="hover:bg-slate-900/40"><td class="p-1.5 font-bold text-cyan-400">DIONAH</td><td class="p-1.5">SV, TM, TYRES Fleet</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -375,6 +387,7 @@
         let rawPartsRows = [];
         
         let complianceChartInstance = null;
+        let monthlyChartInstance = null;
         let doughnutChartInstance = null;
         let barChartInstance = null;
         let partsChartInstance = null;
@@ -387,7 +400,7 @@
         let autoSyncInterval = null;
 
         function createVerticalGradient(ctx, colorStart, colorEnd) {
-            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            const gradient = ctx.createLinearGradient(0, 0, 0, 250);
             gradient.addColorStop(0, colorStart);
             gradient.addColorStop(1, colorEnd);
             return gradient;
@@ -455,6 +468,9 @@
                         renderPlannerVisualizer(rawPlannerRows, defaultWeek); 
                     }
                     
+                    // Trigger monthly average roll-up calculations
+                    calculateMonthlyAggregates(rawPlannerRows);
+
                     renderCapexSummary(rawCapexRows);
                     renderPartsSummary(rawPartsRows);
 
@@ -624,12 +640,110 @@
                     maintainAspectRatio: false,
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10, weight: '500' } } },
-                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 10, color: '#22d3ee', font: { size: 10 }, callback: function(value) { return value + ' Vol'; } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 25, color: '#22d3ee', font: { size: 10 }, callback: function(value) { return value + ' Vol'; } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
                         yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#94a3b8', font: { size: 10 }, callback: function(value) { return value + '%'; } }, grid: { display: false } }
                     },
                     plugins: {
                         legend: { position: 'top', labels: { color: '#cbd5e1', font: { size: 10 } } },
                         datalabels: { formatter: function(value, context) { if (context.dataset.yAxisID === 'yPercentage') { return context.datasetIndex === 2 ? value + '%' : ''; } return value; }, color: '#fff', anchor: 'end', align: 'top', offset: -1, font: { size: 9, weight: 'bold' } }
+                    }
+                }
+            });
+        }
+
+        // NEW METHOD: Groups weeks to generate the monthly average performance chart
+        function calculateMonthlyAggregates(rows) {
+            if (!rows.length) return;
+
+            // Monthly definition lookup mapping
+            const monthsDef = [
+                { name: 'June', weeks: [23, 24, 25, 26, 27], planned: 0, actual: 0 },
+                { name: 'July', weeks: [28, 29, 30, 31], planned: 0, actual: 0 },
+                { name: 'August', weeks: [32, 33, 34, 35], planned: 0, actual: 0 },
+                { name: 'September', weeks: [36, 37, 38, 39], planned: 0, actual: 0 }
+            ];
+
+            rows.forEach(row => {
+                const weekNum = parseInt(row[0]);
+                const planned = parseInt(row[3]) || 0;
+                const actual = parseInt(row[4]) || 0;
+
+                const targetMonth = monthsDef.find(m => m.weeks.includes(weekNum));
+                if (targetMonth) {
+                    targetMonth.planned += planned;
+                    targetMonth.actual += actual;
+                }
+            });
+
+            const labels = [];
+            const complianceAverages = [];
+            const targetLine = [];
+
+            monthsDef.forEach(m => {
+                if(m.planned > 0) {
+                    labels.push(m.name);
+                    complianceAverages.push(Math.round((m.actual / m.planned) * 100));
+                    targetLine.push(globalComplianceThreshold);
+                }
+            });
+
+            // If no data maps to our defined window, fall back to avoid an empty visualization grid
+            if(labels.length === 0) {
+                labels.push('June', 'July');
+                complianceAverages.push(0, 0);
+                targetLine.push(globalComplianceThreshold, globalComplianceThreshold);
+            }
+
+            renderMonthlyTrendChart(labels, complianceAverages, targetLine);
+        }
+
+        // NEW METHOD: Renders the historical line graph below the main window
+        function renderMonthlyTrendChart(labels, complianceData, targetData) {
+            const ctx = document.getElementById('monthly-compliance-canvas').getContext('2d');
+            if (monthlyChartInstance) monthlyChartInstance.destroy();
+
+            const lineGradient = ctx.createLinearGradient(0, 0, 0, 200);
+            lineGradient.addColorStop(0, 'rgba(16, 185, 129, 0.25)');
+            lineGradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+            monthlyChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Monthly Average %',
+                            data: complianceData,
+                            borderColor: '#10b981',
+                            backgroundColor: lineGradient,
+                            borderWidth: 3,
+                            fill: true,
+                            pointBackgroundColor: '#10b981',
+                            pointHoverRadius: 6,
+                            pointRadius: 4,
+                            tension: 0.15
+                        },
+                        {
+                            label: 'Target Limit (85%)',
+                            data: targetData,
+                            borderColor: '#f43f5e',
+                            borderWidth: 1.5,
+                            borderDash: [6, 4],
+                            pointRadius: 0,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+                        y: { min: 0, max: 100, ticks: { stepSize: 20, color: '#64748b', font: { size: 10 }, callback: v => v + '%' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+                    },
+                    plugins: {
+                        legend: { display: true, position: 'top', labels: { color: '#cbd5e1', font: { size: 10 } } },
+                        datalabels: { color: '#fff', align: 'top', font: { size: 10, weight: 'bold' }, formatter: v => v + '%' }
                     }
                 }
             });
@@ -854,7 +968,6 @@
             
             rows.forEach(row => {
                 const rowStatus = (row.getAttribute('data-status') || '').toUpperCase();
-                // Fixed: Matches exact string OR catches variations containing the substring 'PENDING'
                 const matchesStatus = (currentPartsFilter === 'ALL' || 
                                        rowStatus === currentPartsFilter || 
                                        (currentPartsFilter === 'PENDING' && rowStatus.includes('PENDING')));
