@@ -233,8 +233,8 @@
                         </div>
                     </div>
 
-                    <!-- SCOPED WORK GROUP LEGEND -->
-                   <div class="bg-slate-950/40 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                    <!-- SCOPED WORK GROUP LEGEND (FIXED: NO CLIPPING, NO SCROLLBAR) -->
+                    <div class="bg-slate-950/40 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
                         <div>
                             <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 font-mono flex items-center gap-2">
                                 <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Planner Jurisdiction Scope
@@ -260,6 +260,8 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
 
             <!-- VIEW 2: CAPEX -->
             <div id="view-capex-container" class="hidden space-y-6">
@@ -468,9 +470,7 @@
                         renderPlannerVisualizer(rawPlannerRows, defaultWeek); 
                     }
                     
-                    // Group raw week ranges into rolled up month segments dynamically
                     calculateMonthlyAggregates(rawPlannerRows);
-
                     renderCapexSummary(rawCapexRows);
                     renderPartsSummary(rawPartsRows);
 
@@ -546,10 +546,12 @@
             }
         }
 
+        // FIXED: Maps and triggers targeted views without losing border highlights
         function switchView(targetView) {
             document.getElementById('view-compliance-container').classList.add('hidden');
             document.getElementById('view-capex-container').classList.add('hidden');
             document.getElementById('view-parts-container').classList.add('hidden');
+            
             document.getElementById('panel-compliance').classList.remove('active-panel');
             document.getElementById('panel-capex').classList.remove('active-panel');
             document.getElementById('panel-parts').classList.remove('active-panel');
@@ -558,7 +560,7 @@
                 document.getElementById('view-capex-container').classList.remove('hidden');
                 document.getElementById('panel-capex').classList.add('active-panel');
                 applyCapexCombinedFilter();
-            } else if (targetView === 'parts') {
+            } else if (targetView === 'parts' || targetView === 'speed') {
                 document.getElementById('view-parts-container').classList.remove('hidden');
                 document.getElementById('panel-parts').classList.add('active-panel');
                 applyPartsCombinedFilter();
@@ -651,7 +653,6 @@
             });
         }
 
-        // Groups raw weekly data to build monthly average calculations
         function calculateMonthlyAggregates(rows) {
             if (!rows.length) return;
 
@@ -698,7 +699,7 @@
             renderMonthlyTrendChart(labels, complianceAverages, targetLine);
         }
 
-        // Renders a combo chart layout (Column/Bar for Actuals, Line for Target)
+        // FIXED: Outputs the sleek combo chart layout requested
         function renderMonthlyTrendChart(labels, complianceData, targetData) {
             const ctx = document.getElementById('monthly-compliance-canvas').getContext('2d');
             if (monthlyChartInstance) monthlyChartInstance.destroy();
@@ -738,27 +739,12 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { 
-                            grid: { display: false }, 
-                            ticks: { color: '#94a3b8', font: { size: 11, weight: '500' } } 
-                        },
-                        y: { 
-                            min: 0, 
-                            max: 100, 
-                            ticks: { stepSize: 20, color: '#64748b', font: { size: 10 }, callback: v => v + '%' }, 
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' } 
-                        }
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11, weight: '500' } } },
+                        y: { min: 0, max: 100, ticks: { stepSize: 20, color: '#64748b', font: { size: 10 }, callback: v => v + '%' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
                     },
                     plugins: {
                         legend: { display: true, position: 'top', labels: { color: '#cbd5e1', font: { size: 10 } } },
-                        datalabels: { 
-                            color: '#fff', 
-                            anchor: 'end',
-                            align: 'top', 
-                            offset: -2,
-                            font: { size: 10, weight: 'bold' }, 
-                            formatter: (value, context) => context.dataset.type === 'bar' ? value + '%' : '' 
-                        }
+                        datalabels: { color: '#fff', anchor: 'end', align: 'top', offset: -2, font: { size: 10, weight: 'bold' }, formatter: (value, context) => context.dataset.type === 'bar' ? value + '%' : '' }
                     }
                 }
             });
@@ -983,9 +969,7 @@
             
             rows.forEach(row => {
                 const rowStatus = (row.getAttribute('data-status') || '').toUpperCase();
-                const matchesStatus = (currentPartsFilter === 'ALL' || 
-                                       rowStatus === currentPartsFilter || 
-                                       (currentPartsFilter === 'PENDING' && rowStatus.includes('PENDING')));
+                const matchesStatus = (currentPartsFilter === 'ALL' || rowStatus === currentPartsFilter || (currentPartsFilter === 'PENDING' && rowStatus.includes('PENDING')));
                 const matchesSearch = (query === "" || row.getAttribute('data-search').includes(query));
                 
                 if(matchesStatus && matchesSearch) {
