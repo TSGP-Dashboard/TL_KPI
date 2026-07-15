@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TL Operational Command Center</title>
+    <title>PLANNER'S DASHBOARD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -109,7 +109,7 @@
         <div class="flex items-center gap-4">
             <div id="sync-indicator" class="h-3 w-3 rounded-full bg-[#00e3c8] shadow-[0_0_12px_#00e3c8] transition-all duration-300"></div>
             <div>
-                <h1 class="text-base sm:text-lg font-bold tracking-wider text-white uppercase font-mono">TL Operational Command Center</h1>
+                <h1 class="text-base sm:text-lg font-bold tracking-wider text-white uppercase font-mono">PLANNER'S PERFORMANCE DASHBOARD</h1>
                 <p class="text-xs text-[#8f8ba8] font-mono mt-0.5">
                     Database Feed: <span id="sync-status" class="text-[#00e3c8] font-bold">Connected</span>
                 </p>
@@ -178,7 +178,7 @@
             <div id="panel-parts" class="kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer group" onclick="switchView('parts')">
                 <div class="flex justify-between items-start w-full gap-2">
                     <div class="space-y-1 min-w-0">
-                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Request Speed</h2>
+                        <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Parts Requesting Process</h2>
                         <div class="text-[10px] font-mono text-[#763df2] truncate" id="kpi-parts-count">Calculating...</div>
                     </div>
                     <div class="text-2xl font-mono font-bold tracking-tight text-[#763df2] whitespace-nowrap" id="kpi-parts">0.0d</div>
@@ -238,7 +238,7 @@
                     <div class="xl:col-span-2 bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-4 sm:p-5 shadow-inner">
                         <div class="mb-3">
                             <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">Macro Historical Review</h4>
-                            <p class="text-[11px] text-[#635f80] font-mono">Monthly Average Rolled-Up Aggregations</p>
+                            <p class="text-[11px] text-[#635f80] font-mono">Monthly Compliance Average</p>
                         </div>
                         <div class="h-[220px] w-full relative">
                             <canvas id="monthly-compliance-canvas"></canvas>
@@ -249,7 +249,7 @@
                     <div class="bg-[#0d0c1d]/40 border border-[#2a2552] rounded-xl p-4 flex flex-col justify-between">
                         <div>
                             <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 font-mono flex items-center gap-2">
-                                <span class="w-1.5 h-1.5 rounded-full bg-[#00e3c8]"></span> Planner Jurisdiction Scope
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#00e3c8]"></span> Planner Scope
                             </h4>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left font-mono text-[11px]">
@@ -260,13 +260,13 @@
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-[#2a2552]/40 text-slate-300">
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">PHILIP</td><td class="py-2 px-3 text-slate-300">PMS Engine Area</td></tr>
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">PHILIP</td><td class="py-2 px-3 text-slate-300">PMS Activities</td></tr>
                                         <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">LEO</td><td class="py-2 px-3 text-slate-300">CM (GEM, LOS AMIGOS)</td></tr>
                                         <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">VINCENT</td><td class="py-2 px-3 text-slate-300">CM (REGION XIII, SINUDA)</td></tr>
                                         <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">GLENBERTH</td><td class="py-2 px-3 text-slate-300">CM (REGION XI-A, XI-B)</td></tr>
                                         <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">ROICE</td><td class="py-2 px-3 text-slate-300">CM (SAMAL, CRANEAGE)</td></tr>
                                         <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">JANE</td><td class="py-2 px-3 text-slate-300">PM & CM (REGION X)</td></tr>
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">DIONAH</td><td class="py-2 px-3 text-slate-300">SV, TM, TYRES Fleet</td></tr>
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">DIONAH</td><td class="py-2 px-3 text-slate-300">SV, TM, TYRES</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -309,7 +309,7 @@
                 <!-- UTILITY HUB BAR -->
                 <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-[#0d0c1d]/40 p-3 rounded-xl border border-[#2a2552]">
                     <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="capex-status-pills">
-                        <button onclick="filterCapexTable('ALL')" id="capex-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL STATUSES</button>
+                        <button onclick="filterCapexTable('ALL')" id="capex-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL STATUS</button>
                         <button onclick="filterCapexTable('WITH DOCUMENTS')" id="capex-pill-WITH-DOCUMENTS" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">PENDING DOCS</button>
                         <button onclick="filterCapexTable('DONE')" id="capex-pill-DONE" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">COMPLETE</button>
                     </div>
@@ -346,11 +346,11 @@
                 <div class="border-b border-[#2a2552] pb-4">
                     <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Procurement Turnaround Analytics Matrix</h3>
                     <p class="text-xs text-[#8f8ba8] font-mono mt-1">
-                        💡 <strong class="text-[#00e3c8]">Internal:</strong> Admin Processing Speed. | <strong class="text-emerald-400">Procurement:</strong> Logistics Pipeline.
+                        💡 <strong class="text-[#00e3c8]">Internal:</strong>Request to System Encoding | <strong class="text-emerald-400">Procurement:</strong> PO Creation to Approval.
                     </p>
                 </div>
                 <div class="bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-4 sm:p-6">
-                    <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-5 font-mono">Average Total Lead Days Breakdown</h4>
+                    <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-5 font-mono">Average Total Lead Days</h4>
                     <div class="w-full h-[150px]">
                         <canvas id="parts-performance-canvas"></canvas>
                     </div>
