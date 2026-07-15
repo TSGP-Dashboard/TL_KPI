@@ -901,9 +901,10 @@
                             gradientOrange, 
                             gradientPink
                         ], 
-                        borderWidth: 3, 
-                        borderColor: '#0d0c1d', // Dark separator matching the inner container bg
-                        hoverOffset: 8
+                        borderWidth: 0,          // Removed border lines to mimic fluid continuity
+                        borderRadius: 32,        // Large value wraps caps into perfect half-circle capsules
+                        spacing: -14,            // Generates an overlapping nested appearance
+                        hoverOffset: 12
                     }] 
                 },
                 options: { 
@@ -942,7 +943,7 @@
                             formatter: v => v > 0 ? ((v / totalFinancials) * 100).toFixed(0) + '%' : '' 
                         } 
                     }, 
-                    cutout: '70%' // Slightly thinner cutout width mimicking the visual weight of the template
+                    cutout: '65%' // Correct visual thickness mimicking the reference design perfectly
                 }
             });
 
