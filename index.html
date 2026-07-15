@@ -12,7 +12,7 @@
         /* Exact color palette inspired by the target UI */
         body { 
             font-family: 'Inter', sans-serif; 
-            background: radial-gradient(circle at top right, #1d1b3c 0%, #0d0c1d 100%); 
+            background: radial-gradient(circle at top right, #1d1b3c 0%, #0f0e26 100%); 
         }
         .workspace-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .workspace-scrollbar::-webkit-scrollbar-track { background: #0c0a18; border-radius: 4px; }
@@ -24,7 +24,7 @@
         
         /* Left Sidebar Styling matching the glowing slate-indigo */
         aside {
-            background-color: #1a1736;
+            background-color: #252453;
             border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
 
@@ -41,20 +41,20 @@
             content: '';
             position: absolute;
             left: 0; top: 0; bottom: 0; width: 0px;
-            background: linear-gradient(to bottom, #00ebd4, #00b4d8);
+            background: linear-gradient(to bottom, #00e3c8, #00a5ff);
             transition: width 0.25s ease;
             border-top-left-radius: 0.75rem;
             border-bottom-left-radius: 0.75rem;
         }
         .kpi-card:hover { 
-            border-color: rgba(0, 235, 212, 0.4);
+            border-color: rgba(0, 227, 200, 0.4);
             transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(0, 235, 212, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+            box-shadow: 0 12px 24px rgba(0, 227, 200, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.1);
         }
         .kpi-card.active-panel { 
-            background: linear-gradient(135deg, rgba(31, 41, 95, 0.4) 0%, rgba(13, 12, 29, 0.95) 100%);
-            border-color: #00ebd4; 
-            box-shadow: 0 0 25px rgba(0, 235, 212, 0.25), inset 0 1px 2px rgba(0, 235, 212, 0.2); 
+            background: #353a73;
+            border-color: #00e3c8; 
+            box-shadow: 0 0 25px rgba(0, 227, 200, 0.25), inset 0 1px 2px rgba(0, 227, 200, 0.2); 
         }
         .kpi-card.active-panel::before { width: 4px; }
 
@@ -68,15 +68,15 @@
             transition: all 0.2s ease;
         }
         .filter-pill:hover {
-            border-color: #00ebd4;
+            border-color: #00e3c8;
             color: #fff;
         }
         .filter-pill.active-pill {
-            background: linear-gradient(135deg, #00ebd4 0%, #00b4d8 100%);
-            border-color: #00ebd4;
+            background: linear-gradient(135deg, #00e3c8 0%, #00a5ff 100%);
+            border-color: #00e3c8;
             color: #0d0c1d;
             font-weight: 700;
-            box-shadow: 0 0 15px rgba(0, 235, 212, 0.4);
+            box-shadow: 0 0 15px rgba(0, 227, 200, 0.4);
         }
 
         .detail-drawer { display: none; background-color: #0d0b1a; }
@@ -100,25 +100,25 @@
 <body class="text-[#b1add0] antialiased min-h-screen flex flex-col lg:h-screen lg:overflow-hidden">
 
     <!-- CLIPBOARD TOAST NOTIFICATION HUD -->
-    <div id="copy-toast" class="fixed top-6 right-6 z-50 transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300 bg-[#00ebd4] text-[#0d0c1d] font-mono text-xs font-bold px-4 py-3 rounded-lg shadow-[0_0_20px_rgba(0,235,212,0.4)] flex items-center gap-2">
+    <div id="copy-toast" class="fixed top-6 right-6 z-50 transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300 bg-[#00e3c8] text-[#0d0c1d] font-mono text-xs font-bold px-4 py-3 rounded-lg shadow-[0_0_20px_rgba(0,227,200,0.4)] flex items-center gap-2">
         <span>📋</span> ASSET COPIED TO SYSTEM CLIPBOARD
     </div>
 
     <!-- HEADER -->
     <header class="bg-[#121027]/90 backdrop-blur-md border-b border-[#2a2552] px-4 sm:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl z-20 shrink-0">
         <div class="flex items-center gap-4">
-            <div id="sync-indicator" class="h-3 w-3 rounded-full bg-[#00ebd4] shadow-[0_0_12px_#00ebd4] transition-all duration-300"></div>
+            <div id="sync-indicator" class="h-3 w-3 rounded-full bg-[#00e3c8] shadow-[0_0_12px_#00e3c8] transition-all duration-300"></div>
             <div>
                 <h1 class="text-base sm:text-lg font-bold tracking-wider text-white uppercase font-mono">TL Operational Command Center</h1>
                 <p class="text-xs text-[#8f8ba8] font-mono mt-0.5">
-                    Database Feed: <span id="sync-status" class="text-[#00ebd4] font-bold">Connected</span>
+                    Database Feed: <span id="sync-status" class="text-[#00e3c8] font-bold">Connected</span>
                 </p>
             </div>
         </div>
         <div class="flex items-center gap-4">
             <div class="flex items-center bg-[#0d0c1d]/90 border border-[#2a2552] rounded-lg p-1.5 gap-3 font-mono text-xs">
                 <label class="flex items-center gap-2 cursor-pointer select-none text-[#8f8ba8] pl-1.5">
-                    <input type="checkbox" id="auto-sync-toggle" checked onchange="toggleAutoSyncMode()" class="rounded bg-[#0d0c1d] border-[#2a2552] text-[#00ebd4] focus:ring-0 focus:ring-offset-0 cursor-pointer">
+                    <input type="checkbox" id="auto-sync-toggle" checked onchange="toggleAutoSyncMode()" class="rounded bg-[#0d0c1d] border-[#2a2552] text-[#00e3c8] focus:ring-0 focus:ring-offset-0 cursor-pointer">
                     <span>Auto-Refresh (60s)</span>
                 </label>
                 <div class="h-4 w-[1px] bg-[#2a2552]"></div>
@@ -148,14 +148,14 @@
                     <div class="space-y-1 min-w-0">
                         <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Planner Compliance</h2>
                         <div class="text-[10px] font-mono text-[#8f8ba8] flex items-center gap-1.5 mt-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-[#00ebd4]"></span> Target: &gt;85%
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#00e3c8]"></span> Target: &gt;85%
                         </div>
                     </div>
-                    <div class="text-3xl font-mono font-bold tracking-tight text-[#00ebd4]" id="kpi-compliance">--%</div>
+                    <div class="text-3xl font-mono font-bold tracking-tight text-[#00e3c8]" id="kpi-compliance">--%</div>
                 </div>
                 <div class="mt-3 flex items-center justify-between border-t border-[#2a2552] pt-2 text-[10px] font-mono text-[#8f8ba8]">
                     <span>Chart Matrix</span>
-                    <span class="text-[#00ebd4] font-bold">Select</span>
+                    <span class="text-[#00e3c8] font-bold">Select</span>
                 </div>
             </div>
 
@@ -170,7 +170,7 @@
                 </div>
                 <div class="mt-3 flex items-center justify-between border-t border-[#2a2552] pt-2 text-[10px] font-mono text-[#8f8ba8]">
                     <span>Gross Ledger</span>
-                    <span class="text-[#00ebd4] font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+                    <span class="text-[#00e3c8] font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
                 </div>
             </div>
 
@@ -179,13 +179,13 @@
                 <div class="flex justify-between items-start w-full gap-2">
                     <div class="space-y-1 min-w-0">
                         <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Request Speed</h2>
-                        <div class="text-[10px] font-mono text-[#a855f7] truncate" id="kpi-parts-count">Calculating...</div>
+                        <div class="text-[10px] font-mono text-[#763df2] truncate" id="kpi-parts-count">Calculating...</div>
                     </div>
-                    <div class="text-2xl font-mono font-bold tracking-tight text-[#a855f7] whitespace-nowrap" id="kpi-parts">0.0d</div>
+                    <div class="text-2xl font-mono font-bold tracking-tight text-[#763df2] whitespace-nowrap" id="kpi-parts">0.0d</div>
                 </div>
                 <div class="mt-3 flex items-center justify-between border-t border-[#2a2552] pt-2 text-[10px] font-mono text-[#8f8ba8]">
                     <span>Turnaround</span>
-                    <span class="text-[#00ebd4] font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+                    <span class="text-[#00e3c8] font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
                 </div>
             </div>
 
@@ -210,7 +210,7 @@
         </aside>
 
         <!-- DYNAMIC CONTENT HUD -->
-        <main class="w-full lg:w-4/5 bg-[#14122d]/70 backdrop-blur-md rounded-xl border border-[#2a2552] p-4 sm:p-6 shadow-2xl lg:overflow-y-auto workspace-scrollbar lg:h-full">
+        <main class="w-full lg:w-4/5 bg-[#0f0e26]/70 backdrop-blur-md rounded-xl border border-[#2a2552] p-4 sm:p-6 shadow-2xl lg:overflow-y-auto workspace-scrollbar lg:h-full">
             
             <!-- VIEW 1: COMPLIANCE -->
             <div id="view-compliance-container" class="space-y-6">
@@ -220,7 +220,7 @@
                         <p class="text-xs text-[#8f8ba8] font-mono mt-0.5">Dual Axis Setup: Volume Bars vs Efficiency Curves</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-4 text-[10px] font-mono">
-                        <select id="week-selector" onchange="changeWeekFilter()" class="bg-[#0d0c1d] text-white border border-[#2a2552] rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-[#00ebd4] cursor-pointer transition-colors shadow-md w-full sm:w-auto">
+                        <select id="week-selector" onchange="changeWeekFilter()" class="bg-[#0d0c1d] text-white border border-[#2a2552] rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-[#00e3c8] cursor-pointer transition-colors shadow-md w-full sm:w-auto">
                             <option value="">Loading cycles...</option>
                         </select>
                     </div>
@@ -249,7 +249,7 @@
                     <div class="bg-[#0d0c1d]/40 border border-[#2a2552] rounded-xl p-4 flex flex-col justify-between">
                         <div>
                             <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 font-mono flex items-center gap-2">
-                                <span class="w-1.5 h-1.5 rounded-full bg-[#00ebd4]"></span> Planner Jurisdiction Scope
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#00e3c8]"></span> Planner Jurisdiction Scope
                             </h4>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left font-mono text-[11px]">
@@ -260,13 +260,13 @@
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-[#2a2552]/40 text-slate-300">
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00ebd4]">PHILIP</td><td class="py-2 px-3 text-slate-300">PMS Engine Area</td></tr>
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00ebd4]">LEO</td><td class="py-2 px-3 text-slate-300">CM (GEM, LOS AMIGOS)</td></tr>
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00ebd4]">VINCENT</td><td class="py-2 px-3 text-slate-300">CM (REGION XIII, SINUDA)</td></tr>
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00ebd4]">GLENBERTH</td><td class="py-2 px-3 text-slate-300">CM (REGION XI-A, XI-B)</td></tr>
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00ebd4]">ROICE</td><td class="py-2 px-3 text-slate-300">CM (SAMAL, CRANEAGE)</td></tr>
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00ebd4]">JANE</td><td class="py-2 px-3 text-slate-300">PM & CM (REGION X)</td></tr>
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00ebd4]">DIONAH</td><td class="py-2 px-3 text-slate-300">SV, TM, TYRES Fleet</td></tr>
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">PHILIP</td><td class="py-2 px-3 text-slate-300">PMS Engine Area</td></tr>
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">LEO</td><td class="py-2 px-3 text-slate-300">CM (GEM, LOS AMIGOS)</td></tr>
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">VINCENT</td><td class="py-2 px-3 text-slate-300">CM (REGION XIII, SINUDA)</td></tr>
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">GLENBERTH</td><td class="py-2 px-3 text-slate-300">CM (REGION XI-A, XI-B)</td></tr>
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">ROICE</td><td class="py-2 px-3 text-slate-300">CM (SAMAL, CRANEAGE)</td></tr>
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">JANE</td><td class="py-2 px-3 text-slate-300">PM & CM (REGION X)</td></tr>
+                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">DIONAH</td><td class="py-2 px-3 text-slate-300">SV, TM, TYRES Fleet</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -283,7 +283,7 @@
                             <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">CAPEX Advanced Metrics Engine</h3>
                             <p class="text-xs text-[#8f8ba8] font-mono mt-0.5">Allocation streams and asset deployment breakdown (Click segment to cross-filter)</p>
                         </div>
-                        <div id="chart-filter-badge" class="hidden font-mono text-[10px] bg-[#0d0c1d] border border-[#00ebd4] text-[#00ebd4] px-2 py-1 rounded animate-pulse shadow-md">
+                        <div id="chart-filter-badge" class="hidden font-mono text-[10px] bg-[#0d0c1d] border border-[#00e3c8] text-[#00e3c8] px-2 py-1 rounded animate-pulse shadow-md">
                             Chart Filter Active: <span id="chart-filter-name" class="font-bold">None</span>
                         </div>
                     </div>
@@ -292,7 +292,7 @@
                     <div class="xl:col-span-2 bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-5 flex flex-col items-center">
                         <div class="w-full flex justify-between items-center mb-4">
                             <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">Asset Allocation</h4>
-                            <span class="text-[9px] font-mono text-[#8f8ba8] cursor-pointer hover:text-[#00ebd4] select-none" onclick="resetChartCrossFilter()">[Clear Filter]</span>
+                            <span class="text-[9px] font-mono text-[#8f8ba8] cursor-pointer hover:text-[#00e3c8] select-none" onclick="resetChartCrossFilter()">[Clear Filter]</span>
                         </div>
                         <div class="w-full max-w-[280px] h-[280px] flex items-center justify-center relative">
                             <canvas id="capex-doughnut-canvas"></canvas>
@@ -314,8 +314,8 @@
                         <button onclick="filterCapexTable('DONE')" id="capex-pill-DONE" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">COMPLETE</button>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <input type="text" id="capex-search" oninput="searchCapexTable()" placeholder="🔍 Fuzzy multi-search (eg. 'BH complete')..." class="w-full sm:w-64 bg-[#0d0c1d] text-slate-200 placeholder-[#635f80] border border-[#2a2552] rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-[#00ebd4]">
-                        <button onclick="exportViewToCSV('capex')" class="bg-[#121027] text-[#00ebd4] hover:bg-[#1a1736] border border-[#00ebd4]/30 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
+                        <input type="text" id="capex-search" oninput="searchCapexTable()" placeholder="🔍 Fuzzy multi-search (eg. 'BH complete')..." class="w-full sm:w-64 bg-[#0d0c1d] text-slate-200 placeholder-[#635f80] border border-[#2a2552] rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-[#00e3c8]">
+                        <button onclick="exportViewToCSV('capex')" class="bg-[#121027] text-[#00e3c8] hover:bg-[#1a1736] border border-[#00e3c8]/30 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
                         <button onclick="window.print()" class="bg-[#1a1736] hover:bg-[#2a2552] text-slate-300 border border-[#3e3778] rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
                     </div>
                 </div>
@@ -346,7 +346,7 @@
                 <div class="border-b border-[#2a2552] pb-4">
                     <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Procurement Turnaround Analytics Matrix</h3>
                     <p class="text-xs text-[#8f8ba8] font-mono mt-1">
-                        💡 <strong class="text-[#00ebd4]">Internal:</strong> Admin Processing Speed. | <strong class="text-emerald-400">Procurement:</strong> Logistics Pipeline.
+                        💡 <strong class="text-[#00e3c8]">Internal:</strong> Admin Processing Speed. | <strong class="text-emerald-400">Procurement:</strong> Logistics Pipeline.
                     </p>
                 </div>
                 <div class="bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-4 sm:p-6">
@@ -364,8 +364,8 @@
                         <button onclick="filterPartsTable('PENDING')" id="parts-pill-PENDING" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">PENDING</button>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <input type="text" id="parts-search" oninput="searchPartsTable()" placeholder="🔍 Search description..." class="w-full sm:w-64 bg-[#0d0c1d] text-slate-200 placeholder-[#635f80] border border-[#2a2552] rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-[#00ebd4]">
-                        <button onclick="exportViewToCSV('parts')" class="bg-[#121027] text-[#00ebd4] hover:bg-[#1a1736] border border-[#00ebd4]/30 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
+                        <input type="text" id="parts-search" oninput="searchPartsTable()" placeholder="🔍 Search description..." class="w-full sm:w-64 bg-[#0d0c1d] text-slate-200 placeholder-[#635f80] border border-[#2a2552] rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-[#00e3c8]">
+                        <button onclick="exportViewToCSV('parts')" class="bg-[#121027] text-[#00e3c8] hover:bg-[#1a1736] border border-[#00e3c8]/30 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
                         <button onclick="window.print()" class="bg-[#1a1736] hover:bg-[#2a2552] text-slate-300 border border-[#3e3778] rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
                     </div>
                 </div>
@@ -449,7 +449,7 @@
                 statusTxt.className = "text-slate-400 font-bold text-xs font-mono mt-0.5";
             } else {
                 statusTxt.innerText = "Connected";
-                statusTxt.className = "text-[#00ebd4] font-bold text-xs font-mono mt-0.5";
+                statusTxt.className = "text-[#00e3c8] font-bold text-xs font-mono mt-0.5";
                 fetchLatestDataStream(); 
             }
         }
@@ -460,8 +460,8 @@
             const indicator = document.getElementById('sync-indicator');
             const statusTxt = document.getElementById('sync-status');
             
-            indicator.classList.replace('bg-[#00ebd4]', 'bg-amber-400');
-            indicator.classList.replace('shadow-[0_0_12px_#00ebd4]', 'shadow-[0_0_10px_#f59e0b]');
+            indicator.classList.replace('bg-[#00e3c8]', 'bg-amber-400');
+            indicator.classList.replace('shadow-[0_0_12px_#00e3c8]', 'shadow-[0_0_10px_#f59e0b]');
             statusTxt.innerText = "Syncing with cloud...";
             statusTxt.className = "text-amber-400 font-bold text-xs font-mono mt-0.5";
 
@@ -490,16 +490,16 @@
                     processAndRenderCapex();
                     processAndRenderParts();
 
-                    indicator.classList.replace('bg-amber-400', 'bg-[#00ebd4]');
-                    indicator.classList.replace('shadow-[0_0_10px_#f59e0b]', 'shadow-[0_0_12px_#00ebd4]');
+                    indicator.classList.replace('bg-amber-400', 'bg-[#00e3c8]');
+                    indicator.classList.replace('shadow-[0_0_10px_#f59e0b]', 'shadow-[0_0_12px_#00e3c8]');
                     statusTxt.innerText = document.getElementById('auto-sync-toggle').checked ? "Connected" : "Paused (Manual Mode)";
-                    statusTxt.className = document.getElementById('auto-sync-toggle').checked ? "text-[#00ebd4] font-bold text-xs font-mono mt-0.5" : "text-slate-400 font-bold text-xs font-mono mt-0.5";
+                    statusTxt.className = document.getElementById('auto-sync-toggle').checked ? "text-[#00e3c8] font-bold text-xs font-mono mt-0.5" : "text-slate-400 font-bold text-xs font-mono mt-0.5";
                 }
             } catch (err) {
                 console.error("Streamer sync error:", err);
                 statusTxt.innerText = "Sync Timeout - Reconnecting";
                 statusTxt.className = "text-rose-500 font-bold text-xs font-mono mt-0.5";
-                indicator.classList.replace('bg-[#00ebd4]', 'bg-rose-500');
+                indicator.classList.replace('bg-[#00e3c8]', 'bg-rose-500');
             }
         }
 
@@ -567,23 +567,23 @@
                     const index = startIndex + i;
 
                     tableHtml += `
-                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-[#14122d]/40' : 'bg-[#14122d]/80'} hover:bg-[#1a1736]/90 border-b border-[#2a2552]/40 transition-colors" 
+                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-[#1b1d40]/40' : 'bg-[#1b1d40]/80'} hover:bg-[#1a1736]/90 border-b border-[#2a2552]/40 transition-colors" 
                             onclick="toggleRowDetailDrawer('cx-${index}')">
                             <td class="p-3 pl-4 text-slate-500 font-medium">${id}</td>
                             <td class="p-3 text-[#8f8ba8] text-[11px] font-medium">${quarter}</td>
                             <td class="p-3">
-                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-[#0d0c1d] border border-[#2a2552] text-[#00ebd4] hover:border-[#00ebd4] transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold font-mono cursor-pointer">
+                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-[#0d0c1d] border border-[#2a2552] text-[#00e3c8] hover:border-[#00e3c8] transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold font-mono cursor-pointer">
                                     ${assetId} 📋
                                 </span>
                             </td>
                             <td class="p-3 text-white font-medium">${activity}</td>
                             <td class="p-3 text-slate-400">${po || '---'}</td>
-                            <td class="p-3 text-[#00ebd4] font-semibold">PHP ${budgetNum.toLocaleString()}</td>
+                            <td class="p-3 text-[#00e3c8] font-semibold">PHP ${budgetNum.toLocaleString()}</td>
                             <td class="p-3 pr-4 text-right">
-                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'||status==='Complete'?'bg-[#00ebd4]/10 text-[#00ebd4] border border-[#00ebd4]/30':'bg-[#14122d] text-slate-400 border border-[#2a2552]'}">${status || 'With Documents'}</span>
+                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'||status==='Complete'?'bg-[#00e3c8]/10 text-[#00e3c8] border border-[#00e3c8]/30':'bg-[#14122b] text-slate-400 border border-[#2a2552]'}">${status || 'With Documents'}</span>
                             </td>
                         </tr>
-                        <tr id="drawer-cx-${index}" class="detail-drawer border-l-2 border-[#00ebd4] font-mono text-[11px] text-slate-400">
+                        <tr id="drawer-cx-${index}" class="detail-drawer border-l-2 border-[#00e3c8] font-mono text-[11px] text-slate-400">
                             <td colspan="7" class="p-4 space-y-2">
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Pipeline ID Token</span> cx-ref-${id}00${index}</div>
@@ -669,20 +669,20 @@
                     const index = startIndex + i;
 
                     tableHtml += `
-                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-[#14122d]/40' : 'bg-[#14122d]/80'} hover:bg-[#1a1736]/90 border-b border-[#2a2552]/40 transition-colors" 
+                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-[#1b1d40]/40' : 'bg-[#1b1d40]/80'} hover:bg-[#1a1736]/90 border-b border-[#2a2552]/40 transition-colors" 
                             onclick="toggleRowDetailDrawer('pt-${index}')">
                             <td class="p-3 pl-4 text-purple-400 font-medium">${id}</td>
                             <td class="p-3">
-                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-[#0d0c1d] border border-[#2a2552] text-white hover:text-[#00ebd4] hover:border-[#00ebd4] transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold cursor-pointer">
+                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-[#0d0c1d] border border-[#2a2552] text-white hover:text-[#00e3c8] hover:border-[#00e3c8] transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold cursor-pointer">
                                     ${assetId} 📋
                                 </span>
                             </td>
                             <td class="p-3 text-white font-medium truncate max-w-[220px]">${desc}</td>
-                            <td class="p-3 text-[#00ebd4] font-semibold">${status==='APPROVED'?internalDays+'d':'—'}</td>
+                            <td class="p-3 text-[#00e3c8] font-semibold">${status==='APPROVED'?internalDays+'d':'—'}</td>
                             <td class="p-3 text-emerald-400 font-semibold">${status==='APPROVED'?procurementDays+'d':'—'}</td>
                             <td class="p-3 text-amber-400 font-bold">${status==='APPROVED'?grossLeadDays+'d':'—'}</td>
                             <td class="p-3 pr-4 text-right">
-                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='APPROVED'?'bg-emerald-500/20 text-[#00ebd4] border border-emerald-500/40':'bg-amber-500/20 text-amber-400 border border-amber-500/40'}">${status}</span>
+                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='APPROVED'?'bg-emerald-500/20 text-[#00e3c8] border border-emerald-500/40':'bg-amber-500/20 text-amber-400 border border-amber-500/40'}">${status}</span>
                             </td>
                         </tr>
                         <tr id="drawer-pt-${index}" class="detail-drawer border-l-2 border-purple-500 font-mono text-[11px] text-slate-400">
@@ -790,9 +790,9 @@
                 data: {
                     labels: names,
                     datasets: [
-                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(0, 235, 212, 0.8)', 'rgba(0, 235, 212, 0.1)'), borderColor: '#00ebd4', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
-                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(168, 85, 247, 0.8)', 'rgba(168, 85, 247, 0.1)'), borderColor: '#a855f7', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
-                        { label: 'Actual Compliance %', data: compliancePercentages, type: 'line', borderColor: '#00ebd4', backgroundColor: '#0d0c1d', borderWidth: 3, pointBackgroundColor: '#00ebd4', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.3, yAxisID: 'yPercentage', order: 1 },
+                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(0, 227, 200, 0.8)', 'rgba(0, 227, 200, 0.1)'), borderColor: '#00e3c8', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
+                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(118, 61, 242, 0.8)', 'rgba(118, 61, 242, 0.1)'), borderColor: '#763df2', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
+                        { label: 'Actual Compliance %', data: compliancePercentages, type: 'line', borderColor: '#00e3c8', backgroundColor: '#0d0c1d', borderWidth: 3, pointBackgroundColor: '#00e3c8', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.3, yAxisID: 'yPercentage', order: 1 },
                         { label: 'Target (85%)', data: targetLineData, type: 'line', borderColor: '#f43f5e', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'yPercentage', order: 2 }
                     ]
                 },
@@ -800,7 +800,7 @@
                     responsive: true, maintainAspectRatio: false,
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#8f8ba8', font: { size: 10, weight: '500' } } },
-                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 25, color: '#00ebd4', font: { size: 10 }, callback: v => v + ' Vol' }, grid: { color: 'rgba(255, 255, 255, 0.03)' } },
+                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 25, color: '#00e3c8', font: { size: 10 }, callback: v => v + ' Vol' }, grid: { color: 'rgba(255, 255, 255, 0.03)' } },
                         yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#8f8ba8', font: { size: 10 }, callback: v => v + '%' }, grid: { display: false } }
                     },
                     plugins: {
@@ -851,7 +851,7 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        { type: 'bar', label: 'Monthly Average %', data: complianceData, backgroundColor: createVerticalGradient(ctx, 'rgba(0, 235, 212, 0.8)', 'rgba(0, 235, 212, 0.15)'), borderColor: '#00ebd4', borderWidth: 1.5, borderRadius: 4, order: 2 },
+                        { type: 'bar', label: 'Monthly Average %', data: complianceData, backgroundColor: createVerticalGradient(ctx, 'rgba(0, 227, 200, 0.8)', 'rgba(0, 227, 200, 0.15)'), borderColor: '#00e3c8', borderWidth: 1.5, borderRadius: 4, order: 2 },
                         { type: 'line', label: 'Target Limit (85%)', data: targetData, borderColor: '#f43f5e', borderWidth: 2, borderDash: [6, 4], pointRadius: 0, fill: false, order: 1 }
                     ]
                 },
@@ -874,7 +874,7 @@
 
             doughnutChartInstance = new Chart(doughnutCtx, {
                 type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: financialData, backgroundColor: [createVerticalGradient(doughnutCtx, 'rgba(0, 235, 212, 0.95)', 'rgba(0, 180, 216, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(251, 191, 36, 0.95)', 'rgba(217, 119, 6, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(168, 85, 247, 0.95)', 'rgba(124, 58, 237, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(244, 63, 94, 0.95)', 'rgba(190, 24, 74, 0.4)')], borderWidth: 2, borderColor: '#0d0c1d' }] },
+                data: { labels: labels, datasets: [{ data: financialData, backgroundColor: [createVerticalGradient(doughnutCtx, 'rgba(0, 227, 200, 0.95)', 'rgba(0, 130, 155, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(251, 191, 36, 0.95)', 'rgba(217, 119, 6, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(118, 61, 242, 0.95)', 'rgba(124, 58, 237, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(244, 63, 94, 0.95)', 'rgba(190, 24, 74, 0.4)')], borderWidth: 2, borderColor: '#0d0c1d' }] },
                 options: { 
                     responsive: true, maintainAspectRatio: false,
                     onClick: (event, activeElements) => {
@@ -901,7 +901,7 @@
             if (barChartInstance) barChartInstance.destroy();
             barChartInstance = new Chart(barCtx, {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Target Count', data: labels.map(l => plannedMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(138, 92, 246, 0.85)', 'rgba(138, 92, 246, 0.15)'), borderColor: '#a855f7', borderWidth: 1, borderRadius: 4 }, { label: 'Actual Completed', data: labels.map(l => actualMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(0, 235, 212, 0.85)', 'rgba(0, 235, 212, 0.15)'), borderColor: '#00ebd4', borderWidth: 1, borderRadius: 4 }] },
+                data: { labels: labels, datasets: [{ label: 'Target Count', data: labels.map(l => plannedMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(118, 61, 242, 0.85)', 'rgba(118, 61, 242, 0.15)'), borderColor: '#763df2', borderWidth: 1, borderRadius: 4 }, { label: 'Actual Completed', data: labels.map(l => actualMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(0, 227, 200, 0.85)', 'rgba(0, 227, 200, 0.15)'), borderColor: '#00e3c8', borderWidth: 1, borderRadius: 4 }] },
                 options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#8f8ba8' }, grid: { display: false } }, y: { grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: '#635f80', stepSize: 1 } } }, plugins: { legend: { labels: { color: '#b1add0' } }, datalabels: { color: '#fff', anchor: 'end', align: 'top' } } }
             });
         }
@@ -911,7 +911,7 @@
             if (partsChartInstance) partsChartInstance.destroy();
             partsChartInstance = new Chart(partsCtx, {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(138, 92, 246, 0.85)', 'rgba(138, 92, 246, 0.15)'), borderColor: '#a855f7', borderWidth: 1, barThickness: 40 }, { label: 'Procurement', data: srcProcureData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(0, 235, 212, 0.85)', 'rgba(0, 235, 212, 0.15)'), borderColor: '#00ebd4', borderWidth: 1, barThickness: 40 }] },
+                data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(118, 61, 242, 0.85)', 'rgba(118, 61, 242, 0.15)'), borderColor: '#763df2', borderWidth: 1, barThickness: 40 }, { label: 'Procurement', data: srcProcureData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(0, 227, 200, 0.85)', 'rgba(0, 227, 200, 0.15)'), borderColor: '#00e3c8', borderWidth: 1, barThickness: 40 }] },
                 options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#8f8ba8' }, grid: { color: 'rgba(255, 255, 255, 0.03)' } }, y: { stacked: true, ticks: { color: '#fff' }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#b1add0' } }, datalabels: { color: '#fff', font: { weight: 'bold' } } } }
             });
         }
