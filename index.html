@@ -82,9 +82,26 @@
         .detail-drawer { display: none; background-color: #0d0b1a; }
         .detail-drawer.open-drawer { display: table-row; }
 
+        /* Styles for the high-end custom integrated SVG Doughnut */
+        .svg-doughnut-segment {
+            transition: stroke-width 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+            cursor: pointer;
+        }
+        .svg-doughnut-segment:hover {
+            stroke-width: 32px;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.2));
+        }
+        .svg-doughnut-segment.dimmed {
+            opacity: 0.3;
+        }
+        .svg-hotspot {
+            cursor: pointer;
+            fill: transparent;
+        }
+
         @media print {
             body { background: #ffffff !important; color: #000000 !important; font-size: 12px; overflow: visible !important; }
-            header, aside, .filter-pill, input, select, #chart-filter-badge, #capex-pagination-ctrl, #parts-pagination-ctrl, .utility-hub-bar, #copy-toast { display: none !important; }
+            header, aside, .filter-pill, input, select, #chart-filter-badge, #capex-pagination-ctrl, #parts-pagination-ctrl, .utility-hub-bar, #copy-toast; { display: none !important; }
             main { width: 100% !important; background: transparent !important; padding: 0 !important; border: none !important; overflow: visible !important; height: auto !important; }
             #view-compliance-container, #view-capex-container, #view-parts-container { display: block !important; page-break-after: always; }
             .bg-slate-950, .bg-slate-950\/60, .bg-slate-900\/60, .bg-slate-800 { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; }
@@ -294,8 +311,41 @@
                             <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">Asset Allocation</h4>
                             <span class="text-[9px] font-mono text-[#8f8ba8] cursor-pointer hover:text-[#00e3c8] select-none" onclick="resetChartCrossFilter()">[Clear Filter]</span>
                         </div>
+                        <!-- Embedded High-Fidelity Vector Donut Graphic Component -->
                         <div class="w-full max-w-[280px] h-[280px] flex items-center justify-center relative">
-                            <canvas id="capex-doughnut-canvas"></canvas>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" class="w-full h-full">
+                                <defs>
+                                    <linearGradient id="blueGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#00D2FF" />
+                                        <stop offset="100%" stop-color="#0066FF" />
+                                    </linearGradient>
+                                    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#E024F3" />
+                                        <stop offset="100%" stop-color="#7B1FA2" />
+                                    </linearGradient>
+                                    <linearGradient id="orangeGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#FFB300" />
+                                        <stop offset="100%" stop-color="#FF6D00" />
+                                    </linearGradient>
+                                    <linearGradient id="pinkGrad" x1="100%" y1="100%" x2="0%" y2="0%">
+                                        <stop offset="0%" stop-color="#FF5252" />
+                                        <stop offset="100%" stop-color="#FF007F" />
+                                    </linearGradient>
+                                </defs>
+                                <g transform="rotate(-45 150 150)">
+                                    <!-- Backhoe Segment (Blue) -->
+                                    <circle id="seg-backhoe" class="svg-doughnut-segment" cx="150" cy="150" r="90" fill="none" stroke="url(#blueGrad)" stroke-width="26" stroke-dasharray="141.37 565.48" stroke-dashoffset="141.37" stroke-linecap="round" onclick="handleSvgSegmentClick('BACKHOE')" />
+                                    <!-- Bulldozer Segment (Purple) -->
+                                    <circle id="seg-bulldozer" class="svg-doughnut-segment" cx="150" cy="150" r="90" fill="none" stroke="url(#purpleGrad)" stroke-width="26" stroke-dasharray="141.37 565.48" stroke-dashoffset="0" stroke-linecap="round" onclick="handleSvgSegmentClick('BULLDOZER')" />
+                                    <!-- Crane Segment (Orange) -->
+                                    <circle id="seg-crane" class="svg-doughnut-segment" cx="150" cy="150" r="90" fill="none" stroke="url(#orangeGrad)" stroke-width="26" stroke-dasharray="141.37 565.48" stroke-dashoffset="-141.37" stroke-linecap="round" onclick="handleSvgSegmentClick('CRANE')" />
+                                    <!-- Drill Rig Segment (Pink) -->
+                                    <circle id="seg-drillrig" class="svg-doughnut-segment" cx="150" cy="150" r="90" fill="none" stroke="url(#pinkGrad)" stroke-width="26" stroke-dasharray="141.37 565.48" stroke-dashoffset="-282.74" stroke-linecap="round" onclick="handleSvgSegmentClick('DRILL RIG')" />
+                                </g>
+                                <!-- Interactive Text Data Core Middle HUD -->
+                                <text x="150" y="142" text-anchor="middle" fill="#8f8ba8" font-family="'Inter', sans-serif" font-size="11" font-weight="600" letter-spacing="1">SELECTED</text>
+                                <text id="svg-center-label" x="150" y="168" text-anchor="middle" fill="#ffffff" font-family="'Inter', sans-serif" font-size="18" font-weight="700">ALL ASSETS</text>
+                            </svg>
                         </div>
                     </div>
                     <div class="xl:col-span-3 bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-5">
@@ -408,7 +458,6 @@
         
         let complianceChartInstance = null;
         let monthlyChartInstance = null;
-        let doughnutChartInstance = null;
         let barChartInstance = null;
         let partsChartInstance = null;
 
@@ -483,6 +532,7 @@
                         selector.value = savedWeekSelection;
                         renderPlannerVisualizer(state.raw.planner, savedWeekSelection);
                     } else {
+                        selector.value = defaultWeek;
                         renderPlannerVisualizer(state.raw.planner, defaultWeek); 
                     }
                     
@@ -618,6 +668,53 @@
             processAndRenderCapex();
         }
 
+        // Handle high fidelity vector donut segment interactions
+        function handleSvgSegmentClick(categoryName) {
+            state.capex.category = (state.capex.category === categoryName) ? 'ALL' : categoryName;
+            state.capex.page = 1;
+            
+            const badge = document.getElementById('chart-filter-badge');
+            const badgeName = document.getElementById('chart-filter-name');
+            const centerLabel = document.getElementById('svg-center-label');
+            
+            // Remove previous highlight properties
+            document.querySelectorAll('.svg-doughnut-segment').forEach(el => el.classList.remove('dimmed'));
+
+            if(state.capex.category === 'ALL') {
+                badge.classList.add('hidden');
+                centerLabel.textContent = "ALL ASSETS";
+                centerLabel.setAttribute("fill", "#ffffff");
+            } else {
+                badgeName.innerText = categoryName;
+                badge.classList.remove('hidden');
+                centerLabel.textContent = categoryName;
+                
+                // Color center text dynamically to match selection
+                if(categoryName === 'BACKHOE') {
+                    centerLabel.setAttribute("fill", "#00D2FF");
+                    document.getElementById('seg-bulldozer').classList.add('dimmed');
+                    document.getElementById('seg-crane').classList.add('dimmed');
+                    document.getElementById('seg-drillrig').classList.add('dimmed');
+                } else if(categoryName === 'BULLDOZER') {
+                    centerLabel.setAttribute("fill", "#E024F3");
+                    document.getElementById('seg-backhoe').classList.add('dimmed');
+                    document.getElementById('seg-crane').classList.add('dimmed');
+                    document.getElementById('seg-drillrig').classList.add('dimmed');
+                } else if(categoryName === 'CRANE') {
+                    centerLabel.setAttribute("fill", "#FFB300");
+                    document.getElementById('seg-backhoe').classList.add('dimmed');
+                    document.getElementById('seg-bulldozer').classList.add('dimmed');
+                    document.getElementById('seg-drillrig').classList.add('dimmed');
+                } else if(categoryName === 'DRILL RIG') {
+                    centerLabel.setAttribute("fill", "#FF5252");
+                    document.getElementById('seg-backhoe').classList.add('dimmed');
+                    document.getElementById('seg-bulldozer').classList.add('dimmed');
+                    document.getElementById('seg-crane').classList.add('dimmed');
+                }
+            }
+            processAndRenderCapex();
+        }
+
         // ==========================================
         // PARTS REQ SPEED SUB-SYSTEM (FUZZY + PAGINATED)
         // ==========================================
@@ -734,8 +831,11 @@
             state.capex.category = 'ALL';
             state.capex.page = 1;
             document.getElementById('chart-filter-badge').classList.add('hidden');
+            const centerLabel = document.getElementById('svg-center-label');
+            centerLabel.textContent = "ALL ASSETS";
+            centerLabel.setAttribute("fill", "#ffffff");
+            document.querySelectorAll('.svg-doughnut-segment').forEach(el => el.classList.remove('dimmed'));
             processAndRenderCapex();
-            if (doughnutChartInstance) { doughnutChartInstance.setActiveElements([]); doughnutChartInstance.update(); }
         }
 
         // ==========================================
@@ -867,33 +967,31 @@
         }
 
         function buildAdvancedCapexCharts(financialsMap, plannedMap, actualMap) {
-            const labels = Object.keys(financialsMap), financialData = Object.values(financialsMap), totalFinancials = financialData.reduce((a, b) => a + b, 0);
-            const doughnutCtx = document.getElementById('capex-doughnut-canvas').getContext('2d');
-            
-            if (doughnutChartInstance) doughnutChartInstance.destroy();
+            const labels = Object.keys(financialsMap);
 
-            doughnutChartInstance = new Chart(doughnutCtx, {
-                type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: financialData, backgroundColor: [createVerticalGradient(doughnutCtx, 'rgba(0, 227, 200, 0.95)', 'rgba(0, 130, 155, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(251, 191, 36, 0.95)', 'rgba(217, 119, 6, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(118, 61, 242, 0.95)', 'rgba(124, 58, 237, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(244, 63, 94, 0.95)', 'rgba(190, 24, 74, 0.4)')], borderWidth: 2, borderColor: '#0d0c1d' }] },
-                options: { 
-                    responsive: true, maintainAspectRatio: false,
-                    onClick: (event, activeElements) => {
-                        if (activeElements && activeElements.length > 0) {
-                            const idx = activeElements[0].index;
-                            const clickedLabel = labels[idx].toUpperCase();
-                            state.capex.category = (state.capex.category === clickedLabel) ? 'ALL' : clickedLabel;
-                            state.capex.page = 1;
-                            
-                            if(state.capex.category === 'ALL') {
-                                document.getElementById('chart-filter-badge').classList.add('hidden');
-                            } else {
-                                document.getElementById('chart-filter-name').innerText = labels[idx];
-                                document.getElementById('chart-filter-badge').classList.remove('hidden');
-                            }
-                            processAndRenderCapex();
-                        }
-                    },
-                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#8f8ba8', font: { size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold' }, formatter: v => v > 0 ? ((v / totalFinancials) * 100).toFixed(0) + '%' : '' } }, cutout: '65%' 
+            // Dynamically manage stroke values on embedded vector chart to emulate live state variables
+            const segments = {
+                'BACKHOE': { id: 'seg-backhoe', val: financialsMap['Backhoe'] },
+                'BULLDOZER': { id: 'seg-bulldozer', val: financialsMap['Bulldozer'] },
+                'CRANE': { id: 'seg-crane', val: financialsMap['Crane'] },
+                'DRILL RIG': { id: 'seg-drillrig', val: financialsMap['Drill Rig'] }
+            };
+
+            const totalSum = Object.values(financialsMap).reduce((a, b) => a + b, 0);
+            const totalCircumference = 565.48;
+
+            let accruedDashOffset = 141.37; // Baseline match coordinate angle offset
+
+            Object.keys(segments).forEach(key => {
+                const element = document.getElementById(segments[key].id);
+                if (element) {
+                    const ratio = totalSum > 0 ? (segments[key].val / totalSum) : 0.25;
+                    const computedSegmentSize = ratio * totalCircumference;
+                    
+                    element.setAttribute("stroke-dasharray", `${computedSegmentSize} ${totalCircumference}`);
+                    element.setAttribute("stroke-dashoffset", accruedDashOffset);
+                    
+                    accruedDashOffset -= computedSegmentSize;
                 }
             });
 
