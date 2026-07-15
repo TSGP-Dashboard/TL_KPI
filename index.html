@@ -872,11 +872,44 @@
             
             if (doughnutChartInstance) doughnutChartInstance.destroy();
 
+            // Replicating the exact neon gradient palette from the infographic image
+            const gradientBlue = doughnutCtx.createLinearGradient(0, 0, 0, 280);
+            gradientBlue.addColorStop(0, '#00bcff');   // Bright cyan
+            gradientBlue.addColorStop(1, '#1d57ff');   // Vibrant blue
+
+            const gradientPurple = doughnutCtx.createLinearGradient(0, 0, 0, 280);
+            gradientPurple.addColorStop(0, '#d100ff'); // Neon purple
+            gradientPurple.addColorStop(1, '#6700b5'); // Deep indigo/violet
+
+            const gradientOrange = doughnutCtx.createLinearGradient(0, 0, 0, 280);
+            gradientOrange.addColorStop(0, '#ff9900'); // Vibrant orange
+            gradientOrange.addColorStop(1, '#ffcb00'); // Golden yellow
+
+            const gradientPink = doughnutCtx.createLinearGradient(0, 0, 0, 280);
+            gradientPink.addColorStop(0, '#ff007f');   // Bright hot pink
+            gradientPink.addColorStop(1, '#ff66aa');   // Soft coral-pink
+
             doughnutChartInstance = new Chart(doughnutCtx, {
                 type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: financialData, backgroundColor: [createVerticalGradient(doughnutCtx, 'rgba(0, 227, 200, 0.95)', 'rgba(0, 130, 155, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(251, 191, 36, 0.95)', 'rgba(217, 119, 6, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(118, 61, 242, 0.95)', 'rgba(124, 58, 237, 0.4)'), createVerticalGradient(doughnutCtx, 'rgba(244, 63, 94, 0.95)', 'rgba(190, 24, 74, 0.4)')], borderWidth: 2, borderColor: '#0d0c1d' }] },
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        data: financialData, 
+                        backgroundColor: [
+                            gradientBlue, 
+                            gradientPurple, 
+                            gradientOrange, 
+                            gradientPink
+                        ], 
+                        borderWidth: 0,          // Removed border lines to mimic fluid continuity[cite: 3]
+                        borderRadius: 6,         // Small softened edges[cite: 3] - NO sausage effect[cite: 3]
+                        spacing: 8,              // Clean crisp gaps separating slices[cite: 3]
+                        hoverOffset: 12
+                    }] 
+                },
                 options: { 
-                    responsive: true, maintainAspectRatio: false,
+                    responsive: true, 
+                    maintainAspectRatio: false,
                     onClick: (event, activeElements) => {
                         if (activeElements && activeElements.length > 0) {
                             const idx = activeElements[0].index;
@@ -893,7 +926,24 @@
                             processAndRenderCapex();
                         }
                     },
-                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#8f8ba8', font: { size: 10 } } }, datalabels: { color: '#fff', font: { weight: 'bold' }, formatter: v => v > 0 ? ((v / totalFinancials) * 100).toFixed(0) + '%' : '' } }, cutout: '65%' 
+                    plugins: { 
+                        legend: { 
+                            display: true, 
+                            position: 'bottom', 
+                            labels: { 
+                                color: '#8f8ba8', 
+                                font: { size: 10, weight: '500' },
+                                padding: 15,
+                                usePointStyle: true
+                            } 
+                        }, 
+                        datalabels: { 
+                            color: '#fff', 
+                            font: { weight: 'bold', size: 11 }, 
+                            formatter: v => v > 0 ? ((v / totalFinancials) * 100).toFixed(0) + '%' : '' 
+                        } 
+                    }, 
+                    cutout: '45%' // Thicker chart walls[cite: 3] & smaller inner hole to match target template exactly[cite: 3]
                 }
             });
 
