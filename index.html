@@ -216,17 +216,24 @@
             <div id="view-compliance-container" class="space-y-6">
                 <div class="border-b border-[#2a2552] pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                     <div>
-                        <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Schedule Compliance Variance Matrix</h3>
-                        <p class="text-xs text-[#8f8ba8] font-mono mt-0.5">Dual Axis Setup: Volume Bars vs Efficiency Curves</p>
+                        <h3 id="planner-chart-title" class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Schedule Compliance Variance Matrix</h3>
+                        <p id="planner-chart-subtitle" class="text-xs text-[#8f8ba8] font-mono mt-0.5">Dual Axis Setup: Volume Bars vs Efficiency Curves</p>
                     </div>
-                    <div class="flex flex-wrap items-center gap-4 text-[10px] font-mono">
+                    <div class="flex flex-wrap items-center gap-3 text-[10px] font-mono">
+                        <!-- ACTIVE PLANNER FILTER BADGE & RESET BUTTON -->
+                        <div id="planner-filter-badge" class="hidden font-mono text-[10px] bg-[#0d0c1d] border border-[#00e3c8] text-[#00e3c8] px-2.5 py-1 rounded animate-pulse shadow-md">
+                            Filtered: <span id="planner-filter-name" class="font-bold">ALL</span>
+                        </div>
+                        <button id="reset-planner-btn" onclick="resetPlannerFilter()" class="hidden bg-[#1a1736] hover:bg-[#2a2552] text-[#00e3c8] border border-[#00e3c8]/50 text-[11px] font-mono px-3 py-1 rounded transition-all shadow-md flex items-center gap-1.5 font-bold cursor-pointer">
+                            🔄 Reset to Original View
+                        </button>
                         <select id="week-selector" onchange="changeWeekFilter()" class="bg-[#0d0c1d] text-white border border-[#2a2552] rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-[#00e3c8] cursor-pointer transition-colors shadow-md w-full sm:w-auto">
                             <option value="">Loading cycles...</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- WEEKLY CHART CANVAS -->
+                <!-- WEEKLY / PLANNER TREND CHART CANVAS -->
                 <div class="w-full bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-4 sm:p-6 shadow-inner">
                     <div class="h-[320px] w-full relative">
                         <canvas id="planner-compliance-canvas"></canvas>
@@ -245,12 +252,15 @@
                         </div>
                     </div>
 
-                    <!-- SCOPED WORK GROUP LEGEND -->
+                    <!-- SCOPED WORK GROUP LEGEND (INTERACTIVE) -->
                     <div class="bg-[#0d0c1d]/40 border border-[#2a2552] rounded-xl p-4 flex flex-col justify-between">
                         <div>
-                            <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 font-mono flex items-center gap-2">
-                                <span class="w-1.5 h-1.5 rounded-full bg-[#00e3c8]"></span> Planner Scope
-                            </h4>
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest font-mono flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#00e3c8]"></span> Planner Scope
+                                </h4>
+                                <span class="text-[9px] text-[#8f8ba8] font-mono">(Click name to filter)</span>
+                            </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left font-mono text-[11px]">
                                     <thead class="bg-[#14122d]/80 text-[#8f8ba8] text-[9px] uppercase font-bold border-b border-[#2a2552]">
@@ -260,13 +270,34 @@
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-[#2a2552]/40 text-slate-300">
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">PHILIP</td><td class="py-2 px-3 text-slate-300">PMS Activities</td></tr>
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">LEO</td><td class="py-2 px-3 text-slate-300">CM (GEM, LOS AMIGOS)</td></tr>
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">VINCENT</td><td class="py-2 px-3 text-slate-300">CM (REGION XIII, SINUDA)</td></tr>
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">GLENBERTH</td><td class="py-2 px-3 text-slate-300">CM (REGION XI-A, XI-B)</td></tr>
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">ROICE</td><td class="py-2 px-3 text-slate-300">CM (SAMAL, CRANEAGE)</td></tr>
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">JANE</td><td class="py-2 px-3 text-slate-300">PM & CM (REGION X)</td></tr>
-                                        <tr class="hover:bg-[#14122d]/40"><td class="py-2 px-3 font-bold text-[#00e3c8]">DIONAH</td><td class="py-2 px-3 text-slate-300">SV, TM, TYRES</td></tr>
+                                        <tr onclick="filterByPlanner('PHILIP')" class="hover:bg-[#00e3c8]/10 cursor-pointer transition-colors group">
+                                            <td class="py-2 px-3 font-bold text-[#00e3c8] group-hover:underline flex items-center justify-between">PHILIP 📊</td>
+                                            <td class="py-2 px-3 text-slate-300">PMS Activities</td>
+                                        </tr>
+                                        <tr onclick="filterByPlanner('LEO')" class="hover:bg-[#00e3c8]/10 cursor-pointer transition-colors group">
+                                            <td class="py-2 px-3 font-bold text-[#00e3c8] group-hover:underline flex items-center justify-between">LEO 📊</td>
+                                            <td class="py-2 px-3 text-slate-300">CM (GEM, LOS AMIGOS)</td>
+                                        </tr>
+                                        <tr onclick="filterByPlanner('VINCENT')" class="hover:bg-[#00e3c8]/10 cursor-pointer transition-colors group">
+                                            <td class="py-2 px-3 font-bold text-[#00e3c8] group-hover:underline flex items-center justify-between">VINCENT 📊</td>
+                                            <td class="py-2 px-3 text-slate-300">CM (REGION XIII, SINUDA)</td>
+                                        </tr>
+                                        <tr onclick="filterByPlanner('GLENBERTH')" class="hover:bg-[#00e3c8]/10 cursor-pointer transition-colors group">
+                                            <td class="py-2 px-3 font-bold text-[#00e3c8] group-hover:underline flex items-center justify-between">GLENBERTH 📊</td>
+                                            <td class="py-2 px-3 text-slate-300">CM (REGION XI-A, XI-B)</td>
+                                        </tr>
+                                        <tr onclick="filterByPlanner('ROICE')" class="hover:bg-[#00e3c8]/10 cursor-pointer transition-colors group">
+                                            <td class="py-2 px-3 font-bold text-[#00e3c8] group-hover:underline flex items-center justify-between">ROICE 📊</td>
+                                            <td class="py-2 px-3 text-slate-300">CM (SAMAL, CRANEAGE)</td>
+                                        </tr>
+                                        <tr onclick="filterByPlanner('JANE')" class="hover:bg-[#00e3c8]/10 cursor-pointer transition-colors group">
+                                            <td class="py-2 px-3 font-bold text-[#00e3c8] group-hover:underline flex items-center justify-between">JANE 📊</td>
+                                            <td class="py-2 px-3 text-slate-300">PM & CM (REGION X)</td>
+                                        </tr>
+                                        <tr onclick="filterByPlanner('DIONAH')" class="hover:bg-[#00e3c8]/10 cursor-pointer transition-colors group">
+                                            <td class="py-2 px-3 font-bold text-[#00e3c8] group-hover:underline flex items-center justify-between">DIONAH 📊</td>
+                                            <td class="py-2 px-3 text-slate-300">SV, TM, TYRES</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -403,6 +434,7 @@
             raw: { planner: [], capex: [], parts: [] },
             capex: { page: 1, limit: 12, search: '', status: 'ALL', category: 'ALL' },
             parts: { page: 1, limit: 12, search: '', status: 'ALL' },
+            planner: { selectedPlanner: null },
             global: { complianceThreshold: 85, autoSyncInterval: null }
         };
         
@@ -477,9 +509,11 @@
                     
                     const selector = document.getElementById('week-selector');
                     const savedWeekSelection = selector.value;
-                    
                     const defaultWeek = populateWeekSelector(state.raw.planner);
-                    if(savedWeekSelection && Array.from(selector.options).some(o => o.value === savedWeekSelection)) {
+
+                    if (state.planner.selectedPlanner) {
+                        renderPlannerTrendVisualizer(state.planner.selectedPlanner);
+                    } else if (savedWeekSelection && Array.from(selector.options).some(o => o.value === savedWeekSelection)) {
                         selector.value = savedWeekSelection;
                         renderPlannerVisualizer(state.raw.planner, savedWeekSelection);
                     } else {
@@ -512,7 +546,6 @@
             let categoryVolumePlanned = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
             let categoryVolumeActual = { "Backhoe": 0, "Bulldozer": 0, "Crane": 0, "Drill Rig": 0 };
 
-            // Run structural metrics on absolute data before filtering bounds are placed
             state.raw.capex.forEach(row => {
                 if (!row[2] && !row[5]) return;
                 const assetId = String(row[2] || '').toUpperCase();
@@ -534,7 +567,6 @@
             document.getElementById('kpi-capex-count').innerText = `● ${documentPhaseCount} Docs Pending`;
             buildAdvancedCapexCharts(categoryFinancials, categoryVolumePlanned, categoryVolumeActual);
 
-            // Apply cross-filtering engine logic
             const processedDataset = state.raw.capex.filter(row => {
                 if (!row[2] && !row[5]) return false;
                 const assetId = String(row[2] || '').toUpperCase();
@@ -549,7 +581,6 @@
                 return matchesStatus && matchesCategory && matchesSearch;
             });
 
-            // Calculate Pagination bounds
             const totalItems = processedDataset.length;
             const maxPage = Math.max(1, Math.ceil(totalItems / state.capex.limit));
             if (state.capex.page > maxPage) state.capex.page = maxPage;
@@ -598,7 +629,6 @@
 
             document.getElementById("capex-table-rows").innerHTML = tableHtml;
             
-            // Render Pagination control elements
             document.getElementById('capex-pagination-ctrl').innerHTML = `
                 <div>Showing ${totalItems === 0 ? 0 : startIndex + 1} to ${Math.min(startIndex + state.capex.limit, totalItems)} of ${totalItems} assets</div>
                 <div class="flex items-center gap-2">
@@ -754,7 +784,11 @@
 
         function changeWeekFilter() {
             switchView('compliance');
-            renderPlannerVisualizer(state.raw.planner, document.getElementById('week-selector').value);
+            if (state.planner.selectedPlanner) {
+                renderPlannerTrendVisualizer(state.planner.selectedPlanner);
+            } else {
+                renderPlannerVisualizer(state.raw.planner, document.getElementById('week-selector').value);
+            }
         }
 
         function renderPlannerVisualizer(rows, selectedWeek) {
@@ -801,6 +835,100 @@
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#8f8ba8', font: { size: 10, weight: '500' } } },
                         yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 25, color: '#00e3c8', font: { size: 10 }, callback: v => v + ' Vol' }, grid: { color: 'rgba(255, 255, 255, 0.03)' } },
+                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#8f8ba8', font: { size: 10 }, callback: v => v + '%' }, grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { color: '#b1add0', font: { size: 10 } } },
+                        datalabels: { formatter: (v, c) => c.dataset.yAxisID === 'yPercentage' ? (c.datasetIndex === 2 ? v + '%' : '') : v, color: '#fff', anchor: 'end', align: 'top', font: { size: 9, weight: 'bold' } }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // SINGLE PLANNER FILTER & TREND VISUALIZER
+        // ==========================================
+        function filterByPlanner(plannerName) {
+            state.planner.selectedPlanner = plannerName.toUpperCase();
+            
+            document.getElementById('planner-filter-name').innerText = plannerName.toUpperCase();
+            document.getElementById('planner-filter-badge').classList.remove('hidden');
+            document.getElementById('reset-planner-btn').classList.remove('hidden');
+
+            document.getElementById('planner-chart-title').innerText = `Planner Performance Trend: ${plannerName.toUpperCase()}`;
+            document.getElementById('planner-chart-subtitle').innerText = `Weekly Trend Breakdown (Planned Volume vs. Actual Volume)`;
+
+            renderPlannerTrendVisualizer(plannerName.toUpperCase());
+        }
+
+        function resetPlannerFilter() {
+            state.planner.selectedPlanner = null;
+
+            document.getElementById('planner-filter-badge').classList.add('hidden');
+            document.getElementById('reset-planner-btn').classList.add('hidden');
+
+            document.getElementById('planner-chart-title').innerText = "Schedule Compliance Variance Matrix";
+            document.getElementById('planner-chart-subtitle').innerText = "Dual Axis Setup: Volume Bars vs Efficiency Curves";
+
+            const selectedWeek = document.getElementById('week-selector').value;
+            renderPlannerVisualizer(state.raw.planner, selectedWeek);
+        }
+
+        function renderPlannerTrendVisualizer(plannerName) {
+            const rows = state.raw.planner || [];
+            if (!rows.length) return;
+
+            const plannerRows = rows
+                .filter(r => (r[1] || '').toString().trim().toUpperCase() === plannerName)
+                .sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+
+            if (!plannerRows.length) return;
+
+            const weekLabels = [];
+            const plannedVolumes = [];
+            const actualVolumes = [];
+            const compliancePercentages = [];
+            const targetLineData = [];
+
+            let totalPlanned = 0;
+            let totalActual = 0;
+
+            plannerRows.forEach(row => {
+                const weekNum = row[0];
+                const planned = parseInt(row[3]) || 0;
+                const actual = parseInt(row[4]) || 0;
+
+                totalPlanned += planned;
+                totalActual += actual;
+
+                weekLabels.push(`Week ${weekNum}`);
+                plannedVolumes.push(planned);
+                actualVolumes.push(actual);
+                compliancePercentages.push(planned > 0 ? Math.round((actual / planned) * 100) : 0);
+                targetLineData.push(state.global.complianceThreshold);
+            });
+
+            document.getElementById('kpi-compliance').innerText = totalPlanned > 0 ? `${Math.round((totalActual / totalPlanned) * 100)}%` : '--%';
+
+            const ctx = document.getElementById('planner-compliance-canvas').getContext('2d');
+            if (complianceChartInstance) complianceChartInstance.destroy();
+
+            complianceChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: weekLabels,
+                    datasets: [
+                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(0, 227, 200, 0.8)', 'rgba(0, 227, 200, 0.1)'), borderColor: '#00e3c8', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
+                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(118, 61, 242, 0.8)', 'rgba(118, 61, 242, 0.1)'), borderColor: '#763df2', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
+                        { label: 'Actual Compliance %', data: compliancePercentages, type: 'line', borderColor: '#00e3c8', backgroundColor: '#0d0c1d', borderWidth: 3, pointBackgroundColor: '#00e3c8', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.3, yAxisID: 'yPercentage', order: 1 },
+                        { label: 'Target (85%)', data: targetLineData, type: 'line', borderColor: '#f43f5e', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'yPercentage', order: 2 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#8f8ba8', font: { size: 10, weight: '500' } } },
+                        yVolume: { type: 'linear', position: 'left', min: 0, ticks: { color: '#00e3c8', font: { size: 10 }, callback: v => v + ' Vol' }, grid: { color: 'rgba(255, 255, 255, 0.03)' } },
                         yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#8f8ba8', font: { size: 10 }, callback: v => v + '%' }, grid: { display: false } }
                     },
                     plugins: {
@@ -872,22 +1000,21 @@
             
             if (doughnutChartInstance) doughnutChartInstance.destroy();
 
-            // Replicating the exact neon gradient palette from the infographic image
             const gradientBlue = doughnutCtx.createLinearGradient(0, 0, 0, 280);
-            gradientBlue.addColorStop(0, '#00bcff');   // Bright cyan
-            gradientBlue.addColorStop(1, '#1d57ff');   // Vibrant blue
+            gradientBlue.addColorStop(0, '#00bcff');
+            gradientBlue.addColorStop(1, '#1d57ff');
 
             const gradientPurple = doughnutCtx.createLinearGradient(0, 0, 0, 280);
-            gradientPurple.addColorStop(0, '#d100ff'); // Neon purple
-            gradientPurple.addColorStop(1, '#6700b5'); // Deep indigo/violet
+            gradientPurple.addColorStop(0, '#d100ff');
+            gradientPurple.addColorStop(1, '#6700b5');
 
             const gradientOrange = doughnutCtx.createLinearGradient(0, 0, 0, 280);
-            gradientOrange.addColorStop(0, '#ff9900'); // Vibrant orange
-            gradientOrange.addColorStop(1, '#ffcb00'); // Golden yellow
+            gradientOrange.addColorStop(0, '#ff9900');
+            gradientOrange.addColorStop(1, '#ffcb00');
 
             const gradientPink = doughnutCtx.createLinearGradient(0, 0, 0, 280);
-            gradientPink.addColorStop(0, '#ff007f');   // Bright hot pink
-            gradientPink.addColorStop(1, '#ff66aa');   // Soft coral-pink
+            gradientPink.addColorStop(0, '#ff007f');
+            gradientPink.addColorStop(1, '#ff66aa');
 
             doughnutChartInstance = new Chart(doughnutCtx, {
                 type: 'doughnut',
@@ -901,9 +1028,9 @@
                             gradientOrange, 
                             gradientPink
                         ], 
-                        borderWidth: 0,          // Removed border lines to mimic fluid continuity[cite: 3]
-                        borderRadius: 6,         // Small softened edges[cite: 3] - NO sausage effect[cite: 3]
-                        spacing: 8,              // Clean crisp gaps separating slices[cite: 3]
+                        borderWidth: 0,
+                        borderRadius: 6,
+                        spacing: 8,
                         hoverOffset: 12
                     }] 
                 },
@@ -943,7 +1070,7 @@
                             formatter: v => v > 0 ? ((v / totalFinancials) * 100).toFixed(0) + '%' : '' 
                         } 
                     }, 
-                    cutout: '45%' // Thicker chart walls[cite: 3] & smaller inner hole to match target template exactly[cite: 3]
+                    cutout: '45%'
                 }
             });
 
