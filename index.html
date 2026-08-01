@@ -9,77 +9,75 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Exact color palette inspired by the target UI */
+        /* Professional Executive Dark Palette inspired by reference */
         body { 
             font-family: 'Inter', sans-serif; 
-            background: radial-gradient(circle at top right, #1d1b3c 0%, #0f0e26 100%); 
+            background-color: #1e222d; 
+            color: #9ca3af;
         }
         .workspace-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .workspace-scrollbar::-webkit-scrollbar-track { background: #0c0a18; border-radius: 4px; }
-        .workspace-scrollbar::-webkit-scrollbar-thumb { background: #2a2552; border-radius: 4px; }
-        .workspace-scrollbar::-webkit-scrollbar-thumb:hover { background: #3e3778; }
+        .workspace-scrollbar::-webkit-scrollbar-track { background: #181b24; border-radius: 4px; }
+        .workspace-scrollbar::-webkit-scrollbar-thumb { background: #383f52; border-radius: 4px; }
+        .workspace-scrollbar::-webkit-scrollbar-thumb:hover { background: #4b546d; }
         .chart-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
-        .chart-scrollbar::-webkit-scrollbar-track { background: #0c0a18; }
-        .chart-scrollbar::-webkit-scrollbar-thumb { background: #2a2552; border-radius: 3px; }
+        .chart-scrollbar::-webkit-scrollbar-track { background: #181b24; }
+        .chart-scrollbar::-webkit-scrollbar-thumb { background: #383f52; border-radius: 3px; }
         
-        /* Left Sidebar Styling matching the glowing slate-indigo */
+        /* Sidebar Deck */
         aside {
-            background-color: #252453;
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            background-color: #252a37;
+            border-right: 1px solid #383f52;
         }
 
-        /* Glassmorphic Glossy Cards with Neon Violet & Cyan Shadows */
+        /* Clean Corporate Slate KPI Cards */
         .kpi-card {
-            background: linear-gradient(135deg, rgba(29, 26, 60, 0.8) 0%, rgba(20, 18, 43, 0.95) 100%);
-            border: 1px solid rgba(138, 92, 246, 0.15);
+            background-color: #282d3c;
+            border: 1px solid #383f52;
             position: relative;
-            backdrop-filter: blur(16px);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.05);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
         }
         .kpi-card::before {
             content: '';
             position: absolute;
             left: 0; top: 0; bottom: 0; width: 0px;
-            background: linear-gradient(to bottom, #00e3c8, #00a5ff);
-            transition: width 0.25s ease;
+            background: #f5ba42;
+            transition: width 0.2s ease;
             border-top-left-radius: 0.75rem;
             border-bottom-left-radius: 0.75rem;
         }
         .kpi-card:hover { 
-            border-color: rgba(0, 227, 200, 0.4);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(0, 227, 200, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+            border-color: #4b546d;
+            background-color: #2e3446;
+            transform: translateY(-1px);
         }
         .kpi-card.active-panel { 
-            background: #353a73;
-            border-color: #00e3c8; 
-            box-shadow: 0 0 25px rgba(0, 227, 200, 0.25), inset 0 1px 2px rgba(0, 227, 200, 0.2); 
+            background-color: #31374a;
+            border-color: #f5ba42; 
         }
         .kpi-card.active-panel::before { width: 4px; }
 
         .filterable-row { transition: all 0.15s ease-out; cursor: pointer; }
         
-        /* Filter Pills matching neon highlight theme */
+        /* Clean Corporate Filter Pills */
         .filter-pill {
-            background-color: #14122b;
-            border: 1px solid rgba(138, 92, 246, 0.2);
-            color: #8f8ba8;
+            background-color: #1e222d;
+            border: 1px solid #383f52;
+            color: #9ca3af;
             transition: all 0.2s ease;
         }
         .filter-pill:hover {
-            border-color: #00e3c8;
-            color: #fff;
+            border-color: #f5ba42;
+            color: #ffffff;
         }
         .filter-pill.active-pill {
-            background: linear-gradient(135deg, #00e3c8 0%, #00a5ff 100%);
-            border-color: #00e3c8;
-            color: #0d0c1d;
+            background-color: #f5ba42;
+            border-color: #f5ba42;
+            color: #1e222d;
             font-weight: 700;
-            box-shadow: 0 0 15px rgba(0, 227, 200, 0.4);
         }
 
-        .detail-drawer { display: none; background-color: #0d0b1a; }
+        .detail-drawer { display: none; background-color: #181b24; }
         .detail-drawer.open-drawer { display: table-row; }
 
         @media print {
@@ -87,48 +85,46 @@
             header, aside, .filter-pill, input, select, #chart-filter-badge, #capex-pagination-ctrl, #parts-pagination-ctrl, .utility-hub-bar, #copy-toast { display: none !important; }
             main { width: 100% !important; background: transparent !important; padding: 0 !important; border: none !important; overflow: visible !important; height: auto !important; }
             #view-compliance-container, #view-capex-container, #view-parts-container { display: block !important; page-break-after: always; }
-            .bg-slate-950, .bg-slate-950\/60, .bg-slate-900\/60, .bg-slate-800 { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; }
             tr { page-break-inside: avoid; }
             th { background: #e2e8f0 !important; color: #0f172a !important; border-bottom: 2px solid #94a3b8 !important; }
             td { color: #334155 !important; border-bottom: 1px solid #e2e8f0 !important; }
-            .text-cyan-400, .text-emerald-400, .text-amber-400, .text-purple-400 { color: #0f172a !important; font-weight: bold; }
             canvas { max-height: 250px !important; }
             .detail-drawer { display: none !important; }
         }
     </style>
 </head>
-<body class="text-[#b1add0] antialiased min-h-screen flex flex-col lg:h-screen lg:overflow-hidden">
+<body class="antialiased min-h-screen flex flex-col lg:h-screen lg:overflow-hidden">
 
     <!-- CLIPBOARD TOAST NOTIFICATION HUD -->
-    <div id="copy-toast" class="fixed top-6 right-6 z-50 transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300 bg-[#00e3c8] text-[#0d0c1d] font-mono text-xs font-bold px-4 py-3 rounded-lg shadow-[0_0_20px_rgba(0,227,200,0.4)] flex items-center gap-2">
+    <div id="copy-toast" class="fixed top-6 right-6 z-50 transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300 bg-[#00c49f] text-[#1e222d] font-mono text-xs font-bold px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
         <span>📋</span> ASSET COPIED TO SYSTEM CLIPBOARD
     </div>
 
     <!-- HEADER -->
-    <header class="bg-[#121027]/90 backdrop-blur-md border-b border-[#2a2552] px-4 sm:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl z-20 shrink-0">
+    <header class="bg-[#252a37] border-b border-[#383f52] px-4 sm:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-md z-20 shrink-0">
         <div class="flex items-center gap-4">
-            <div id="sync-indicator" class="h-3 w-3 rounded-full bg-[#00e3c8] shadow-[0_0_12px_#00e3c8] transition-all duration-300"></div>
+            <div id="sync-indicator" class="h-3 w-3 rounded-full bg-[#00c49f] transition-all duration-300"></div>
             <div>
                 <h1 class="text-base sm:text-lg font-bold tracking-wider text-white uppercase font-mono">PLANNER'S PERFORMANCE DASHBOARD</h1>
-                <p class="text-xs text-[#8f8ba8] font-mono mt-0.5">
-                    Database Feed: <span id="sync-status" class="text-[#00e3c8] font-bold">Connected</span>
+                <p class="text-xs text-[#9ca3af] font-mono mt-0.5">
+                    Present complex data in an easy-to-understand way | Database Feed: <span id="sync-status" class="text-[#00c49f] font-bold">Connected</span>
                 </p>
             </div>
         </div>
         <div class="flex items-center gap-4">
-            <div class="flex items-center bg-[#0d0c1d]/90 border border-[#2a2552] rounded-lg p-1.5 gap-3 font-mono text-xs">
-                <label class="flex items-center gap-2 cursor-pointer select-none text-[#8f8ba8] pl-1.5">
-                    <input type="checkbox" id="auto-sync-toggle" checked onchange="toggleAutoSyncMode()" class="rounded bg-[#0d0c1d] border-[#2a2552] text-[#00e3c8] focus:ring-0 focus:ring-offset-0 cursor-pointer">
+            <div class="flex items-center bg-[#1e222d] border border-[#383f52] rounded-lg p-1.5 gap-3 font-mono text-xs">
+                <label class="flex items-center gap-2 cursor-pointer select-none text-[#9ca3af] pl-1.5">
+                    <input type="checkbox" id="auto-sync-toggle" checked onchange="toggleAutoSyncMode()" class="rounded bg-[#1e222d] border-[#383f52] text-[#00c49f] focus:ring-0 focus:ring-offset-0 cursor-pointer">
                     <span>Auto-Refresh (60s)</span>
                 </label>
-                <div class="h-4 w-[1px] bg-[#2a2552]"></div>
-                <button onclick="fetchLatestDataStream()" class="text-[11px] bg-[#1a1736] hover:bg-[#2a2552] text-white font-bold px-2.5 py-1 rounded transition-colors border border-[#3e3778] flex items-center gap-1">
+                <div class="h-4 w-[1px] bg-[#383f52]"></div>
+                <button onclick="fetchLatestDataStream()" class="text-[11px] bg-[#282d3c] hover:bg-[#383f52] text-white font-bold px-2.5 py-1 rounded transition-colors border border-[#4b546d] flex items-center gap-1">
                     🔄 Sync Now
                 </button>
             </div>
             <div class="text-right hidden sm:block font-mono">
                 <p class="text-xs text-slate-200 font-medium">Global Enterprise Deck</p>
-                <p class="text-[11px] text-[#635f80]">v5.0.0-paginated</p>
+                <p class="text-[11px] text-[#9ca3af]">v5.1.0-executive</p>
             </div>
         </div>
     </header>
@@ -138,7 +134,7 @@
         
         <!-- SIDEBAR DECK -->
         <aside class="w-full lg:w-1/5 flex flex-col gap-4 shrink-0 p-4 rounded-xl">
-            <div class="text-[10px] font-mono tracking-widest text-[#8f8ba8] uppercase px-1 font-bold">
+            <div class="text-[10px] font-mono tracking-widest text-[#9ca3af] uppercase px-1 font-bold">
                 Operational Framework
             </div>
 
@@ -147,15 +143,15 @@
                 <div class="flex justify-between items-start w-full gap-2">
                     <div class="space-y-1 min-w-0">
                         <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Planner Compliance</h2>
-                        <div class="text-[10px] font-mono text-[#8f8ba8] flex items-center gap-1.5 mt-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-[#00e3c8]"></span> Target: &gt;85%
+                        <div class="text-[10px] font-mono text-[#9ca3af] flex items-center gap-1.5 mt-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#00c49f]"></span> Target: &gt;85%
                         </div>
                     </div>
-                    <div class="text-3xl font-mono font-bold tracking-tight text-[#00e3c8]" id="kpi-compliance">--%</div>
+                    <div class="text-3xl font-mono font-bold tracking-tight text-[#00c49f]" id="kpi-compliance">--%</div>
                 </div>
-                <div class="mt-3 flex items-center justify-between border-t border-[#2a2552] pt-2 text-[10px] font-mono text-[#8f8ba8]">
+                <div class="mt-3 flex items-center justify-between border-t border-[#383f52] pt-2 text-[10px] font-mono text-[#9ca3af]">
                     <span>Chart Matrix</span>
-                    <span class="text-[#00e3c8] font-bold">Select</span>
+                    <span class="text-[#f5ba42] font-bold">Select</span>
                 </div>
             </div>
 
@@ -164,13 +160,13 @@
                 <div class="flex justify-between items-start w-full gap-2">
                     <div class="space-y-1 min-w-0">
                         <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">CAPEX Pipeline</h2>
-                        <div class="text-[10px] font-mono text-[#f59e0b] truncate" id="kpi-capex-count">Loading...</div>
+                        <div class="text-[10px] font-mono text-[#f5ba42] truncate" id="kpi-capex-count">Loading...</div>
                     </div>
                     <div class="text-xl font-mono font-bold tracking-tight text-white whitespace-nowrap" id="kpi-capex">PHP 0M</div>
                 </div>
-                <div class="mt-3 flex items-center justify-between border-t border-[#2a2552] pt-2 text-[10px] font-mono text-[#8f8ba8]">
+                <div class="mt-3 flex items-center justify-between border-t border-[#383f52] pt-2 text-[10px] font-mono text-[#9ca3af]">
                     <span>Gross Ledger</span>
-                    <span class="text-[#00e3c8] font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+                    <span class="text-[#f5ba42] font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
                 </div>
             </div>
 
@@ -179,13 +175,13 @@
                 <div class="flex justify-between items-start w-full gap-2">
                     <div class="space-y-1 min-w-0">
                         <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Parts Requesting Process</h2>
-                        <div class="text-[10px] font-mono text-[#763df2] truncate" id="kpi-parts-count">Calculating...</div>
+                        <div class="text-[10px] font-mono text-[#3b82f6] truncate" id="kpi-parts-count">Calculating...</div>
                     </div>
-                    <div class="text-2xl font-mono font-bold tracking-tight text-[#763df2] whitespace-nowrap" id="kpi-parts">0.0d</div>
+                    <div class="text-2xl font-mono font-bold tracking-tight text-[#3b82f6] whitespace-nowrap" id="kpi-parts">0.0d</div>
                 </div>
-                <div class="mt-3 flex items-center justify-between border-t border-[#2a2552] pt-2 text-[10px] font-mono text-[#8f8ba8]">
+                <div class="mt-3 flex items-center justify-between border-t border-[#383f52] pt-2 text-[10px] font-mono text-[#9ca3af]">
                     <span>Turnaround</span>
-                    <span class="text-[#00e3c8] font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+                    <span class="text-[#f5ba42] font-bold opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
                 </div>
             </div>
 
@@ -194,47 +190,47 @@
                 <div class="flex justify-between items-start w-full gap-2">
                     <div class="space-y-1 min-w-0">
                         <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider truncate">Telematics Alert</h2>
-                        <div class="text-[10px] font-mono text-[#f59e0b] flex items-center gap-1.5 mt-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-[#f59e0b] animate-pulse"></span> Diagnostic Hub
+                        <div class="text-[10px] font-mono text-[#f5ba42] flex items-center gap-1.5 mt-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#f5ba42]"></span> Diagnostic Hub
                         </div>
                     </div>
-                    <div class="text-2xl font-mono font-bold tracking-tight text-[#f59e0b] flex items-center gap-1">
+                    <div class="text-2xl font-mono font-bold tracking-tight text-[#f5ba42] flex items-center gap-1">
                         <span>🔗</span>
                     </div>
                 </div>
-                <div class="mt-3 flex items-center justify-between border-t border-[#2a2552] pt-2 text-[10px] font-mono text-[#8f8ba8]">
+                <div class="mt-3 flex items-center justify-between border-t border-[#383f52] pt-2 text-[10px] font-mono text-[#9ca3af]">
                     <span>External Matrix</span>
-                    <span class="text-[#f59e0b] font-bold group-hover:underline transition-all">Launch ↗</span>
+                    <span class="text-[#f5ba42] font-bold group-hover:underline transition-all">Launch ↗</span>
                 </div>
             </a>
         </aside>
 
         <!-- DYNAMIC CONTENT HUD -->
-        <main class="w-full lg:w-4/5 bg-[#0f0e26]/70 backdrop-blur-md rounded-xl border border-[#2a2552] p-4 sm:p-6 shadow-2xl lg:overflow-y-auto workspace-scrollbar lg:h-full">
+        <main class="w-full lg:w-4/5 bg-[#252a37] rounded-xl border border-[#383f52] p-4 sm:p-6 shadow-xl lg:overflow-y-auto workspace-scrollbar lg:h-full">
             
             <!-- VIEW 1: COMPLIANCE -->
             <div id="view-compliance-container" class="space-y-6">
-                <div class="border-b border-[#2a2552] pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                <div class="border-b border-[#383f52] pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                     <div>
                         <h3 id="planner-chart-title" class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Schedule Compliance Variance Matrix</h3>
-                        <p id="planner-chart-subtitle" class="text-xs text-[#8f8ba8] font-mono mt-0.5">Dual Axis Setup: Volume Bars vs Efficiency Curves</p>
+                        <p id="planner-chart-subtitle" class="text-xs text-[#9ca3af] font-mono mt-0.5">Dual Axis Setup: Volume Bars vs Efficiency Curves</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-3 text-[10px] font-mono">
                         <!-- ACTIVE PLANNER FILTER BADGE & RESET BUTTON -->
-                        <div id="planner-filter-badge" class="hidden font-mono text-[10px] bg-[#0d0c1d] border border-[#00e3c8] text-[#00e3c8] px-2.5 py-1 rounded animate-pulse shadow-md">
+                        <div id="planner-filter-badge" class="hidden font-mono text-[10px] bg-[#1e222d] border border-[#f5ba42] text-[#f5ba42] px-2.5 py-1 rounded shadow-md">
                             Filtered: <span id="planner-filter-name" class="font-bold">ALL</span>
                         </div>
-                        <button id="reset-planner-btn" onclick="resetPlannerFilter()" class="hidden bg-[#1a1736] hover:bg-[#2a2552] text-[#00e3c8] border border-[#00e3c8]/50 text-[11px] font-mono px-3 py-1 rounded transition-all shadow-md flex items-center gap-1.5 font-bold cursor-pointer">
+                        <button id="reset-planner-btn" onclick="resetPlannerFilter()" class="hidden bg-[#282d3c] hover:bg-[#383f52] text-[#00c49f] border border-[#00c49f]/50 text-[11px] font-mono px-3 py-1 rounded transition-all shadow-md flex items-center gap-1.5 font-bold cursor-pointer">
                             🔄 Reset to Original View
                         </button>
-                        <select id="week-selector" onchange="changeWeekFilter()" class="bg-[#0d0c1d] text-white border border-[#2a2552] rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-[#00e3c8] cursor-pointer transition-colors shadow-md w-full sm:w-auto">
+                        <select id="week-selector" onchange="changeWeekFilter()" class="bg-[#1e222d] text-white border border-[#383f52] rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-[#f5ba42] cursor-pointer transition-colors shadow-md w-full sm:w-auto">
                             <option value="">Loading cycles...</option>
                         </select>
                     </div>
                 </div>
 
                 <!-- WEEKLY / PLANNER TREND CHART CANVAS -->
-                <div class="w-full bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-4 sm:p-6 shadow-inner">
+                <div class="w-full bg-[#1e222d] border border-[#383f52] rounded-xl p-4 sm:p-6 shadow-inner">
                     <div class="h-[320px] w-full relative">
                         <canvas id="planner-compliance-canvas"></canvas>
                     </div>
@@ -242,10 +238,10 @@
 
                 <!-- HISTORICAL MONTHLY COMPLIANCE TRENDS -->
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                    <div class="xl:col-span-2 bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-4 sm:p-5 shadow-inner">
+                    <div class="xl:col-span-2 bg-[#1e222d] border border-[#383f52] rounded-xl p-4 sm:p-5 shadow-inner">
                         <div class="mb-3">
-                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">Macro Historical Review</h4>
-                            <p class="text-[11px] text-[#635f80] font-mono">Monthly Compliance Average</p>
+                            <h4 class="text-xs font-semibold text-slate-200 uppercase tracking-wider font-mono">Macro Historical Review</h4>
+                            <p class="text-[11px] text-[#9ca3af] font-mono">Monthly Compliance Average</p>
                         </div>
                         <div class="h-[220px] w-full relative">
                             <canvas id="monthly-compliance-canvas"></canvas>
@@ -253,49 +249,49 @@
                     </div>
 
                     <!-- SCOPED WORK GROUP LEGEND (INTERACTIVE) -->
-                    <div class="bg-[#0d0c1d]/40 border border-[#2a2552] rounded-xl p-4 flex flex-col justify-between">
+                    <div class="bg-[#1e222d] border border-[#383f52] rounded-xl p-4 flex flex-col justify-between">
                         <div>
                             <div class="flex justify-between items-center mb-3">
-                                <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest font-mono flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-[#00e3c8]"></span> Planner Scope
+                                <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-widest font-mono flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#00c49f]"></span> Planner Scope
                                 </h4>
-                                <span class="text-[9px] text-[#8f8ba8] font-mono">(Click name to filter)</span>
+                                <span class="text-[9px] text-[#9ca3af] font-mono">(Click name to filter)</span>
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left font-mono text-[11px]">
-                                    <thead class="bg-[#14122d]/80 text-[#8f8ba8] text-[9px] uppercase font-bold border-b border-[#2a2552]">
+                                    <thead class="bg-[#282d3c] text-[#9ca3af] text-[9px] uppercase font-bold border-b border-[#383f52]">
                                         <tr>
                                             <th class="py-2 px-3">Planner</th>
                                             <th class="py-2 px-3">Maintenance Assignment</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-[#2a2552]/40 text-slate-300">
-                                        <tr onclick="filterByPlanner('PHILIP')" class="hover:bg-[#00e3c8]/10 cursor-pointer transition-colors group">
-                                            <td class="py-2 px-3 font-bold text-[#00e3c8] group-hover:underline flex items-center justify-between">PHILIP 📊</td>
+                                    <tbody class="divide-y divide-[#383f52] text-slate-200">
+                                        <tr onclick="filterByPlanner('PHILIP')" class="hover:bg-[#f5ba42]/10 cursor-pointer transition-colors group">
+                                            <td class="py-2 px-3 font-bold text-[#f5ba42] group-hover:underline flex items-center justify-between">PHILIP 📊</td>
                                             <td class="py-2 px-3 text-slate-300">PMS Activities</td>
                                         </tr>
-                                        <tr onclick="filterByPlanner('LEO')" class="hover:bg-[#00e3c8]/10 cursor-pointer transition-colors group">
-                                            <td class="py-2 px-3 font-bold text-[#00e3c8] group-hover:underline flex items-center justify-between">LEO 📊</td>
+                                        <tr onclick="filterByPlanner('LEO')" class="hover:bg-[#f5ba42]/10 cursor-pointer transition-colors group">
+                                            <td class="py-2 px-3 font-bold text-[#f5ba42] group-hover:underline flex items-center justify-between">LEO 📊</td>
                                             <td class="py-2 px-3 text-slate-300">CM (GEM, LOS AMIGOS)</td>
                                         </tr>
-                                        <tr onclick="filterByPlanner('VINCENT')" class="hover:bg-[#00e3c8]/10 cursor-pointer transition-colors group">
-                                            <td class="py-2 px-3 font-bold text-[#00e3c8] group-hover:underline flex items-center justify-between">VINCENT 📊</td>
+                                        <tr onclick="filterByPlanner('VINCENT')" class="hover:bg-[#f5ba42]/10 cursor-pointer transition-colors group">
+                                            <td class="py-2 px-3 font-bold text-[#f5ba42] group-hover:underline flex items-center justify-between">VINCENT 📊</td>
                                             <td class="py-2 px-3 text-slate-300">CM (REGION XIII, SINUDA)</td>
                                         </tr>
-                                        <tr onclick="filterByPlanner('GLENBERTH')" class="hover:bg-[#00e3c8]/10 cursor-pointer transition-colors group">
-                                            <td class="py-2 px-3 font-bold text-[#00e3c8] group-hover:underline flex items-center justify-between">GLENBERTH 📊</td>
+                                        <tr onclick="filterByPlanner('GLENBERTH')" class="hover:bg-[#f5ba42]/10 cursor-pointer transition-colors group">
+                                            <td class="py-2 px-3 font-bold text-[#f5ba42] group-hover:underline flex items-center justify-between">GLENBERTH 📊</td>
                                             <td class="py-2 px-3 text-slate-300">CM (REGION XI-A, XI-B)</td>
                                         </tr>
-                                        <tr onclick="filterByPlanner('ROICE')" class="hover:bg-[#00e3c8]/10 cursor-pointer transition-colors group">
-                                            <td class="py-2 px-3 font-bold text-[#00e3c8] group-hover:underline flex items-center justify-between">ROICE 📊</td>
+                                        <tr onclick="filterByPlanner('ROICE')" class="hover:bg-[#f5ba42]/10 cursor-pointer transition-colors group">
+                                            <td class="py-2 px-3 font-bold text-[#f5ba42] group-hover:underline flex items-center justify-between">ROICE 📊</td>
                                             <td class="py-2 px-3 text-slate-300">CM (SAMAL, CRANEAGE)</td>
                                         </tr>
-                                        <tr onclick="filterByPlanner('JANE')" class="hover:bg-[#00e3c8]/10 cursor-pointer transition-colors group">
-                                            <td class="py-2 px-3 font-bold text-[#00e3c8] group-hover:underline flex items-center justify-between">JANE 📊</td>
+                                        <tr onclick="filterByPlanner('JANE')" class="hover:bg-[#f5ba42]/10 cursor-pointer transition-colors group">
+                                            <td class="py-2 px-3 font-bold text-[#f5ba42] group-hover:underline flex items-center justify-between">JANE 📊</td>
                                             <td class="py-2 px-3 text-slate-300">PM & CM (REGION X)</td>
                                         </tr>
-                                        <tr onclick="filterByPlanner('DIONAH')" class="hover:bg-[#00e3c8]/10 cursor-pointer transition-colors group">
-                                            <td class="py-2 px-3 font-bold text-[#00e3c8] group-hover:underline flex items-center justify-between">DIONAH 📊</td>
+                                        <tr onclick="filterByPlanner('DIONAH')" class="hover:bg-[#f5ba42]/10 cursor-pointer transition-colors group">
+                                            <td class="py-2 px-3 font-bold text-[#f5ba42] group-hover:underline flex items-center justify-between">DIONAH 📊</td>
                                             <td class="py-2 px-3 text-slate-300">SV, TM, TYRES</td>
                                         </tr>
                                     </tbody>
@@ -308,29 +304,29 @@
 
             <!-- VIEW 2: CAPEX -->
             <div id="view-capex-container" class="hidden space-y-6">
-                <div class="border-b border-[#2a2552] pb-4">
+                <div class="border-b border-[#383f52] pb-4">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                         <div>
                             <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">CAPEX Advanced Metrics Engine</h3>
-                            <p class="text-xs text-[#8f8ba8] font-mono mt-0.5">Allocation streams and asset deployment breakdown (Click segment to cross-filter)</p>
+                            <p class="text-xs text-[#9ca3af] font-mono mt-0.5">Allocation streams and asset deployment breakdown (Click segment to cross-filter)</p>
                         </div>
-                        <div id="chart-filter-badge" class="hidden font-mono text-[10px] bg-[#0d0c1d] border border-[#00e3c8] text-[#00e3c8] px-2 py-1 rounded animate-pulse shadow-md">
+                        <div id="chart-filter-badge" class="hidden font-mono text-[10px] bg-[#1e222d] border border-[#f5ba42] text-[#f5ba42] px-2 py-1 rounded shadow-md">
                             Chart Filter Active: <span id="chart-filter-name" class="font-bold">None</span>
                         </div>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
-                    <div class="xl:col-span-2 bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-5 flex flex-col items-center">
+                    <div class="xl:col-span-2 bg-[#1e222d] border border-[#383f52] rounded-xl p-5 flex flex-col items-center">
                         <div class="w-full flex justify-between items-center mb-4">
-                            <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">Asset Allocation</h4>
-                            <span class="text-[9px] font-mono text-[#8f8ba8] cursor-pointer hover:text-[#00e3c8] select-none" onclick="resetChartCrossFilter()">[Clear Filter]</span>
+                            <h4 class="text-xs font-semibold text-slate-200 uppercase tracking-wider font-mono">Asset Allocation</h4>
+                            <span class="text-[9px] font-mono text-[#9ca3af] cursor-pointer hover:text-[#f5ba42] select-none" onclick="resetChartCrossFilter()">[Clear Filter]</span>
                         </div>
                         <div class="w-full max-w-[280px] h-[280px] flex items-center justify-center relative">
                             <canvas id="capex-doughnut-canvas"></canvas>
                         </div>
                     </div>
-                    <div class="xl:col-span-3 bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-5">
-                        <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-4 font-mono">Equipment Categories</h4>
+                    <div class="xl:col-span-3 bg-[#1e222d] border border-[#383f52] rounded-xl p-5">
+                        <h4 class="text-xs font-semibold text-slate-200 uppercase tracking-wider mb-4 font-mono">Equipment Categories</h4>
                         <div class="w-full h-[280px]">
                             <canvas id="capex-bar-canvas"></canvas>
                         </div>
@@ -338,23 +334,23 @@
                 </div>
 
                 <!-- UTILITY HUB BAR -->
-                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-[#0d0c1d]/40 p-3 rounded-xl border border-[#2a2552]">
+                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-[#1e222d] p-3 rounded-xl border border-[#383f52]">
                     <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="capex-status-pills">
                         <button onclick="filterCapexTable('ALL')" id="capex-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL STATUS</button>
                         <button onclick="filterCapexTable('WITH DOCUMENTS')" id="capex-pill-WITH-DOCUMENTS" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">PENDING DOCS</button>
                         <button onclick="filterCapexTable('DONE')" id="capex-pill-DONE" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">COMPLETE</button>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <input type="text" id="capex-search" oninput="searchCapexTable()" placeholder="🔍 Fuzzy multi-search (eg. 'BH complete')..." class="w-full sm:w-64 bg-[#0d0c1d] text-slate-200 placeholder-[#635f80] border border-[#2a2552] rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-[#00e3c8]">
-                        <button onclick="exportViewToCSV('capex')" class="bg-[#121027] text-[#00e3c8] hover:bg-[#1a1736] border border-[#00e3c8]/30 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
-                        <button onclick="window.print()" class="bg-[#1a1736] hover:bg-[#2a2552] text-slate-300 border border-[#3e3778] rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
+                        <input type="text" id="capex-search" oninput="searchCapexTable()" placeholder="🔍 Fuzzy multi-search (eg. 'BH complete')..." class="w-full sm:w-64 bg-[#282d3c] text-slate-200 placeholder-[#9ca3af] border border-[#383f52] rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-[#f5ba42]">
+                        <button onclick="exportViewToCSV('capex')" class="bg-[#282d3c] text-[#00c49f] hover:bg-[#383f52] border border-[#00c49f]/30 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
+                        <button onclick="window.print()" class="bg-[#282d3c] hover:bg-[#383f52] text-slate-200 border border-[#383f52] rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto chart-scrollbar bg-[#0d0c1d]/60 rounded-xl border border-[#2a2552] p-4">
+                <div class="overflow-x-auto chart-scrollbar bg-[#1e222d] rounded-xl border border-[#383f52] p-4">
                     <table id="capex-data-table" class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
                         <thead>
-                            <tr class="bg-[#1a1736] text-[#b1add0] uppercase tracking-wider text-[11px] font-bold rounded-lg border-b border-[#2a2552]">
+                            <tr class="bg-[#282d3c] text-[#9ca3af] uppercase tracking-wider text-[11px] font-bold rounded-lg border-b border-[#383f52]">
                                 <th class="p-3 pl-4 rounded-l-lg">Index</th>
                                 <th class="p-3">Reporting Cycle</th>
                                 <th class="p-3">Asset ID</th>
@@ -364,47 +360,47 @@
                                 <th class="p-3 pr-4 text-right rounded-r-lg">Status</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-[#2a2552] text-slate-300" id="capex-table-rows">
-                            <tr><td colspan="7" class="py-6 text-center text-slate-500">Querying database allocations...</td></tr>
+                        <tbody class="divide-y divide-[#383f52] text-slate-200" id="capex-table-rows">
+                            <tr><td colspan="7" class="py-6 text-center text-slate-400">Querying database allocations...</td></tr>
                         </tbody>
                     </table>
                 </div>
-                <div id="capex-pagination-ctrl" class="flex justify-between items-center mt-4 px-2 font-mono text-xs text-[#8f8ba8]"></div>
+                <div id="capex-pagination-ctrl" class="flex justify-between items-center mt-4 px-2 font-mono text-xs text-[#9ca3af]"></div>
             </div>
 
             <!-- VIEW 3: PARTS REQUEST -->
             <div id="view-parts-container" class="hidden space-y-6">
-                <div class="border-b border-[#2a2552] pb-4">
+                <div class="border-b border-[#383f52] pb-4">
                     <h3 class="text-sm font-semibold text-white uppercase tracking-widest font-mono">Procurement Turnaround Analytics Matrix</h3>
-                    <p class="text-xs text-[#8f8ba8] font-mono mt-1">
-                        💡 <strong class="text-[#00e3c8]">Internal:</strong>Request to System Encoding | <strong class="text-emerald-400">Procurement:</strong> PO Creation to Approval.
+                    <p class="text-xs text-[#9ca3af] font-mono mt-1">
+                        💡 <strong class="text-[#00c49f]">Internal:</strong> Request to System Encoding | <strong class="text-[#3b82f6]">Procurement:</strong> PO Creation to Approval.
                     </p>
                 </div>
-                <div class="bg-[#0d0c1d]/60 border border-[#2a2552] rounded-xl p-4 sm:p-6">
-                    <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-5 font-mono">Average Total Lead Days</h4>
+                <div class="bg-[#1e222d] border border-[#383f52] rounded-xl p-4 sm:p-6">
+                    <h4 class="text-xs font-semibold text-slate-200 uppercase tracking-wider mb-5 font-mono">Average Total Lead Days</h4>
                     <div class="w-full h-[150px]">
                         <canvas id="parts-performance-canvas"></canvas>
                     </div>
                 </div>
 
                 <!-- UTILITY HUB BAR -->
-                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-[#0d0c1d]/40 p-3 rounded-xl border border-[#2a2552]">
+                <div class="utility-hub-bar flex flex-col sm:flex-row gap-3 items-center justify-between bg-[#1e222d] p-3 rounded-xl border border-[#383f52]">
                     <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="parts-status-pills">
                         <button onclick="filterPartsTable('ALL')" id="parts-pill-ALL" class="filter-pill active-pill px-3 py-1 rounded-md text-xs font-mono">ALL</button>
                         <button onclick="filterPartsTable('APPROVED')" id="parts-pill-APPROVED" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">APPROVED</button>
                         <button onclick="filterPartsTable('PENDING')" id="parts-pill-PENDING" class="filter-pill px-3 py-1 rounded-md text-xs font-mono">PENDING</button>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <input type="text" id="parts-search" oninput="searchPartsTable()" placeholder="🔍 Search description..." class="w-full sm:w-64 bg-[#0d0c1d] text-slate-200 placeholder-[#635f80] border border-[#2a2552] rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-[#00e3c8]">
-                        <button onclick="exportViewToCSV('parts')" class="bg-[#121027] text-[#00e3c8] hover:bg-[#1a1736] border border-[#00e3c8]/30 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
-                        <button onclick="window.print()" class="bg-[#1a1736] hover:bg-[#2a2552] text-slate-300 border border-[#3e3778] rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
+                        <input type="text" id="parts-search" oninput="searchPartsTable()" placeholder="🔍 Search description..." class="w-full sm:w-64 bg-[#282d3c] text-slate-200 placeholder-[#9ca3af] border border-[#383f52] rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-[#f5ba42]">
+                        <button onclick="exportViewToCSV('parts')" class="bg-[#282d3c] text-[#00c49f] hover:bg-[#383f52] border border-[#00c49f]/30 rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all whitespace-nowrap">📥 Export CSV</button>
+                        <button onclick="window.print()" class="bg-[#282d3c] hover:bg-[#383f52] text-slate-200 border border-[#383f52] rounded-lg px-3 py-1.5 text-xs font-mono transition-all">🖨️ Print</button>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto chart-scrollbar bg-[#0d0c1d]/60 rounded-xl border border-[#2a2552] p-4">
+                <div class="overflow-x-auto chart-scrollbar bg-[#1e222d] rounded-xl border border-[#383f52] p-4">
                     <table id="parts-data-table" class="w-full text-left border-collapse font-mono text-xs min-w-[900px]">
                         <thead>
-                            <tr class="bg-[#1a1736] text-[#b1add0] uppercase tracking-wider text-[11px] font-bold rounded-lg border-b border-[#2a2552]">
+                            <tr class="bg-[#282d3c] text-[#9ca3af] uppercase tracking-wider text-[11px] font-bold rounded-lg border-b border-[#383f52]">
                                 <th class="p-3 pl-4 rounded-l-lg">Request ID</th>
                                 <th class="p-3">Asset Ref</th>
                                 <th class="p-3">Component Description</th>
@@ -414,18 +410,18 @@
                                 <th class="p-3 pr-4 text-right rounded-r-lg">Workflow Status</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-[#2a2552] text-slate-300" id="parts-table-rows">
-                            <tr><td colspan="7" class="py-6 text-center text-slate-500">Retrieving logistical metrics...</td></tr>
+                        <tbody class="divide-y divide-[#383f52] text-slate-200" id="parts-table-rows">
+                            <tr><td colspan="7" class="py-6 text-center text-slate-400">Retrieving logistical metrics...</td></tr>
                         </tbody>
                     </table>
                 </div>
-                <div id="parts-pagination-ctrl" class="flex justify-between items-center mt-4 px-2 font-mono text-xs text-[#8f8ba8]"></div>
+                <div id="parts-pagination-ctrl" class="flex justify-between items-center mt-4 px-2 font-mono text-xs text-[#9ca3af]"></div>
             </div>
 
         </main>
     </div>
 
-    <!-- DATA PIPELINE ENGINE (V5.0 Advanced Architecture) -->
+    <!-- DATA PIPELINE ENGINE (V5.1 Corporate Executive Architecture) -->
     <script>
         const SHEET_DB_API_URL = 'https://script.google.com/macros/s/AKfycbzqed0j2W4mevtpEANLXZTIpFoAS79_GXxzmNvDfZOls4hOlnHY7FDtWyyXUCHIawrePQ/exec';
 
@@ -458,7 +454,7 @@
             return gradient;
         }
 
-        // Tokenized Fuzzy Search Matcher (Evaluates queries out of absolute order)
+        // Tokenized Fuzzy Search Matcher
         function fuzzyMatch(text, query) {
             if (!query) return true;
             const tokens = query.toLowerCase().split(/\s+/).filter(t => t.length > 0);
@@ -481,7 +477,7 @@
                 statusTxt.className = "text-slate-400 font-bold text-xs font-mono mt-0.5";
             } else {
                 statusTxt.innerText = "Connected";
-                statusTxt.className = "text-[#00e3c8] font-bold text-xs font-mono mt-0.5";
+                statusTxt.className = "text-[#00c49f] font-bold text-xs font-mono mt-0.5";
                 fetchLatestDataStream(); 
             }
         }
@@ -492,10 +488,9 @@
             const indicator = document.getElementById('sync-indicator');
             const statusTxt = document.getElementById('sync-status');
             
-            indicator.classList.replace('bg-[#00e3c8]', 'bg-amber-400');
-            indicator.classList.replace('shadow-[0_0_12px_#00e3c8]', 'shadow-[0_0_10px_#f59e0b]');
+            indicator.className = "h-3 w-3 rounded-full bg-[#f5ba42] transition-all duration-300";
             statusTxt.innerText = "Syncing with cloud...";
-            statusTxt.className = "text-amber-400 font-bold text-xs font-mono mt-0.5";
+            statusTxt.className = "text-[#f5ba42] font-bold text-xs font-mono mt-0.5";
 
             try {
                 const res = await fetch(SHEET_DB_API_URL, { method: 'GET', mode: 'cors', credentials: 'omit' });
@@ -524,16 +519,15 @@
                     processAndRenderCapex();
                     processAndRenderParts();
 
-                    indicator.classList.replace('bg-amber-400', 'bg-[#00e3c8]');
-                    indicator.classList.replace('shadow-[0_0_10px_#f59e0b]', 'shadow-[0_0_12px_#00e3c8]');
+                    indicator.className = "h-3 w-3 rounded-full bg-[#00c49f] transition-all duration-300";
                     statusTxt.innerText = document.getElementById('auto-sync-toggle').checked ? "Connected" : "Paused (Manual Mode)";
-                    statusTxt.className = document.getElementById('auto-sync-toggle').checked ? "text-[#00e3c8] font-bold text-xs font-mono mt-0.5" : "text-slate-400 font-bold text-xs font-mono mt-0.5";
+                    statusTxt.className = document.getElementById('auto-sync-toggle').checked ? "text-[#00c49f] font-bold text-xs font-mono mt-0.5" : "text-slate-400 font-bold text-xs font-mono mt-0.5";
                 }
             } catch (err) {
                 console.error("Streamer sync error:", err);
                 statusTxt.innerText = "Sync Timeout - Reconnecting";
-                statusTxt.className = "text-rose-500 font-bold text-xs font-mono mt-0.5";
-                indicator.classList.replace('bg-[#00e3c8]', 'bg-rose-500');
+                statusTxt.className = "text-[#ef4444] font-bold text-xs font-mono mt-0.5";
+                indicator.className = "h-3 w-3 rounded-full bg-[#ef4444] transition-all duration-300";
             }
         }
 
@@ -590,7 +584,7 @@
 
             let tableHtml = '';
             if (pageSlice.length === 0) {
-                tableHtml = `<tr><td colspan="7" class="py-12 text-center text-slate-500 font-mono text-xs">⚠️ No matching records correspond with active matrix filters.</td></tr>`;
+                tableHtml = `<tr><td colspan="7" class="py-12 text-center text-slate-400 font-mono text-xs">⚠️ No matching records correspond with active matrix filters.</td></tr>`;
             } else {
                 pageSlice.forEach((row, i) => {
                     const id = row[0], quarter = row[1], assetId = String(row[2] || '').toUpperCase(), activity = row[3] || '', po = row[4], status = row[6] || '';
@@ -598,29 +592,29 @@
                     const index = startIndex + i;
 
                     tableHtml += `
-                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-[#1b1d40]/40' : 'bg-[#1b1d40]/80'} hover:bg-[#1a1736]/90 border-b border-[#2a2552]/40 transition-colors" 
+                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-[#222634]' : 'bg-[#282d3c]'} hover:bg-[#31374a] border-b border-[#383f52] transition-colors" 
                             onclick="toggleRowDetailDrawer('cx-${index}')">
-                            <td class="p-3 pl-4 text-slate-500 font-medium">${id}</td>
-                            <td class="p-3 text-[#8f8ba8] text-[11px] font-medium">${quarter}</td>
+                            <td class="p-3 pl-4 text-slate-400 font-medium">${id}</td>
+                            <td class="p-3 text-[#9ca3af] text-[11px] font-medium">${quarter}</td>
                             <td class="p-3">
-                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-[#0d0c1d] border border-[#2a2552] text-[#00e3c8] hover:border-[#00e3c8] transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold font-mono cursor-pointer">
+                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-[#1e222d] border border-[#383f52] text-[#00c49f] hover:border-[#00c49f] transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold font-mono cursor-pointer">
                                     ${assetId} 📋
                                 </span>
                             </td>
                             <td class="p-3 text-white font-medium">${activity}</td>
                             <td class="p-3 text-slate-400">${po || '---'}</td>
-                            <td class="p-3 text-[#00e3c8] font-semibold">PHP ${budgetNum.toLocaleString()}</td>
+                            <td class="p-3 text-[#f5ba42] font-semibold">PHP ${budgetNum.toLocaleString()}</td>
                             <td class="p-3 pr-4 text-right">
-                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'||status==='Complete'?'bg-[#00e3c8]/10 text-[#00e3c8] border border-[#00e3c8]/30':'bg-[#14122b] text-slate-400 border border-[#2a2552]'}">${status || 'With Documents'}</span>
+                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='Done'||status==='Complete'?'bg-[#00c49f]/10 text-[#00c49f] border border-[#00c49f]/30':'bg-[#1e222d] text-slate-400 border border-[#383f52]'}">${status || 'With Documents'}</span>
                             </td>
                         </tr>
-                        <tr id="drawer-cx-${index}" class="detail-drawer border-l-2 border-[#00e3c8] font-mono text-[11px] text-slate-400">
+                        <tr id="drawer-cx-${index}" class="detail-drawer border-l-2 border-[#f5ba42] font-mono text-[11px] text-slate-300">
                             <td colspan="7" class="p-4 space-y-2">
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Pipeline ID Token</span> cx-ref-${id}00${index}</div>
-                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Deployment Phase</span> Tier-1 Operational Authorization</div>
-                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Ledger Sync Index</span> 0x${(index*143).toString(16).toUpperCase()}</div>
-                                    <div><span class="text-slate-500 block font-bold uppercase text-[9px]">Procurement Route</span> Direct Vendor Allocation</div>
+                                    <div><span class="text-slate-400 block font-bold uppercase text-[9px]">Pipeline ID Token</span> cx-ref-${id}00${index}</div>
+                                    <div><span class="text-slate-400 block font-bold uppercase text-[9px]">Deployment Phase</span> Tier-1 Operational Authorization</div>
+                                    <div><span class="text-slate-400 block font-bold uppercase text-[9px]">Ledger Sync Index</span> 0x${(index*143).toString(16).toUpperCase()}</div>
+                                    <div><span class="text-slate-400 block font-bold uppercase text-[9px]">Procurement Route</span> Direct Vendor Allocation</div>
                                 </div>
                             </td>
                         </tr>`;
@@ -632,9 +626,9 @@
             document.getElementById('capex-pagination-ctrl').innerHTML = `
                 <div>Showing ${totalItems === 0 ? 0 : startIndex + 1} to ${Math.min(startIndex + state.capex.limit, totalItems)} of ${totalItems} assets</div>
                 <div class="flex items-center gap-2">
-                    <button onclick="setCapexPage(${state.capex.page - 1})" ${state.capex.page === 1 ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-[#1a1736] hover:bg-[#2a2552] px-3 py-1 rounded border border-[#3e3778] text-slate-300 transition-colors"'} tabindex="0">◄ Prev</button>
-                    <span class="text-slate-300 font-bold">Page ${state.capex.page} / ${maxPage}</span>
-                    <button onclick="setCapexPage(${state.capex.page + 1})" ${state.capex.page === maxPage ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-[#1a1736] hover:bg-[#2a2552] px-3 py-1 rounded border border-[#3e3778] text-slate-300 transition-colors"'} tabindex="0">Next ►</button>
+                    <button onclick="setCapexPage(${state.capex.page - 1})" ${state.capex.page === 1 ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-[#282d3c] hover:bg-[#383f52] px-3 py-1 rounded border border-[#383f52] text-slate-300 transition-colors"'} tabindex="0">◄ Prev</button>
+                    <span class="text-slate-200 font-bold">Page ${state.capex.page} / ${maxPage}</span>
+                    <button onclick="setCapexPage(${state.capex.page + 1})" ${state.capex.page === maxPage ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-[#282d3c] hover:bg-[#383f52] px-3 py-1 rounded border border-[#383f52] text-slate-300 transition-colors"'} tabindex="0">Next ►</button>
                 </div>`;
         }
 
@@ -649,7 +643,7 @@
         }
 
         // ==========================================
-        // PARTS REQ SPEED SUB-SYSTEM (FUZZY + PAGINATED)
+        // PARTS REQ SPEED SUB-SYSTEM
         // ==========================================
         function processAndRenderParts() {
             let totalOverallDays = 0, totalInternalDays = 0, totalProcurementDays = 0, approvedCount = 0;
@@ -691,7 +685,7 @@
 
             let tableHtml = '';
             if (pageSlice.length === 0) {
-                tableHtml = `<tr><td colspan="7" class="py-12 text-center text-slate-500 font-mono text-xs">⚠️ No component tracking requests match criteria.</td></tr>`;
+                tableHtml = `<tr><td colspan="7" class="py-12 text-center text-slate-400 font-mono text-xs">⚠️ No component tracking requests match criteria.</td></tr>`;
             } else {
                 pageSlice.forEach((row, i) => {
                     const id = row[0], assetId = String(row[2]).toUpperCase(), desc = row[3], status = String(row[19]).trim().toUpperCase();
@@ -699,28 +693,28 @@
                     const index = startIndex + i;
 
                     tableHtml += `
-                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-[#1b1d40]/40' : 'bg-[#1b1d40]/80'} hover:bg-[#1a1736]/90 border-b border-[#2a2552]/40 transition-colors" 
+                        <tr class="filterable-row ${index % 2 === 0 ? 'bg-[#222634]' : 'bg-[#282d3c]'} hover:bg-[#31374a] border-b border-[#383f52] transition-colors" 
                             onclick="toggleRowDetailDrawer('pt-${index}')">
-                            <td class="p-3 pl-4 text-purple-400 font-medium">${id}</td>
+                            <td class="p-3 pl-4 text-[#3b82f6] font-medium">${id}</td>
                             <td class="p-3">
-                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-[#0d0c1d] border border-[#2a2552] text-white hover:text-[#00e3c8] hover:border-[#00e3c8] transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold cursor-pointer">
+                                <span onclick="copyAssetIdToClipboard(event, '${assetId}')" class="bg-[#1e222d] border border-[#383f52] text-white hover:text-[#f5ba42] hover:border-[#f5ba42] transition-colors px-1.5 py-0.5 rounded text-[11px] font-bold cursor-pointer">
                                     ${assetId} 📋
                                 </span>
                             </td>
                             <td class="p-3 text-white font-medium truncate max-w-[220px]">${desc}</td>
-                            <td class="p-3 text-[#00e3c8] font-semibold">${status==='APPROVED'?internalDays+'d':'—'}</td>
-                            <td class="p-3 text-emerald-400 font-semibold">${status==='APPROVED'?procurementDays+'d':'—'}</td>
-                            <td class="p-3 text-amber-400 font-bold">${status==='APPROVED'?grossLeadDays+'d':'—'}</td>
+                            <td class="p-3 text-[#00c49f] font-semibold">${status==='APPROVED'?internalDays+'d':'—'}</td>
+                            <td class="p-3 text-[#3b82f6] font-semibold">${status==='APPROVED'?procurementDays+'d':'—'}</td>
+                            <td class="p-3 text-[#f5ba42] font-bold">${status==='APPROVED'?grossLeadDays+'d':'—'}</td>
                             <td class="p-3 pr-4 text-right">
-                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='APPROVED'?'bg-emerald-500/20 text-[#00e3c8] border border-emerald-500/40':'bg-amber-500/20 text-amber-400 border border-amber-500/40'}">${status}</span>
+                                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${status==='APPROVED'?'bg-[#00c49f]/10 text-[#00c49f] border border-[#00c49f]/30':'bg-[#f5ba42]/10 text-[#f5ba42] border border-[#f5ba42]/30'}">${status}</span>
                             </td>
                         </tr>
-                        <tr id="drawer-pt-${index}" class="detail-drawer border-l-2 border-purple-500 font-mono text-[11px] text-slate-400">
+                        <tr id="drawer-pt-${index}" class="detail-drawer border-l-2 border-[#3b82f6] font-mono text-[11px] text-slate-300">
                             <td colspan="7" class="p-4 space-y-1">
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                    <div><strong class="text-slate-500">Internal Pipeline Speed:</strong> Approved within ${internalDays} working days.</div>
-                                    <div><strong class="text-slate-500">Procurement Cycle:</strong> Field acquisition completed in ${procurementDays} days.</div>
-                                    <div><strong class="text-slate-500">System Verification:</strong> Digital PO Stamp secure token verified.</div>
+                                    <div><strong class="text-slate-400">Internal Pipeline Speed:</strong> Approved within ${internalDays} working days.</div>
+                                    <div><strong class="text-slate-400">Procurement Cycle:</strong> Field acquisition completed in ${procurementDays} days.</div>
+                                    <div><strong class="text-slate-400">System Verification:</strong> Digital PO Stamp secure token verified.</div>
                                 </div>
                             </td>
                         </tr>`;
@@ -732,9 +726,9 @@
             document.getElementById('parts-pagination-ctrl').innerHTML = `
                 <div>Showing ${totalItems === 0 ? 0 : startIndex + 1} to ${Math.min(startIndex + state.parts.limit, totalItems)} of ${totalItems} tracking links</div>
                 <div class="flex items-center gap-2">
-                    <button onclick="setPartsPage(${state.parts.page - 1})" ${state.parts.page === 1 ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-[#1a1736] hover:bg-[#2a2552] px-3 py-1 rounded border border-[#3e3778] text-slate-300 transition-colors"'} tabindex="0">◄ Prev</button>
-                    <span class="text-slate-300 font-bold">Page ${state.parts.page} / ${maxPage}</span>
-                    <button onclick="setPartsPage(${state.parts.page + 1})" ${state.parts.page === maxPage ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-[#1a1736] hover:bg-[#2a2552] px-3 py-1 rounded border border-[#3e3778] text-slate-300 transition-colors"'} tabindex="0">Next ►</button>
+                    <button onclick="setPartsPage(${state.parts.page - 1})" ${state.parts.page === 1 ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-[#282d3c] hover:bg-[#383f52] px-3 py-1 rounded border border-[#383f52] text-slate-300 transition-colors"'} tabindex="0">◄ Prev</button>
+                    <span class="text-slate-200 font-bold">Page ${state.parts.page} / ${maxPage}</span>
+                    <button onclick="setPartsPage(${state.parts.page + 1})" ${state.parts.page === maxPage ? 'disabled class="opacity-30 cursor-not-allowed"' : 'class="bg-[#282d3c] hover:bg-[#383f52] px-3 py-1 rounded border border-[#383f52] text-slate-300 transition-colors"'} tabindex="0">Next ►</button>
                 </div>`;
         }
 
@@ -824,21 +818,21 @@
                 data: {
                     labels: names,
                     datasets: [
-                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(0, 227, 200, 0.8)', 'rgba(0, 227, 200, 0.1)'), borderColor: '#00e3c8', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
-                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(118, 61, 242, 0.8)', 'rgba(118, 61, 242, 0.1)'), borderColor: '#763df2', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
-                        { label: 'Actual Compliance %', data: compliancePercentages, type: 'line', borderColor: '#00e3c8', backgroundColor: '#0d0c1d', borderWidth: 3, pointBackgroundColor: '#00e3c8', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.3, yAxisID: 'yPercentage', order: 1 },
-                        { label: 'Target (85%)', data: targetLineData, type: 'line', borderColor: '#f43f5e', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'yPercentage', order: 2 }
+                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(0, 196, 159, 0.8)', 'rgba(0, 196, 159, 0.2)'), borderColor: '#00c49f', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
+                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(245, 186, 66, 0.8)', 'rgba(245, 186, 66, 0.2)'), borderColor: '#f5ba42', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
+                        { label: 'Actual Compliance %', data: compliancePercentages, type: 'line', borderColor: '#3b82f6', backgroundColor: '#1e222d', borderWidth: 3, pointBackgroundColor: '#3b82f6', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.3, yAxisID: 'yPercentage', order: 1 },
+                        { label: 'Target (85%)', data: targetLineData, type: 'line', borderColor: '#ef4444', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'yPercentage', order: 2 }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#8f8ba8', font: { size: 10, weight: '500' } } },
-                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 25, color: '#00e3c8', font: { size: 10 }, callback: v => v + ' Vol' }, grid: { color: 'rgba(255, 255, 255, 0.03)' } },
-                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#8f8ba8', font: { size: 10 }, callback: v => v + '%' }, grid: { display: false } }
+                        x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { size: 10, weight: '500' } } },
+                        yVolume: { type: 'linear', position: 'left', min: 0, max: 100, ticks: { stepSize: 25, color: '#00c49f', font: { size: 10 }, callback: v => v + ' Vol' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#9ca3af', font: { size: 10 }, callback: v => v + '%' }, grid: { display: false } }
                     },
                     plugins: {
-                        legend: { position: 'top', labels: { color: '#b1add0', font: { size: 10 } } },
+                        legend: { position: 'top', labels: { color: '#d1d5db', font: { size: 10 } } },
                         datalabels: { formatter: (v, c) => c.dataset.yAxisID === 'yPercentage' ? (c.datasetIndex === 2 ? v + '%' : '') : v, color: '#fff', anchor: 'end', align: 'top', font: { size: 9, weight: 'bold' } }
                     }
                 }
@@ -918,21 +912,21 @@
                 data: {
                     labels: weekLabels,
                     datasets: [
-                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(0, 227, 200, 0.8)', 'rgba(0, 227, 200, 0.1)'), borderColor: '#00e3c8', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
-                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(118, 61, 242, 0.8)', 'rgba(118, 61, 242, 0.1)'), borderColor: '#763df2', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
-                        { label: 'Actual Compliance %', data: compliancePercentages, type: 'line', borderColor: '#00e3c8', backgroundColor: '#0d0c1d', borderWidth: 3, pointBackgroundColor: '#00e3c8', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.3, yAxisID: 'yPercentage', order: 1 },
-                        { label: 'Target (85%)', data: targetLineData, type: 'line', borderColor: '#f43f5e', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'yPercentage', order: 2 }
+                        { label: 'Planned Vol', data: plannedVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(0, 196, 159, 0.8)', 'rgba(0, 196, 159, 0.2)'), borderColor: '#00c49f', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 3 },
+                        { label: 'Actual Vol', data: actualVolumes, backgroundColor: createVerticalGradient(ctx, 'rgba(245, 186, 66, 0.8)', 'rgba(245, 186, 66, 0.2)'), borderColor: '#f5ba42', borderWidth: 1.5, borderRadius: 4, yAxisID: 'yVolume', order: 4 },
+                        { label: 'Actual Compliance %', data: compliancePercentages, type: 'line', borderColor: '#3b82f6', backgroundColor: '#1e222d', borderWidth: 3, pointBackgroundColor: '#3b82f6', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.3, yAxisID: 'yPercentage', order: 1 },
+                        { label: 'Target (85%)', data: targetLineData, type: 'line', borderColor: '#ef4444', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, yAxisID: 'yPercentage', order: 2 }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#8f8ba8', font: { size: 10, weight: '500' } } },
-                        yVolume: { type: 'linear', position: 'left', min: 0, ticks: { color: '#00e3c8', font: { size: 10 }, callback: v => v + ' Vol' }, grid: { color: 'rgba(255, 255, 255, 0.03)' } },
-                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#8f8ba8', font: { size: 10 }, callback: v => v + '%' }, grid: { display: false } }
+                        x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { size: 10, weight: '500' } } },
+                        yVolume: { type: 'linear', position: 'left', min: 0, ticks: { color: '#00c49f', font: { size: 10 }, callback: v => v + ' Vol' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        yPercentage: { type: 'linear', position: 'right', min: 0, max: 100, ticks: { stepSize: 25, color: '#9ca3af', font: { size: 10 }, callback: v => v + '%' }, grid: { display: false } }
                     },
                     plugins: {
-                        legend: { position: 'top', labels: { color: '#b1add0', font: { size: 10 } } },
+                        legend: { position: 'top', labels: { color: '#d1d5db', font: { size: 10 } } },
                         datalabels: { formatter: (v, c) => c.dataset.yAxisID === 'yPercentage' ? (c.datasetIndex === 2 ? v + '%' : '') : v, color: '#fff', anchor: 'end', align: 'top', font: { size: 9, weight: 'bold' } }
                     }
                 }
@@ -979,17 +973,17 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        { type: 'bar', label: 'Monthly Average %', data: complianceData, backgroundColor: createVerticalGradient(ctx, 'rgba(0, 227, 200, 0.8)', 'rgba(0, 227, 200, 0.15)'), borderColor: '#00e3c8', borderWidth: 1.5, borderRadius: 4, order: 2 },
-                        { type: 'line', label: 'Target Limit (85%)', data: targetData, borderColor: '#f43f5e', borderWidth: 2, borderDash: [6, 4], pointRadius: 0, fill: false, order: 1 }
+                        { type: 'bar', label: 'Monthly Average %', data: complianceData, backgroundColor: createVerticalGradient(ctx, 'rgba(0, 196, 159, 0.8)', 'rgba(0, 196, 159, 0.2)'), borderColor: '#00c49f', borderWidth: 1.5, borderRadius: 4, order: 2 },
+                        { type: 'line', label: 'Target Limit (85%)', data: targetData, borderColor: '#ef4444', borderWidth: 2, borderDash: [6, 4], pointRadius: 0, fill: false, order: 1 }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#8f8ba8' } },
-                        y: { min: 0, max: 100, ticks: { color: '#635f80', callback: v => v + '%' }, grid: { color: 'rgba(255, 255, 255, 0.03)' } }
+                        x: { grid: { display: false }, ticks: { color: '#9ca3af' } },
+                        y: { min: 0, max: 100, ticks: { color: '#9ca3af', callback: v => v + '%' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
                     },
-                    plugins: { legend: { labels: { color: '#b1add0' } }, datalabels: { color: '#fff', font: { weight: 'bold' }, formatter: (v, c) => c.dataset.type === 'bar' ? v + '%' : '' } }
+                    plugins: { legend: { labels: { color: '#d1d5db' } }, datalabels: { color: '#fff', font: { weight: 'bold' }, formatter: (v, c) => c.dataset.type === 'bar' ? v + '%' : '' } }
                 }
             });
         }
@@ -1000,22 +994,6 @@
             
             if (doughnutChartInstance) doughnutChartInstance.destroy();
 
-            const gradientBlue = doughnutCtx.createLinearGradient(0, 0, 0, 280);
-            gradientBlue.addColorStop(0, '#00bcff');
-            gradientBlue.addColorStop(1, '#1d57ff');
-
-            const gradientPurple = doughnutCtx.createLinearGradient(0, 0, 0, 280);
-            gradientPurple.addColorStop(0, '#d100ff');
-            gradientPurple.addColorStop(1, '#6700b5');
-
-            const gradientOrange = doughnutCtx.createLinearGradient(0, 0, 0, 280);
-            gradientOrange.addColorStop(0, '#ff9900');
-            gradientOrange.addColorStop(1, '#ffcb00');
-
-            const gradientPink = doughnutCtx.createLinearGradient(0, 0, 0, 280);
-            gradientPink.addColorStop(0, '#ff007f');
-            gradientPink.addColorStop(1, '#ff66aa');
-
             doughnutChartInstance = new Chart(doughnutCtx, {
                 type: 'doughnut',
                 data: { 
@@ -1023,15 +1001,15 @@
                     datasets: [{ 
                         data: financialData, 
                         backgroundColor: [
-                            gradientBlue, 
-                            gradientPurple, 
-                            gradientOrange, 
-                            gradientPink
+                            '#00c49f', 
+                            '#f5ba42', 
+                            '#ef4444', 
+                            '#3b82f6'
                         ], 
                         borderWidth: 0,
-                        borderRadius: 6,
-                        spacing: 8,
-                        hoverOffset: 12
+                        borderRadius: 4,
+                        spacing: 4,
+                        hoverOffset: 8
                     }] 
                 },
                 options: { 
@@ -1058,7 +1036,7 @@
                             display: true, 
                             position: 'bottom', 
                             labels: { 
-                                color: '#8f8ba8', 
+                                color: '#9ca3af', 
                                 font: { size: 10, weight: '500' },
                                 padding: 15,
                                 usePointStyle: true
@@ -1070,7 +1048,7 @@
                             formatter: v => v > 0 ? ((v / totalFinancials) * 100).toFixed(0) + '%' : '' 
                         } 
                     }, 
-                    cutout: '45%'
+                    cutout: '50%'
                 }
             });
 
@@ -1078,8 +1056,8 @@
             if (barChartInstance) barChartInstance.destroy();
             barChartInstance = new Chart(barCtx, {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Target Count', data: labels.map(l => plannedMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(118, 61, 242, 0.85)', 'rgba(118, 61, 242, 0.15)'), borderColor: '#763df2', borderWidth: 1, borderRadius: 4 }, { label: 'Actual Completed', data: labels.map(l => actualMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(0, 227, 200, 0.85)', 'rgba(0, 227, 200, 0.15)'), borderColor: '#00e3c8', borderWidth: 1, borderRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#8f8ba8' }, grid: { display: false } }, y: { grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: '#635f80', stepSize: 1 } } }, plugins: { legend: { labels: { color: '#b1add0' } }, datalabels: { color: '#fff', anchor: 'end', align: 'top' } } }
+                data: { labels: labels, datasets: [{ label: 'Target Count', data: labels.map(l => plannedMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(59, 130, 246, 0.85)', 'rgba(59, 130, 246, 0.2)'), borderColor: '#3b82f6', borderWidth: 1, borderRadius: 4 }, { label: 'Actual Completed', data: labels.map(l => actualMap[l]), backgroundColor: createVerticalGradient(barCtx, 'rgba(245, 186, 66, 0.85)', 'rgba(245, 186, 66, 0.2)'), borderColor: '#f5ba42', borderWidth: 1, borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#9ca3af' }, grid: { display: false } }, y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#9ca3af', stepSize: 1 } } }, plugins: { legend: { labels: { color: '#d1d5db' } }, datalabels: { color: '#fff', anchor: 'end', align: 'top' } } }
             });
         }
 
@@ -1088,8 +1066,8 @@
             if (partsChartInstance) partsChartInstance.destroy();
             partsChartInstance = new Chart(partsCtx, {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(118, 61, 242, 0.85)', 'rgba(118, 61, 242, 0.15)'), borderColor: '#763df2', borderWidth: 1, barThickness: 40 }, { label: 'Procurement', data: srcProcureData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(0, 227, 200, 0.85)', 'rgba(0, 227, 200, 0.15)'), borderColor: '#00e3c8', borderWidth: 1, barThickness: 40 }] },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#8f8ba8' }, grid: { color: 'rgba(255, 255, 255, 0.03)' } }, y: { stacked: true, ticks: { color: '#fff' }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#b1add0' } }, datalabels: { color: '#fff', font: { weight: 'bold' } } } }
+                data: { labels: labels, datasets: [{ label: 'Internal', data: internalData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(0, 196, 159, 0.85)', 'rgba(0, 196, 159, 0.2)'), borderColor: '#00c49f', borderWidth: 1, barThickness: 40 }, { label: 'Procurement', data: srcProcureData, backgroundColor: createVerticalGradient(partsCtx, 'rgba(59, 130, 246, 0.85)', 'rgba(59, 130, 246, 0.2)'), borderColor: '#3b82f6', borderWidth: 1, barThickness: 40 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y: { stacked: true, ticks: { color: '#fff' }, grid: { display: false } } }, plugins: { legend: { labels: { color: '#d1d5db' } }, datalabels: { color: '#fff', font: { weight: 'bold' } } } }
             });
         }
 
